@@ -1,0 +1,240 @@
+/* Sistema de diseño · Roodada — generado con Office (Digital Dementia) el 2026-10-11.
+   No editar a mano: cambia el sistema en Office y vuelve a exportar. */
+
+:root {
+  /* Primitivos */
+  --ds-roodada-principal: #FF716A;
+  --ds-roodada-principal-50: #FFF4F3;
+  --ds-roodada-principal-100: #FFE4E1;
+  --ds-roodada-principal-200: #FFC8C2;
+  --ds-roodada-principal-300: #FFA098;
+  --ds-roodada-principal-400: #F17870;
+  --ds-roodada-principal-500: #DA534E;
+  --ds-roodada-principal-600: #B63B39;
+  --ds-roodada-principal-700: #942A29;
+  --ds-roodada-principal-800: #74191A;
+  --ds-roodada-principal-900: #55080C;
+  --ds-roodada-principal-950: #3B0003;
+  --ds-roodada-textos: #373435;
+  --ds-roodada-textos-50: #F8F6F7;
+  --ds-roodada-textos-100: #EDEAEB;
+  --ds-roodada-textos-200: #D9D7D7;
+  --ds-roodada-textos-300: #C0BDBE;
+  --ds-roodada-textos-400: #A4A0A1;
+  --ds-roodada-textos-500: #888586;
+  --ds-roodada-textos-600: #6E6B6C;
+  --ds-roodada-textos-700: #575455;
+  --ds-roodada-textos-800: #413F40;
+  --ds-roodada-textos-900: #2C2B2B;
+  --ds-roodada-textos-950: #1C1A1B;
+  --ds-roodada-secundario: #00D8BC;
+  --ds-roodada-secundario-50: #DFFFF7;
+  --ds-roodada-secundario-100: #ADFEEC;
+  --ds-roodada-secundario-200: #8FECD8;
+  --ds-roodada-secundario-300: #64D5BF;
+  --ds-roodada-secundario-400: #1FBAA3;
+  --ds-roodada-secundario-500: #009C87;
+  --ds-roodada-secundario-600: #007E6D;
+  --ds-roodada-secundario-700: #006456;
+  --ds-roodada-secundario-800: #004B40;
+  --ds-roodada-secundario-900: #00342C;
+  --ds-roodada-secundario-950: #00211B;
+  --ds-roodada-terciario: #FFC35C;
+  --ds-roodada-terciario-50: #FFF5E7;
+  --ds-roodada-terciario-100: #FFE8C4;
+  --ds-roodada-terciario-200: #F8D194;
+  --ds-roodada-terciario-300: #E2B66F;
+  --ds-roodada-terciario-400: #C99842;
+  --ds-roodada-terciario-500: #B07B00;
+  --ds-roodada-terciario-600: #8E6200;
+  --ds-roodada-terciario-700: #714E00;
+  --ds-roodada-terciario-800: #563A00;
+  --ds-roodada-terciario-900: #3C2700;
+  --ds-roodada-terciario-950: #271700;
+  --ds-roodada-texto2: #EEE7E9;
+  --ds-roodada-texto2-50: #F9F6F7;
+  --ds-roodada-texto2-100: #EEEAEB;
+  --ds-roodada-texto2-200: #DAD6D7;
+  --ds-roodada-texto2-300: #C1BCBE;
+  --ds-roodada-texto2-400: #A5A0A1;
+  --ds-roodada-texto2-500: #8A8486;
+  --ds-roodada-texto2-600: #706A6C;
+  --ds-roodada-texto2-700: #585455;
+  --ds-roodada-texto2-800: #423E40;
+  --ds-roodada-texto2-900: #2D2A2B;
+  --ds-roodada-texto2-950: #1C1A1B;
+
+  /* Color: roles (modo claro) */
+  --ds-bg: var(--ds-roodada-principal);
+  --ds-surface: var(--ds-roodada-texto2);
+  --ds-surface-alt: var(--ds-roodada-principal);
+  --ds-text: var(--ds-roodada-textos);
+  --ds-text-muted: var(--ds-roodada-texto2);
+  --ds-border: var(--ds-roodada-textos);
+  --ds-accent: var(--ds-roodada-textos);
+  --ds-on-accent: #FFFFFF;
+  --ds-success: var(--ds-roodada-secundario);
+  --ds-warning: var(--ds-roodada-principal);
+  --ds-danger: var(--ds-roodada-principal-700);
+  --ds-focus: var(--ds-roodada-textos);
+  color-scheme: light;
+
+  /* Tipografía */
+  --ds-font-display: 'DM mono', ui-sans-serif, system-ui, sans-serif;
+  --ds-font-body: 'Space Mono', ui-sans-serif, system-ui, sans-serif;
+  --ds-font-mono: 'DM MONO', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ds-text-display: clamp(3.3563rem, 3.0261rem + 1.408vw, 4.2938rem);
+  --ds-leading-display: 0.95;
+  --ds-tracking-display: -0.03em;
+  --ds-weight-display: 600;
+  --ds-text-h1: clamp(2.8rem, 2.5777rem + 0.948vw, 3.4313rem);
+  --ds-leading-h1: 1.05;
+  --ds-tracking-h1: -0.025em;
+  --ds-weight-h1: 600;
+  --ds-text-h2: clamp(2.3313rem, 2.186rem + 0.62vw, 2.7438rem);
+  --ds-leading-h2: 1.1;
+  --ds-tracking-h2: -0.02em;
+  --ds-weight-h2: 600;
+  --ds-text-h3: clamp(1.6188rem, 1.5703rem + 0.207vw, 1.7563rem);
+  --ds-leading-h3: 1.2;
+  --ds-tracking-h3: -0.01em;
+  --ds-weight-h3: 600;
+  --ds-text-h4: clamp(1.35rem, 1.3302rem + 0.085vw, 1.4063rem);
+  --ds-leading-h4: 1.3;
+  --ds-tracking-h4: 0;
+  --ds-weight-h4: 600;
+  --ds-text-body: 1.125rem;
+  --ds-leading-body: 1.55;
+  --ds-tracking-body: 0;
+  --ds-weight-body: 400;
+  --ds-text-small: clamp(0.9375rem, 0.9507rem + -0.056vw, 0.9rem);
+  --ds-leading-small: 1.45;
+  --ds-tracking-small: 0;
+  --ds-weight-small: 400;
+  --ds-text-label: clamp(0.9375rem, 0.9507rem + -0.056vw, 0.9rem);
+  --ds-leading-label: 1.2;
+  --ds-tracking-label: 0.02em;
+  --ds-weight-label: 600;
+  --ds-text-mono: clamp(0.9375rem, 0.9507rem + -0.056vw, 0.9rem);
+  --ds-leading-mono: 1.5;
+  --ds-tracking-mono: 0;
+  --ds-weight-mono: 400;
+
+  /* Espacio (múltiplos de la unidad base) */
+  --ds-space-unit: 8px;
+  --ds-space-1: 0.5rem;
+  --ds-space-2: 1rem;
+  --ds-space-3: 1.5rem;
+  --ds-space-4: 2rem;
+  --ds-space-5: 2.5rem;
+  --ds-space-6: 3rem;
+  --ds-space-8: 4rem;
+  --ds-space-10: 5rem;
+  --ds-space-12: 6rem;
+  --ds-space-16: 8rem;
+  --ds-space-20: 10rem;
+  --ds-space-24: 12rem;
+
+  /* Forma */
+  --ds-radius-sm: 0px;
+  --ds-radius-md: 0px;
+  --ds-radius-lg: 0px;
+  --ds-radius-full: 999px;
+  --ds-border-width: 3px;
+  --ds-border-strong: 3px;
+  --ds-divider-style: solid;
+  --ds-icon-size: 24px;
+  --ds-icon-stroke: 1.75;
+  --ds-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 1px 3px 0 rgb(0 0 0 / 0.08);
+  --ds-shadow-md: 0 6px 16px -4px rgb(0 0 0 / 0.14);
+  --ds-shadow-lg: 0 20px 44px -12px rgb(0 0 0 / 0.28);
+
+  /* Layout: anchos de contenido */
+  --ds-container-narrow: 680px;
+  --ds-container: 1200px;
+  --ds-container-wide: 1440px;
+  /* Layout: retícula (móvil; cambia por dispositivo más abajo) */
+  --ds-columns: 2;
+  --ds-gutter: 2px;
+  --ds-margin: 8px;
+  /* Layout: ritmo vertical */
+  --ds-section-sm: clamp(1.8125rem, 1.3944rem + 1.784vw, 3rem);
+  --ds-section: clamp(3.625rem, 2.7887rem + 3.568vw, 6rem);
+  --ds-section-lg: clamp(5.375rem, 4.0986rem + 5.446vw, 9rem);
+  --ds-stack: 1rem;
+
+  /* Movimiento */
+  --ds-duration-fast: 120ms;
+  --ds-duration-base: 200ms;
+  --ds-duration-slow: 320ms;
+  --ds-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  :root {
+    --ds-columns: 8;
+    --ds-gutter: 24px;
+    --ds-margin: 32px;
+  }
+}
+
+/* Escritorio */
+@media (min-width: 1024px) {
+  :root {
+    --ds-columns: 8;
+    --ds-gutter: 12px;
+    --ds-margin: 12px;
+  }
+}
+
+/* Pantalla grande */
+@media (min-width: 1440px) {
+  :root {
+    --ds-columns: 12;
+    --ds-gutter: 32px;
+    --ds-margin: 64px;
+  }
+}
+
+/* Modo oscuro: sigue al sistema salvo que el sitio fije data-theme="light" | "dark" en <html> */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ds-bg: var(--ds-neutral-950);
+    --ds-surface: var(--ds-neutral-900);
+    --ds-surface-alt: var(--ds-neutral-800);
+    --ds-text: var(--ds-neutral-50);
+    --ds-text-muted: var(--ds-neutral-400);
+    --ds-border: var(--ds-neutral-800);
+    --ds-accent: var(--ds-color-1);
+    --ds-on-accent: var(--ds-neutral-950);
+    --ds-success: var(--ds-verde-400);
+    --ds-warning: var(--ds-ambar-400);
+    --ds-danger: var(--ds-rojo-400);
+    --ds-focus: var(--ds-color-1-300);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ds-bg: var(--ds-neutral-950);
+  --ds-surface: var(--ds-neutral-900);
+  --ds-surface-alt: var(--ds-neutral-800);
+  --ds-text: var(--ds-neutral-50);
+  --ds-text-muted: var(--ds-neutral-400);
+  --ds-border: var(--ds-neutral-800);
+  --ds-accent: var(--ds-color-1);
+  --ds-on-accent: var(--ds-neutral-950);
+  --ds-success: var(--ds-verde-400);
+  --ds-warning: var(--ds-ambar-400);
+  --ds-danger: var(--ds-rojo-400);
+  --ds-focus: var(--ds-color-1-300);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-duration-fast: 0ms;
+    --ds-duration-base: 0ms;
+    --ds-duration-slow: 0ms;
+  }
+}
