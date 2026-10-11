@@ -93,3 +93,11 @@ describe("respuestas en la URL", () => {
     expect(parseAnswers({ ...params, prioridades: "comodidad,ligereza,ahorro" })).toBeNull();
   });
 });
+
+describe("compareSizes", () => {
+  it("ordena por altura aunque sort_order venga desordenado (caso Canyon)", async () => {
+    const { compareSizes } = await import("../../catalog/build");
+    const sizes = [size("L", 0, 184, 190), size("2XS", 3, 160, 166), size("M", 6, 178, 184)];
+    expect([...sizes].sort(compareSizes).map((s) => s.label)).toEqual(["2XS", "M", "L"]);
+  });
+});

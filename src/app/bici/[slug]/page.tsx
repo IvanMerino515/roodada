@@ -33,6 +33,9 @@ export default async function BikePage({ params }: PageProps<"/bici/[slug]">) {
   const bike = await getBike((await params).slug);
   if (!bike) notFound();
   const detail = await getBikeDetail(bike.id);
+  // Mismo orden de tallas que el catálogo (por altura), no el sort_order de la base
+  const order = new Map(bike.sizes.map((s, i) => [s.label, i]));
+  const geometry = [...detail.geometry].sort((a, b) => (order.get(a.label) ?? 99) - (order.get(b.label) ?? 99));
   const photos = detail.photos.length ? detail.photos : [{ url: bike.imageUrl, alt: null }];
 
   return (
@@ -105,7 +108,7 @@ export default async function BikePage({ params }: PageProps<"/bici/[slug]">) {
             </Stack>
             <Stack>
               <Heading level={2} size="h3">Geometría</Heading>
-              <GeometryTable geometry={detail.geometry} />
+              <GeometryTable geometry={geometry} />
               {detail.components.length > 0 && (
                 <details>
                   <summary className="text-label cursor-pointer py-1">Montaje completo ({detail.components.length} piezas)</summary>

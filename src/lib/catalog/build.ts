@@ -80,6 +80,14 @@ function mapSize(r: SizeRow): Size {
   };
 }
 
+// sort_order no es fiable (103 bicis de Canyon, Orbea y otras lo traen desordenado):
+// se ordena por altura del ciclista, luego por stack y, como último recurso, por sort_order.
+export function compareSizes(a: Size, b: Size) {
+  if (a.heightMin !== null && b.heightMin !== null && a.heightMin !== b.heightMin) return a.heightMin - b.heightMin;
+  if (a.stackMm !== null && b.stackMm !== null && a.stackMm !== b.stackMm) return a.stackMm - b.stackMm;
+  return a.order - b.order;
+}
+
 export const cohortKey = (b: Pick<Bike, "category" | "electric">) => `${b.category}|${b.electric ? "e" : "m"}`;
 
 export function buildCatalog(rows: ListingRow[], sizeRows: SizeRow[], formula: QualityFormula): Bike[] {
@@ -110,7 +118,7 @@ export function buildCatalog(rows: ListingRow[], sizeRows: SizeRow[], formula: Q
       imageUrl: r.main_image_url,
       officialUrl: r.official_url,
       specs,
-      sizes: (sizesByBike.get(r.variant_id) ?? []).sort((a, b) => a.order - b.order),
+      sizes: (sizesByBike.get(r.variant_id) ?? []).sort(compareSizes),
       tier: groupsetTier(specs.groupset),
     };
   });
