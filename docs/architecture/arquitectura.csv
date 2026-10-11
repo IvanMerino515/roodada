@@ -1,0 +1,10 @@
+﻿Nº;Nombre;Tipo;Ruta;Plantilla;Estado;Fase;Navegación;Clics;Bloques;Notas
+1;Comparador;Página;/comparador;;Idea;MVP;Principal;0;;
+2;Comparativa;Página;/comparativa;;Idea;MVP;Principal;1;;
+3;Ficha de bici;Página;/bici;;Idea;MVP;Principal;2;header · imagen · Especs · Recomendador;
+4;Roodada Inicio;Página;hola;Inicio;Idea;MVP;Principal;;Hero · Descripción de Roodada · Llamada a la acción al formulario;
+5;Formulario;Página;/formulario;Formulario;Idea;MVP;Principal;;Campos · Validación · Confirmación;
+6;Cátalogo Personalizado;Página;/pagina;;Idea;MVP;Principal;;Header · Modo de visualización · Catálogo · Footer;
+;Clic en comparador;Acción;;;Idea;MVP;;;;
+;Clic en formulario;Acción;;;Idea;MVP;;;;Clic para rellenar la configuración
+;Nota;Nota;;;Idea;MVP;;;;Poner especificaciones.

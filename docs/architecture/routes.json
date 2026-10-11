@@ -1,0 +1,107 @@
+{
+  "generated": "2026-10-11",
+  "routes": [
+    {
+      "id": "1",
+      "path": "/comparador",
+      "name": "Comparador",
+      "type": "page",
+      "template": null,
+      "parent": null,
+      "nav": "principal",
+      "status": "idea",
+      "phase": "mvp",
+      "clicks": 0,
+      "dynamic": false,
+      "blocks": []
+    },
+    {
+      "id": "2",
+      "path": "/comparativa",
+      "name": "Comparativa",
+      "type": "page",
+      "template": null,
+      "parent": null,
+      "nav": "principal",
+      "status": "idea",
+      "phase": "mvp",
+      "clicks": 1,
+      "dynamic": false,
+      "blocks": []
+    },
+    {
+      "id": "3",
+      "path": "/bici",
+      "name": "Ficha de bici",
+      "type": "page",
+      "template": null,
+      "parent": null,
+      "nav": "principal",
+      "status": "idea",
+      "phase": "mvp",
+      "clicks": 2,
+      "dynamic": false,
+      "blocks": [
+        "header",
+        "imagen",
+        "Especs",
+        "Recomendador"
+      ]
+    },
+    {
+      "id": "4",
+      "path": "hola",
+      "name": "Roodada Inicio",
+      "type": "page",
+      "template": "inicio",
+      "parent": null,
+      "nav": "principal",
+      "status": "idea",
+      "phase": "mvp",
+      "clicks": null,
+      "dynamic": false,
+      "blocks": [
+        "Hero",
+        "Descripción de Roodada",
+        "Llamada a la acción al formulario"
+      ]
+    },
+    {
+      "id": "5",
+      "path": "/formulario",
+      "name": "Formulario",
+      "type": "page",
+      "template": "formulario",
+      "parent": null,
+      "nav": "principal",
+      "status": "idea",
+      "phase": "mvp",
+      "clicks": null,
+      "dynamic": false,
+      "blocks": [
+        "Campos",
+        "Validación",
+        "Confirmación"
+      ]
+    },
+    {
+      "id": "6",
+      "path": "/pagina",
+      "name": "Cátalogo Personalizado",
+      "type": "page",
+      "template": null,
+      "parent": null,
+      "nav": "principal",
+      "status": "idea",
+      "phase": "mvp",
+      "clicks": null,
+      "dynamic": false,
+      "blocks": [
+        "Header",
+        "Modo de visualización",
+        "Catálogo",
+        "Footer"
+      ]
+    }
+  ]
+}
