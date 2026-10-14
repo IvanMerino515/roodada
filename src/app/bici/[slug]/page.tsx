@@ -10,7 +10,7 @@ import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
 import { SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getCatalog } from "@/lib/catalog/load";
-import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur } from "@/lib/format";
+import { CATEGORY_LABEL, day, DISCIPLINE_LABEL, eur } from "@/lib/format";
 
 // Todas las fichas se generan en el build: son las páginas que posiciona Google
 export async function generateStaticParams() {
@@ -77,6 +77,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
               <span className="font-display text-h3 num">{eur(detail.offer?.priceCents ?? bike.priceCents)}</span>
               <span className="block text-small">
                 {bike.inStock ? "En stock" : "Sin stock"} en {detail.offer?.store ?? "la web oficial"}
+                {detail.offer?.checkedAt && <>. Precio comprobado el {day(detail.offer.checkedAt)}</>}
               </span>
             </SpecRow>
             {bike.category !== "bici-infantil" && (

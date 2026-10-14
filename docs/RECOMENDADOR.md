@@ -47,7 +47,7 @@ En infantil no se aplica el filtro de eléctrica ni se preguntan prioridades.
 ## Recomendador
 
 1. **Filtros duros** (`filters.ts`): uso → categoría + disciplinas, eléctrica, presupuesto + 10 %, en stock y talla que encaje.
-2. **Talla** (`sizing.ts`): oficial · estimada · entre dos tallas (solape o hueco ≤ 3 cm). Si no hay talla, la bici queda fuera. Con entrepierna: holgura = entrepierna − standover (64 % de las tallas lo publican). Entre dos tallas, si la elegida deja menos de 2 cm y la otra no, se cambia; si no pasa por encima del tubo, la talla puntúa la mitad.
+2. **Talla** (`sizing.ts`): oficial · estimada · entre dos tallas (solape, o hueco entre dos tallas de la tabla: BH deja huecos de hasta 16 cm). Por encima o por debajo de toda la tabla, solo a ≤ 3 cm; si no, la bici queda fuera. Con entrepierna: holgura = entrepierna − standover (64 % de las tallas lo publican). Entre dos tallas, si la elegida deja menos de 2 cm y la otra no, se cambia; si no pasa por encima del tubo, la talla puntúa la mitad.
 3. **Puntuación** (`score.ts`, pesos en `weights.ts`): `100 · (0,25 talla + 0,20 calidad-precio + 0,55 prioridades)`, × 0,85 si supera el presupuesto.
    - Prioridades según el Roodador (`LEVEL_PRIORITIES`). Si no elige (novato y curioso nunca eligen), cuentan las de base con peso 1; las implícitas suman con peso 0,5.
      - Novato: comodidad + ahorro (implícita).

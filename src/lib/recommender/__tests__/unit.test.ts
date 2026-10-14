@@ -32,10 +32,17 @@ describe("fitSize", () => {
   it("entre tallas cuando dos rangos se solapan, la más centrada primero", () => {
     expect(fitSize(sizes, 177)).toMatchObject({ fit: "entre", size: { label: "M" }, alternative: { label: "L" } });
   });
-  it("entre tallas en un hueco de hasta 3 cm", () => {
-    expect(fitSize(sizes, 189)).toMatchObject({ fit: "entre", size: { label: "L" } });
+  it("entre tallas en un hueco entre dos tallas, la más cercana primero", () => {
+    expect(fitSize(sizes, 189)).toMatchObject({ fit: "entre", size: { label: "L" }, alternative: { label: "XL" } });
+    // Hueco ancho, como en las tablas de BH (157 → 169): sigue siendo entre tallas, no "sin talla"
+    const bh = [size("XS", 0, 150, 157), size("SM", 1, 169, 172)];
+    expect(fitSize(bh, 163)).toMatchObject({ fit: "entre", size: { label: "XS" }, alternative: { label: "SM" } });
+    expect(fitSize(bh, 166)).toMatchObject({ fit: "entre", size: { label: "SM" }, alternative: { label: "XS" } });
   });
-  it("no encaja si el hueco es mayor", () => {
+  it("fuera de la tabla, solo a menos de 3 cm", () => {
+    expect(fitSize(sizes, 202)).toMatchObject({ fit: "entre", size: { label: "XL" } });
+  });
+  it("no encaja si está lejos de toda la tabla", () => {
     expect(fitSize(sizes, 140)).toBeNull();
     expect(fitSize(sizes, 210)).toBeNull();
   });

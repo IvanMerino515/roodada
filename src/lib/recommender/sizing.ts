@@ -1,6 +1,6 @@
 // Talla recomendada por altura (docs/data/ANALISIS.md §5). Tres resultados, siempre visibles:
 // "oficial" (la altura cae en el rango que publica la marca), "estimada" (rango estimado) y
-// "entre" (solape de dos tallas o hueco de hasta GAP_CM entre ellas).
+// "entre" (solape de dos tallas, o hueco entre dos tallas; fuera de la tabla, solo a menos de GAP_CM).
 import type { Size } from "../catalog/types";
 
 export const GAP_CM = 3;
@@ -54,11 +54,17 @@ function fitByHeight(sizes: Size[], heightCm: number): SizeFit | null {
     return { fit: "entre", size: a, alternative: b };
   }
 
-  // Ninguna talla cubre la altura: si hay una a menos de GAP_CM, entre tallas; si no, no encaja
+  // Ninguna talla cubre la altura. En un hueco entre dos tallas de la misma bici (BH deja huecos de hasta
+  // 16 cm en sus tablas), estás entre esas dos, sea cual sea el hueco. Por encima o por debajo de toda la
+  // tabla, solo si hay una talla a menos de GAP_CM; si no, no encaja
   const below = ranged.filter((s) => s.heightMax < heightCm).at(-1);
   const above = ranged.find((s) => s.heightMin > heightCm);
   const dBelow = below ? heightCm - below.heightMax : Infinity;
   const dAbove = above ? above.heightMin - heightCm : Infinity;
+  if (below && above) {
+    const [near, far] = dBelow <= dAbove ? [below, above] : [above, below];
+    return { fit: "entre", size: near, alternative: far };
+  }
   if (Math.min(dBelow, dAbove) > GAP_CM) return null;
   const nearest = dBelow <= dAbove ? below! : above!;
   const other = nearest === below ? above : below;
