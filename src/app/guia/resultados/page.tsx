@@ -68,7 +68,7 @@ async function Results({ params }: { params: Record<string, string | string[] | 
         </div>
       ) : (
         <CompareProvider>
-          <ol className="wrap list-none m-0 py-2 grid gap-2">
+          <ol className="wrap list-none my-0 py-2 grid grid-cols-[minmax(0,1fr)] gap-2">
             {results.map((r, i) => (
               <li key={r.bike.id}>
                 <Pick r={r} n={i + 1} href={`/bici/${r.bike.slug}?${query}`} top={i === 0} />

@@ -25,20 +25,22 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
         <div className="flex items-center min-h-4 pr-12">
           {bike.electric && <span className="eyebrow">Eléctrica</span>}
         </div>
-        <div className="aspect-[4/3] flex items-center justify-center my-1">
+        {/* La foto va absoluta: si no, una foto cuadrada estira la caja y rompe la proporción 4:3 de todas */}
+        <div className="relative aspect-[4/3] my-1">
           <Image
             src={bike.imageUrl}
             alt=""
             width={600}
             height={400}
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-            className="product w-full h-full object-contain transition-transform duration-200 ease-ds group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="product absolute inset-0 size-full object-contain transition-transform duration-200 ease-ds group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             preload={preload}
           />
         </div>
         <div className="mt-auto grid gap-0.5">
           <p className="eyebrow">{bike.brand}</p>
-          <h3 className="text-body font-display leading-tight group-hover:underline">{bike.name}</h3>
+          {/* Hasta 3 líneas: hay nombres de 12 palabras. El texto entero sigue ahí para lectores y en la ficha */}
+          <h3 className="text-body font-display leading-tight line-clamp-3 group-hover:underline" title={bike.name}>{bike.name}</h3>
           {/* El precio es el dato con el que se decide: pesa más que la marca */}
           <p className="font-display font-semibold num mt-0.5">{eur(bike.priceCents)}</p>
           <QualityBadge bike={bike} />

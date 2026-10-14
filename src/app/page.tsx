@@ -73,7 +73,7 @@ export default async function HomePage() {
         <section className="wrap py-6 grid gap-2" aria-labelledby="destacadas">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="destacadas" className="text-h2 uppercase">Mejor calidad-precio</h2>
-            <Link href="/comparador" className="eyebrow link">Ver todas <span aria-hidden="true">→</span></Link>
+            <Link href="/comparador" className="eyebrow link inline-flex items-center min-h-3">Ver todas <span aria-hidden="true">→</span></Link>
           </div>
           <ul className="grid grid-cols-2 lg:grid-cols-4 gap-1 md:gap-2 list-none m-0 p-0">
             {picks.map((b) => (

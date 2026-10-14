@@ -16,8 +16,10 @@ export function Intro({ bikes }: { bikes: string }) {
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    // Sin autoPlay en el HTML: así, con "reducir movimiento", el vídeo no llega a moverse ni un instante
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) video.current?.play().catch(() => {});
+    // Sin autoPlay en el HTML: así, con "reducir movimiento", el vídeo no llega a moverse ni un instante.
+    // preload="none": con movimiento reducido o ahorro de datos no se descargan sus 4 MB; se queda el póster
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    if (!saveData && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) video.current?.play().catch(() => {});
   }, []);
 
   const toggle = () => {
@@ -28,14 +30,14 @@ export function Intro({ bikes }: { bikes: string }) {
   };
 
   return (
-    <section id="intro" aria-labelledby="claim" className="on-dark relative h-svh min-h-100 overflow-hidden bg-black text-white">
+    <section id="intro" aria-labelledby="claim" className="on-dark relative min-h-svh overflow-hidden bg-black text-white">
       <video
         ref={video}
         className="absolute inset-0 size-full object-cover"
         muted
         loop
         playsInline
-        preload="auto"
+        preload="none"
         poster="/intro-poster.jpg"
         aria-hidden="true"
         tabIndex={-1}
@@ -48,7 +50,8 @@ export function Intro({ bikes }: { bikes: string }) {
       <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/10 to-black/55" aria-hidden="true" />
       <div className="absolute inset-0 bg-radial from-black/45 via-black/20 via-45% to-transparent to-75%" aria-hidden="true" />
 
-      <div className="relative h-full flex flex-col items-center justify-center gap-3 px-2 text-center">
+      {/* Al menos la pantalla entera; si no cabe (móvil en horizontal), crece y se baja con scroll. py-10 deja sitio a la cabecera */}
+      <div className="relative min-h-svh flex flex-col items-center justify-center gap-3 px-2 py-10 text-center">
         <Image
           src="/logo-blanco.png"
           alt="Roodada"
@@ -56,7 +59,7 @@ export function Intro({ bikes }: { bikes: string }) {
           height={200}
           preload
           sizes="(min-width: 768px) 400px, 70vw"
-          className="intro-in intro-logo w-[min(70vw,400px)] h-auto"
+          className="intro-in intro-logo w-[min(70vw,400px)] [@media(max-height:500px)]:w-[min(40vw,240px)] h-auto"
         />
         <h1 id="claim" className="intro-in intro-claim text-display uppercase max-w-120">
           Deja de buscar. Empieza a rodar.

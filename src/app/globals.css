@@ -47,8 +47,14 @@
 }
 
 @layer base {
+  /* Lo enfocado o enlazado no queda bajo la cabecera fija ni bajo la barra de comparar */
   html {
     scroll-padding-top: var(--ds-space-10);
+    scroll-padding-bottom: var(--ds-space-10);
+  }
+  /* Sin el retraso de doble toque en móvil */
+  a, button, label, select, summary, input {
+    touch-action: manipulation;
   }
   h1, h2, h3, h4 {
     font-family: var(--ds-font-display);
@@ -151,6 +157,10 @@
     color: var(--ds-on-accent);
     border-color: var(--ds-accent);
   }
+  /* Respuesta al pulsar: se hunde un poco, sin mover lo de alrededor */
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
   .btn:disabled {
     cursor: not-allowed;
     opacity: 0.5;
@@ -217,6 +227,9 @@
   /* Fotos de producto con fondo blanco: se funden con la casilla */
   .product {
     mix-blend-mode: multiply;
+    /* Algunas marcas (Decathlon, Rockrider) fotografían sobre gris muy claro, no blanco: un 5 % más de
+       brillo lo lleva a blanco y la casilla queda lisa; en las bicis apenas se nota */
+    filter: brightness(1.05);
   }
 }
 

@@ -12,7 +12,7 @@ export function QualityBadge({ bike, large = false }: { bike: Bike; large?: bool
     return (
       <p className="flex items-baseline gap-1">
         <span className="font-display text-h2 num leading-none">{q}</span>
-        <span className="eyebrow">/10 calidad-precio</span>
+        <span className="eyebrow">sobre 10</span>
       </p>
     );
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 
 import {
   answersToSearch, availablePriorities, BUDGET, ELECTRIC, HEIGHT, INSEAM, isDetailed, LEVELS, MAX_PRIORITIES, PRIORITIES, USES, usesFor,
@@ -26,7 +26,32 @@ export function Guide() {
   const [step, setStep] = useState<Step>("nivel");
   const [a, setA] = useState<Partial<Answers>>({ presupuesto: 2500, prioridades: [] });
   const [counts, setCounts] = useState<Counts | null>(null);
+  const [finding, startFinding] = useTransition();
   const index = STEPS.indexOf(step);
+
+  // Cada paso es una entrada del historial (?paso=uso): el "atrás" del navegador o del móvil vuelve a la
+  // pregunta anterior en lugar de sacarte de la guía. Next integra pushState en su router.
+  useEffect(() => {
+    // Al recargar a mitad, las respuestas no se conservan: se empieza por la primera pregunta
+    if (location.search.includes("paso=")) history.replaceState(null, "", location.pathname);
+    const onPop = () => {
+      const p = new URLSearchParams(location.search).get("paso") as Step | null;
+      setStep(p && STEPS.includes(p) ? p : "nivel");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Al cambiar de pregunta, el foco va a su título: si no, se pierde (el botón pulsado desaparece) y el
+  // lector de pantalla no anuncia nada. En la altura, el foco ya va al campo.
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    if (step !== "altura") document.getElementById("pregunta")?.focus();
+  }, [step]);
 
   // Contador en vivo: cuántas bicis quedan con lo respondido (con pausa para no pedir en cada movimiento del deslizador)
   useEffect(() => {
@@ -48,20 +73,21 @@ export function Guide() {
     };
   }, [a.uso, a.electrica, a.presupuesto, a.altura, index]);
 
-  const go = (next: Step) => setStep(next);
+  const go = (next: Step) => {
+    setStep(next);
+    history.pushState(null, "", `?paso=${next}`);
+  };
   // Las prioridades solo se preguntan al avanzado y al experto, y nunca para una bici infantil
   const detailed = a.nivel ? isDetailed(a.nivel) : false;
   const skipped = (st: Step) => st === "prioridades" && (!detailed || a.uso === "infantil");
-  const back = () => {
-    let i = index - 1;
-    while (i > 0 && skipped(STEPS[i])) i--;
-    go(STEPS[i]);
-  };
+  // Atrás = la entrada anterior del historial, que es siempre la pregunta anterior que viste
+  const back = () => history.back();
   const choose = (patch: Partial<Answers>, next: Step) => {
     setA((prev) => ({ ...prev, ...patch }));
     go(next);
   };
-  const finish = (final: Partial<Answers>) => router.push(`/guia/resultados?${answersToSearch(final as Answers)}`);
+  const finish = (final: Partial<Answers>) =>
+    startFinding(() => router.push(`/guia/resultados?${answersToSearch(final as Answers)}`));
 
   const remaining = counts ? lastCount(counts.funnel) : null;
   const visible = STEPS.filter((st) => !skipped(st));
@@ -236,35 +262,34 @@ export function Guide() {
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-          {index > 0 ? (
-            <button type="button" className="btn" onClick={back}>
-              <span aria-hidden="true">←</span> Atrás
-            </button>
-          ) : (
-            <span />
-          )}
-          {step === "presupuesto" && (
-            <button type="button" className="btn btn-solid" onClick={() => go("uso")}>
-              Siguiente <span aria-hidden="true">→</span>
-            </button>
-          )}
-          {step === "altura" &&
-            (skipped("prioridades") ? (
-              <button type="button" className="btn btn-solid btn-lg" disabled={!a.altura} onClick={() => finish(a)}>
-                Ver mis bicis <span aria-hidden="true">→</span>
+        {/* Sin filete propio: la lista de opciones ya cierra con uno. En la primera pregunta no hay botones */}
+        {index > 0 && (
+          <div className="flex items-center justify-between gap-2">
+            {index > 0 ? (
+              <button type="button" className="btn" onClick={back}>
+                <span aria-hidden="true">←</span> Atrás
               </button>
             ) : (
-              <button type="button" className="btn btn-solid" disabled={!a.altura} onClick={() => go("prioridades")}>
+              <span />
+            )}
+            {step === "presupuesto" && (
+              <button type="button" className="btn btn-solid" onClick={() => go("uso")}>
                 Siguiente <span aria-hidden="true">→</span>
               </button>
-            ))}
-          {step === "prioridades" && (
-            <button type="button" className="btn btn-solid btn-lg" onClick={() => finish(a)}>
-              Ver mis bicis <span aria-hidden="true">→</span>
-            </button>
-          )}
-        </div>
+            )}
+            {step === "altura" &&
+              (skipped("prioridades") ? (
+                <FinishButton pending={finding} disabled={!a.altura} onClick={() => finish(a)} />
+              ) : (
+                <button type="button" className="btn btn-solid" disabled={!a.altura} onClick={() => go("prioridades")}>
+                  Siguiente <span aria-hidden="true">→</span>
+                </button>
+              ))}
+            {step === "prioridades" && (
+              <FinishButton pending={finding} onClick={() => finish(a)} />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -293,11 +318,20 @@ function lastCount(funnel: Record<string, number>) {
   return null;
 }
 
+/** "Ver mis bicis": mientras se calculan los resultados dice que está buscando y no se puede pulsar dos veces. */
+function FinishButton({ pending, disabled, onClick }: { pending: boolean; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button type="button" className="btn btn-solid btn-lg" disabled={disabled || pending} aria-busy={pending} onClick={onClick}>
+      {pending ? "Buscando tus bicis…" : <>Ver mis bicis <span aria-hidden="true">→</span></>}
+    </button>
+  );
+}
+
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <fieldset className="grid gap-3 border-0 p-0 m-0 min-w-0">
       <legend className="p-0 mb-3">
-        <h1 className="text-h1 uppercase">{title}</h1>
+        <h1 id="pregunta" tabIndex={-1} className="text-h1 uppercase">{title}</h1>
       </legend>
       {children}
     </fieldset>
@@ -324,7 +358,9 @@ function Option({
       <span className="eyebrow num">{pad(n)}</span>
       <span className="font-display text-h4 uppercase">{title}</span>
       <span className="eyebrow num text-right">
-        {count === undefined ? (selected ? "✓" : "") : empty ? "Sin bicis" : `${count.toLocaleString("es-ES")} bicis`}
+        {/* La marca de elegida no depende solo del color */}
+        {selected && <span aria-hidden="true">✓ </span>}
+        {count === undefined ? "" : empty ? "Sin bicis" : `${count.toLocaleString("es-ES")} bicis`}
       </span>
       {hint && <span className="col-start-2 col-span-2 text-small">{hint}</span>}
     </button>
@@ -373,8 +409,10 @@ function BudgetInput({ value, desde, onChange }: { value: number; desde: number 
 function HeightInput({ value, onChange }: { value?: number; onChange: (v: number | undefined) => void }) {
   const id = useId();
   const [raw, setRaw] = useState(value ? String(value) : "");
+  const [touched, setTouched] = useState(false);
   const n = Number(raw);
-  const invalid = raw !== "" && (!Number.isInteger(n) || n < HEIGHT.min || n > HEIGHT.max);
+  // El error se enseña al salir del campo o con tres cifras ya escritas, no mientras escribes "1", "17"…
+  const invalid = raw !== "" && (!Number.isInteger(n) || n < HEIGHT.min || n > HEIGHT.max) && (touched || raw.length >= 3);
   return (
     <div className="grid gap-1">
       <label htmlFor={id} className="eyebrow">Altura (cm)</label>
@@ -389,6 +427,7 @@ function HeightInput({ value, onChange }: { value?: number; onChange: (v: number
           placeholder="175"
           aria-invalid={invalid}
           aria-describedby={`${id}-hint`}
+          onBlur={() => setTouched(true)}
           autoFocus
           onChange={(e) => {
             setRaw(e.target.value);
@@ -409,8 +448,9 @@ function HeightInput({ value, onChange }: { value?: number; onChange: (v: number
 function InseamInput({ value, onChange }: { value?: number; onChange: (v: number | undefined) => void }) {
   const id = useId();
   const [raw, setRaw] = useState(value ? String(value) : "");
+  const [touched, setTouched] = useState(false);
   const n = Number(raw);
-  const invalid = raw !== "" && (!Number.isInteger(n) || n < INSEAM.min || n > INSEAM.max);
+  const invalid = raw !== "" && (!Number.isInteger(n) || n < INSEAM.min || n > INSEAM.max) && (touched || raw.length >= 3);
   return (
     <div className="grid gap-1 border-t border-border pt-2">
       <label htmlFor={id} className="eyebrow">Entrepierna (cm) · opcional</label>
@@ -425,6 +465,7 @@ function InseamInput({ value, onChange }: { value?: number; onChange: (v: number
           placeholder="80"
           aria-invalid={invalid}
           aria-describedby={`${id}-hint`}
+          onBlur={() => setTouched(true)}
           onChange={(e) => {
             setRaw(e.target.value);
             const v = Number(e.target.value);

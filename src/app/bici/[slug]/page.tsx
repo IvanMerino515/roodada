@@ -41,12 +41,12 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
   const kind = bike.specs.discipline === "infantil" ? CATEGORY_LABEL[bike.category] : DISCIPLINE_LABEL[bike.specs.discipline];
 
   return (
-    <div className="wrap pt-2 pb-4 grid gap-4">
+    <div className="wrap pt-2 pb-4 grid grid-cols-[minmax(0,1fr)] gap-4">
       <nav aria-label="Estás en" className="eyebrow">
         <ol className="flex flex-wrap gap-1 list-none m-0 p-0">
-          <li><Link href="/comparador" className="link">Comparador</Link> /</li>
-          <li><Link href={`/comparador?categoria=${bike.category}`} className="link">{CATEGORY_LABEL[bike.category]}</Link> /</li>
-          <li aria-current="page">{bike.brand}</li>
+          <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link> /</li>
+          <li><Link href={`/comparador?categoria=${bike.category}`} className="link inline-flex items-center min-h-3">{CATEGORY_LABEL[bike.category]}</Link> /</li>
+          <li aria-current="page" className="inline-flex items-center min-h-3">{bike.brand}</li>
         </ol>
       </nav>
 

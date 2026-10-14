@@ -109,12 +109,13 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               <option key={k} value={k}>{label(k)} ({n})</option>
             ))}
           </FilterSelect>
-          <div className="grid grid-cols-2">
-            {filtered ? (
+          {/* Sin filtros puestos, "Aplicar" ocupa toda la celda: una mitad vacía parecía un campo */}
+          <div className={`grid ${filtered ? "grid-cols-2" : "grid-cols-1"}`}>
+            {filtered && (
               <Link href="/comparador" className="eyebrow flex items-center justify-center min-h-6 border-r border-border hover:underline">
                 Quitar filtros
               </Link>
-            ) : <span className="border-r border-border" />}
+            )}
             <button type="submit" className="eyebrow min-h-6 bg-accent text-on-accent cursor-pointer hover:underline">
               Aplicar
             </button>
@@ -137,8 +138,9 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               {shown.map((b, i) => (
                 <Fragment key={b.id}>
                   {tiles.get(i) && (
-                    // Dos filas de alto: rompe el ritmo de la rejilla sin dejar huecos en 2, 3 o 4 columnas
-                    <li className="row-span-2">
+                    // Dos filas de alto desde tablet: rompe el ritmo sin dejar huecos en 3 o 4 columnas. En móvil,
+                    // una casilla normal (a dos filas sería un bloque amarillo casi vacío)
+                    <li className="md:row-span-2">
                       {tiles.get(i)}
                     </li>
                   )}

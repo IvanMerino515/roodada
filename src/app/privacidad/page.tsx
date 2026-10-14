@@ -35,6 +35,11 @@ export default function PrivacyPage() {
           página de Roodada saliste y el precio de ese momento. Sin tu IP ni ningún identificador.
         </li>
         <li>
+          <strong>Bicis que marcas para comparar</strong>: se guardan solo en tu navegador mientras dura la visita
+          (almacenamiento de sesión), para no perderlas al cambiar de página. No nos llegan y se borran al cerrar la
+          pestaña.
+        </li>
+        <li>
           <strong>Datos técnicos</strong>: como cualquier web, el servidor recibe tu IP y la dirección que pides. El
           proveedor de alojamiento los usa para servir la página y por seguridad, y los borra en poco tiempo.
         </li>
@@ -43,8 +48,8 @@ export default function PrivacyPage() {
       <h2>Para qué y con qué base</h2>
       <p>
         Para que la web funcione y para saber si las recomendaciones sirven (interés legítimo, art. 6.1.f del RGPD). Como
-        las mediciones son anónimas y no usamos cookies ni almacenamos nada en tu navegador, no necesitamos pedirte
-        consentimiento.
+        las mediciones son anónimas, no usamos cookies y lo único que se guarda en tu navegador es tu selección para
+        comparar (necesaria para lo que pides), no necesitamos pedirte consentimiento.
       </p>
 
       <h2>Proveedores</h2>

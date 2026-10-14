@@ -44,10 +44,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Elegir bici con datos, no con anuncios.
             </p>
             <ul className="col-span-2 md:col-span-2 lg:col-span-2 list-none m-0 p-0 grid gap-1 content-start eyebrow">
-              <li><Link href="/guia" className="link">Guía</Link></li>
-              <li><Link href="/comparador" className="link">Comparador</Link></li>
-              <li><Link href="/aviso-legal" className="link">Aviso legal</Link></li>
-              <li><Link href="/privacidad" className="link">Privacidad</Link></li>
+              <li><Link href="/guia" className="link inline-flex items-center min-h-3">Guía</Link></li>
+              <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link></li>
+              <li><Link href="/aviso-legal" className="link inline-flex items-center min-h-3">Aviso legal</Link></li>
+              <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
             </ul>
             <p className="col-span-4 md:col-span-2 lg:col-span-4 text-small">
               Roodada compara los datos que publica cada marca. Precio y disponibilidad de su web oficial: compruébalos

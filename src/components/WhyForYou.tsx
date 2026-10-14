@@ -28,7 +28,7 @@ export async function WhyForYou({ bike, searchParams }: { bike: Bike; searchPara
         </p>
       </header>
       <div className="lg:grid lg:grid-cols-12">
-        <div className="lg:col-span-7 p-2 md:p-3 grid gap-2 content-start lg:border-r border-border">
+        <div className="lg:col-span-7 p-2 md:p-3 grid gap-2 content-start lg:border-r border-border [&_p]:max-w-[65ch]">
           {/* El primer párrafo a la vista y el resto plegado: así la bici no queda debajo de un muro de texto */}
           {r.story[0] && <p>{r.story[0]}</p>}
           {r.story.length > 1 && (
