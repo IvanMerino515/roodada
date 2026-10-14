@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import type { Size } from "../../catalog/types";
 import { percentile, sortedValues } from "../percentile";
-import { answersToSearch, parseAnswers, type Answers } from "../questions";
+import { answersToSearch, parseAnswers, usesFor, type Answers } from "../questions";
 import { qualityScore } from "../quality";
-import { fitSize } from "../sizing";
+import { fitSize, standoverClearance } from "../sizing";
 import { groupsetTier } from "../tiers";
 
 const size = (label: string, order: number, min: number, max: number, src: Size["heightSource"] = "oficial"): Size => ({
-  label, order, heightMin: min, heightMax: max, heightSource: src, stackMm: 580 + order * 20, reachMm: 380 + order * 10,
+  label, order, heightMin: min, heightMax: max, heightSource: src, stackMm: 580 + order * 20, reachMm: 380 + order * 10, standoverMm: 740 + order * 20,
 });
 
 describe("percentile", () => {
@@ -38,6 +38,17 @@ describe("fitSize", () => {
   it("no encaja si el hueco es mayor", () => {
     expect(fitSize(sizes, 140)).toBeNull();
     expect(fitSize(sizes, 210)).toBeNull();
+  });
+  it("con entrepierna, entre dos tallas se queda la que deja holgura sobre el tubo", () => {
+    // 177 cm: entre M (standover 760) y L (780). Entrepierna 78 cm = 780 mm: la M deja 20 mm, la L 0
+    expect(fitSize(sizes, 177, 78)).toMatchObject({ size: { label: "M" } });
+    // Si la M (la más centrada) no deja holgura y la L sí, cambia a la L
+    const tall = sizes.map((s) => (s.label === "M" ? { ...s, standoverMm: 800 } : s));
+    expect(fitSize(tall, 177, 80)).toMatchObject({ fit: "entre", size: { label: "L" }, alternative: { label: "M" } });
+  });
+  it("holgura negativa si el tubo queda por encima de la entrepierna", () => {
+    expect(standoverClearance(size("M", 1, 168, 178), 70)).toBe(700 - 760);
+    expect(standoverClearance(size("M", 1, 168, 178))).toBeNull();
   });
   it("no encaja sin rangos publicados", () => {
     expect(fitSize([{ ...size("M", 0, 0, 0), heightMin: null, heightMax: null }], 175)).toBeNull();
@@ -79,7 +90,7 @@ describe("qualityScore", () => {
 });
 
 describe("respuestas en la URL", () => {
-  const a: Answers = { uso: "gravel", electrica: "no", presupuesto: 1500, altura: 172, nivel: "empiezo", prioridades: ["comodidad", "versatilidad"] };
+  const a: Answers = { uso: "gravel", electrica: "no", presupuesto: 1500, altura: 172, nivel: "avanzado", prioridades: ["comodidad", "versatilidad"], entrepierna: 81 };
   it("ida y vuelta", () => {
     const params = Object.fromEntries(new URLSearchParams(answersToSearch(a)));
     expect(parseAnswers(params)).toEqual(a);
@@ -87,6 +98,16 @@ describe("respuestas en la URL", () => {
   it("rechaza respuestas inválidas", () => {
     expect(parseAnswers({ ...Object.fromEntries(new URLSearchParams(answersToSearch(a))), altura: "20" })).toBeNull();
     expect(parseAnswers({ uso: "volar" })).toBeNull();
+  });
+  it("la entrepierna es opcional", () => {
+    const sin: Answers = { ...a, entrepierna: undefined };
+    expect(parseAnswers(Object.fromEntries(new URLSearchParams(answersToSearch(sin))))).toMatchObject({ ...sin, entrepierna: undefined });
+  });
+  it("novato y curioso ven usos amplios; avanzado y experto, los detallados", () => {
+    expect(usesFor("novato")).toContain("carretera");
+    expect(usesFor("novato")).not.toContain("carretera-rapida");
+    expect(usesFor("experto")).toContain("montana-tecnica");
+    expect(usesFor("experto")).not.toContain("montana");
   });
   it("como mucho dos prioridades", () => {
     const params = Object.fromEntries(new URLSearchParams(answersToSearch(a)));

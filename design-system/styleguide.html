@@ -1,7 +1,7 @@
 <!doctype html><html lang="es" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guía de estilo · Roodada</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+mono:wght@300;400;500;600;700&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@300;400;500;600;700&display=swap"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+MONO:wght@300;400;500;600;700&display=swap">
-<style>/* Sistema de diseño · Roodada — generado con Office (Digital Dementia) el 2026-10-11.
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=poppins:wght@300;400;500;600;700&display=swap">
+<style>/* Sistema de diseño · Roodada — generado con Office (Digital Dementia) el 2026-10-14.
    No editar a mano: cambia el sistema en Office y vuelve a exportar. */
 
 :root {
@@ -68,9 +68,9 @@
   --ds-roodada-texto2-950: #1C1A1B;
 
   /* Color: roles (modo claro) */
-  --ds-bg: var(--ds-roodada-principal);
-  --ds-surface: var(--ds-roodada-texto2);
-  --ds-surface-alt: var(--ds-roodada-principal);
+  --ds-bg: var(--ds-roodada-texto2);
+  --ds-surface: var(--ds-roodada-terciario);
+  --ds-surface-alt: var(--ds-roodada-terciario);
   --ds-text: var(--ds-roodada-textos);
   --ds-text-muted: var(--ds-roodada-texto2);
   --ds-border: var(--ds-roodada-textos);
@@ -83,42 +83,42 @@
   color-scheme: light;
 
   /* Tipografía */
-  --ds-font-display: 'DM mono', ui-sans-serif, system-ui, sans-serif;
-  --ds-font-body: 'Space Mono', ui-sans-serif, system-ui, sans-serif;
-  --ds-font-mono: 'DM MONO', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --ds-text-display: clamp(3.3563rem, 3.0261rem + 1.408vw, 4.2938rem);
+  --ds-font-display: 'poppins', ui-sans-serif, system-ui, sans-serif;
+  --ds-font-body: 'poppins', ui-sans-serif, system-ui, sans-serif;
+  --ds-font-mono: 'poppins', ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ds-text-display: clamp(3.3563rem, 3.7348rem + -1.615vw, 2.2813rem);
   --ds-leading-display: 0.95;
-  --ds-tracking-display: -0.03em;
-  --ds-weight-display: 600;
-  --ds-text-h1: clamp(2.8rem, 2.5777rem + 0.948vw, 3.4313rem);
+  --ds-tracking-display: -0.075em;
+  --ds-weight-display: 800;
+  --ds-text-h1: clamp(2.8rem, 3.0729rem + -1.164vw, 2.025rem);
   --ds-leading-h1: 1.05;
-  --ds-tracking-h1: -0.025em;
-  --ds-weight-h1: 600;
-  --ds-text-h2: clamp(2.3313rem, 2.186rem + 0.62vw, 2.7438rem);
+  --ds-tracking-h1: -0.05em;
+  --ds-weight-h1: 700;
+  --ds-text-h2: clamp(2.3313rem, 2.5183rem + -0.798vw, 1.8rem);
   --ds-leading-h2: 1.1;
-  --ds-tracking-h2: -0.02em;
+  --ds-tracking-h2: -0.05em;
   --ds-weight-h2: 600;
-  --ds-text-h3: clamp(1.6188rem, 1.5703rem + 0.207vw, 1.7563rem);
+  --ds-text-h3: clamp(1.6188rem, 1.687rem + -0.291vw, 1.425rem);
   --ds-leading-h3: 1.2;
-  --ds-tracking-h3: -0.01em;
+  --ds-tracking-h3: -0.05em;
   --ds-weight-h3: 600;
-  --ds-text-h4: clamp(1.35rem, 1.3302rem + 0.085vw, 1.4063rem);
+  --ds-text-h4: clamp(1.35rem, 1.3786rem + -0.122vw, 1.2688rem);
   --ds-leading-h4: 1.3;
   --ds-tracking-h4: 0;
   --ds-weight-h4: 600;
   --ds-text-body: 1.125rem;
   --ds-leading-body: 1.55;
   --ds-tracking-body: 0;
-  --ds-weight-body: 400;
-  --ds-text-small: clamp(0.9375rem, 0.9507rem + -0.056vw, 0.9rem);
+  --ds-weight-body: 500;
+  --ds-text-small: clamp(0.9375rem, 0.9155rem + 0.094vw, 1rem);
   --ds-leading-small: 1.45;
   --ds-tracking-small: 0;
-  --ds-weight-small: 400;
-  --ds-text-label: clamp(0.9375rem, 0.9507rem + -0.056vw, 0.9rem);
+  --ds-weight-small: 500;
+  --ds-text-label: clamp(0.9375rem, 0.9155rem + 0.094vw, 1rem);
   --ds-leading-label: 1.2;
   --ds-tracking-label: 0.02em;
   --ds-weight-label: 600;
-  --ds-text-mono: clamp(0.9375rem, 0.9507rem + -0.056vw, 0.9rem);
+  --ds-text-mono: clamp(0.9375rem, 0.9155rem + 0.094vw, 1rem);
   --ds-leading-mono: 1.5;
   --ds-tracking-mono: 0;
   --ds-weight-mono: 400;
@@ -143,8 +143,8 @@
   --ds-radius-md: 0px;
   --ds-radius-lg: 0px;
   --ds-radius-full: 999px;
-  --ds-border-width: 3px;
-  --ds-border-strong: 3px;
+  --ds-border-width: 2px;
+  --ds-border-strong: 2px;
   --ds-divider-style: solid;
   --ds-icon-size: 24px;
   --ds-icon-stroke: 1.75;
@@ -170,7 +170,7 @@
   --ds-duration-fast: 120ms;
   --ds-duration-base: 200ms;
   --ds-duration-slow: 320ms;
-  --ds-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ds-ease: steps(4, end);
 }
 
 /* Tablet */
@@ -367,7 +367,7 @@
     color: var(--_fg);
     background: var(--_bg);
     border: var(--ds-border-width) solid var(--_bd);
-    border-radius: var(--ds-radius-full);
+    border-radius: 0;
     cursor: pointer;
     transition: background-color var(--ds-duration-fast) var(--ds-ease), color var(--ds-duration-fast) var(--ds-ease), border-color var(--ds-duration-fast) var(--ds-ease), transform var(--ds-duration-fast) var(--ds-ease), box-shadow var(--ds-duration-fast) var(--ds-ease);
   }
@@ -575,7 +575,7 @@
     max-width: 100%;
     overflow-x: auto;
     border: var(--ds-border-width) solid var(--ds-border);
-    border-radius: var(--ds-radius-full);
+    border-radius: 0;
   }
   .ds-tab {
     min-height: 40px;
@@ -901,7 +901,7 @@ body{margin:0;padding:24px}
 <main class="sg"><span class="sg-rl"></span><span class="sg-rr"></span>
   <header>
     <h1 class="sg-title">Roodada<br>Guía de estilo</h1>
-    <p class="sg-sub">Acento, superficie, borde, foco · DM mono / Space Mono</p>
+    <p class="sg-sub">Acento, superficie, borde, foco · poppins / poppins</p>
   </header>
   <div class="sg-dbl"></div>
 
@@ -909,19 +909,19 @@ body{margin:0;padding:24px}
     <div id="ds-color">
       <h2 class="sg-h">Tokens de color</h2>
       <div class="sg-sws">
-        <figure class="sg-sw"><i style="background:var(--ds-accent)"></i><figcaption>Acento<br>#373435</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-surface)"></i><figcaption>Superficie<br>#EEE7E9</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-border)"></i><figcaption>Borde<br>#373435</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-focus);background-image:repeating-linear-gradient(45deg,transparent 0 3px,color-mix(in oklab,var(--ds-text) 22%,transparent) 3px 4px)"></i><figcaption>Foco<br>#373435</figcaption></figure>
-        <figure class="sg-sw"><i style="background:var(--ds-text)"></i><figcaption>Texto<br>#373435</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-text-muted)"></i><figcaption>Texto sec.<br>#EEE7E9</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-bg)"></i><figcaption>Fondo<br>#FF716A</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-surface-alt)"></i><figcaption>Superficie alt.<br>#FF716A</figcaption></figure>
+        <figure class="sg-sw"><i style="background:var(--ds-accent)"></i><figcaption>Acento<br>#373435</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-surface)"></i><figcaption>Superficie<br>#FFC35C</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-border)"></i><figcaption>Borde<br>#373435</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-focus);background-image:repeating-linear-gradient(45deg,transparent 0 3px,color-mix(in oklab,var(--ds-text) 22%,transparent) 3px 4px)"></i><figcaption>Foco<br>#373435</figcaption></figure>
+        <figure class="sg-sw"><i style="background:var(--ds-text)"></i><figcaption>Texto<br>#373435</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-text-muted)"></i><figcaption>Texto sec.<br>#EEE7E9</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-bg)"></i><figcaption>Fondo<br>#EEE7E9</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-surface-alt)"></i><figcaption>Superficie alt.<br>#FFC35C</figcaption></figure>
         <figure class="sg-sw"><i style="background:var(--ds-success)"></i><figcaption>Éxito<br>#00D8BC</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-warning)"></i><figcaption>Aviso<br>#FF716A</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-danger)"></i><figcaption>Error<br>#942A29</figcaption></figure><figure class="sg-sw"><i style="background:var(--ds-on-accent)"></i><figcaption>Sobre acento<br>#FFFFFF</figcaption></figure>
       </div>
     </div>
     <div id="ds-type">
       <h2 class="sg-h">Escala tipográfica</h2>
-      <div class="sg-tr"><span class="sg-k">H1:</span><span class="ds-h1">Roodada</span><span class="sg-px">54.9px</span></div>
-      <div class="sg-tr"><span class="sg-k">H2:</span><span class="ds-h2">Título de sección</span><span class="sg-px">43.9px</span></div>
-      <div class="sg-tr"><span class="sg-k">H3:</span><span class="ds-h3">Etiqueta de componente</span><span class="sg-px">28.1px</span></div>
+      <div class="sg-tr"><span class="sg-k">H1:</span><span class="ds-h1">Roodada</span><span class="sg-px">32.4px</span></div>
+      <div class="sg-tr"><span class="sg-k">H2:</span><span class="ds-h2">Título de sección</span><span class="sg-px">28.8px</span></div>
+      <div class="sg-tr"><span class="sg-k">H3:</span><span class="ds-h3">Etiqueta de componente</span><span class="sg-px">22.8px</span></div>
       <div class="sg-tr"><span class="sg-k">Texto:</span><span class="ds-body">El veloz murciélago hindú comía feliz cardillo y kiwi.</span><span class="sg-px">18px</span></div>
-      <div class="sg-tr"><span class="sg-k">Peq.:</span><span class="ds-small">Texto pequeño para notas y metadatos.</span><span class="sg-px">14.4px</span></div>
-      <div class="sg-tr"><span class="sg-k">Etiq.:</span><span class="ds-label-text">Etiqueta de campo</span><span class="sg-px">14.4px</span></div>
+      <div class="sg-tr"><span class="sg-k">Peq.:</span><span class="ds-small">Texto pequeño para notas y metadatos.</span><span class="sg-px">16px</span></div>
+      <div class="sg-tr"><span class="sg-k">Etiq.:</span><span class="ds-label-text">Etiqueta de campo</span><span class="sg-px">16px</span></div>
     </div>
   </section>
   <div class="sg-dbl"></div>
@@ -987,5 +987,5 @@ body{margin:0;padding:24px}
     </div>
   </section>
 
-  <footer class="sg-foot"><span>Roodada · sistema de diseño</span><span>Modo claro · unidad 8px · escala 1.25</span></footer>
+  <footer class="sg-foot"><span>Roodada · sistema de diseño</span><span>Modo claro · unidad 8px · escala 1.125</span></footer>
 </main></body></html>

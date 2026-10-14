@@ -41,6 +41,8 @@ export type Size = {
   heightSource: "oficial" | "estimado" | null;
   stackMm: number | null;
   reachMm: number | null;
+  /** Altura del tubo horizontal sobre el suelo: con la entrepierna dice si pasas por encima */
+  standoverMm: number | null;
 };
 
 export type Bike = {

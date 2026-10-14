@@ -23,16 +23,16 @@ const GEOMETRY_LABELS: [key: string, label: string, unit: string][] = [
 /** Geometría por talla. Solo muestra las medidas que la marca publica para alguna talla. */
 export function GeometryTable({ geometry, highlight }: { geometry: BikeDetail["geometry"]; highlight?: string }) {
   const rows = GEOMETRY_LABELS.filter(([key]) => geometry.some((s) => s.values[key] !== null && s.values[key] !== undefined));
-  if (rows.length === 0) return <p className="text-small">La marca no publica la geometría de esta bici.</p>;
+  if (rows.length === 0) return <p className="px-2 py-2 border-t border-border italic">La marca no publica la geometría de esta bici.</p>;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-small border-collapse">
+    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Geometría por talla (desliza para ver todas las tallas)">
+      <table className="w-full text-small border-collapse num">
         <caption className="sr-only">Geometría por talla</caption>
         <thead>
-          <tr>
-            <th scope="col" className="text-left py-1 pr-2">Medida</th>
+          <tr className="border-t border-border">
+            <th scope="col" className="eyebrow text-left font-normal py-1 px-2">Talla</th>
             {geometry.map((s) => (
-              <th key={s.label} scope="col" className={`py-1 px-1 text-right ${s.label === highlight ? "bg-surface" : ""}`}>
+              <th key={s.label} scope="col" className={`font-display text-body py-1 px-1 text-right ${s.label === highlight ? "bg-accent text-on-accent" : ""}`}>
                 {s.label}
               </th>
             ))}
@@ -41,9 +41,9 @@ export function GeometryTable({ geometry, highlight }: { geometry: BikeDetail["g
         <tbody>
           {rows.map(([key, label, unit]) => (
             <tr key={key} className="border-t border-border">
-              <th scope="row" className="text-left font-normal py-1 pr-2 whitespace-nowrap">{label} ({unit})</th>
+              <th scope="row" className="eyebrow text-left font-normal py-1 px-2 whitespace-nowrap">{label} <span className="normal-case">({unit})</span></th>
               {geometry.map((s) => (
-                <td key={s.label} className={`py-1 px-1 text-right font-mono ${s.label === highlight ? "bg-surface" : ""}`}>
+                <td key={s.label} className={`py-1 px-1 text-right font-mono ${s.label === highlight ? "bg-accent text-on-accent" : ""}`}>
                   {s.values[key] ?? "–"}
                 </td>
               ))}

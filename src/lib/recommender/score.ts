@@ -3,9 +3,9 @@ import type { Answers, PriorityKey } from "./questions";
 import { componentsScore } from "./quality";
 import { percentile, sortedValues } from "./percentile";
 import type { Candidate } from "./filters";
-import { uprightRatio } from "./sizing";
+import { standoverClearance, uprightRatio } from "./sizing";
 import {
-  DEFAULT_PRIORITIES, NEUTRAL, OVER_BUDGET_FACTOR, PRIORITY_WEIGHT, SIZE_FIT_SCORE, WEIGHTS,
+  LEVEL_PRIORITIES, NEUTRAL, OVER_BUDGET_FACTOR, PRIORITY_WEIGHT, SIZE_FIT_SCORE, WEIGHTS,
 } from "./weights";
 
 /** "rendimiento" no se elige: es la prioridad implícita de quien compite (lo contrario de comodidad) */
@@ -19,15 +19,16 @@ export type Scored = Candidate & {
   coverage: number;
   confidence: "alta" | "media" | "baja";
   uprightPct: number | null;
+  /** Holgura sobre el tubo con la entrepierna dada (mm); null sin entrepierna o sin standover */
+  clearanceMm: number | null;
 };
 
 export function effectivePriorities(a: Answers): Map<ScoreKey, number> {
-  const chosen: ScoreKey[] = a.prioridades.length ? a.prioridades : [...DEFAULT_PRIORITIES];
+  const level = LEVEL_PRIORITIES[a.nivel];
+  const chosen: ScoreKey[] = a.prioridades.length ? a.prioridades : level.base;
   const out = new Map<ScoreKey, number>(chosen.map((k) => [k, PRIORITY_WEIGHT.elegida]));
-  const implicit: ScoreKey[] =
-    a.nivel === "empiezo" ? ["comodidad"] : a.nivel === "compito" ? ["componentes", "rendimiento"] : [];
-  for (const k of implicit) {
-    // quien compite y además pide comodidad: se respeta lo que ha elegido
+  for (const k of level.implicitas) {
+    // el experto que además pide comodidad: se respeta lo que ha elegido
     if (k === "rendimiento" && out.has("comodidad")) continue;
     if (!out.has(k)) out.set(k, PRIORITY_WEIGHT.implicita);
   }
@@ -65,15 +66,18 @@ export function scoreCandidates(candidates: Candidate[], a: Answers): Scored[] {
     const prioridades = total ? sum / total : NEUTRAL;
     const coverage = total ? withData / total : 1;
 
+    // Si no pasa por encima del tubo, la talla vale la mitad
+    const clearanceMm = standoverClearance(c.sizeFit.size, a.entrepierna);
+    const sizeScore = SIZE_FIT_SCORE[c.sizeFit.fit] * (clearanceMm !== null && clearanceMm < 0 ? 0.5 : 1);
     const raw =
-      WEIGHTS.talla * SIZE_FIT_SCORE[c.sizeFit.fit] +
+      WEIGHTS.talla * sizeScore +
       WEIGHTS.valor * (bike.quality.total / 10) +
       WEIGHTS.prioridades * prioridades;
     const score = Math.round(100 * raw * (c.overBudget ? OVER_BUDGET_FACTOR : 1));
 
     const confidence =
       coverage >= 0.8 && c.sizeFit.fit === "oficial" ? "alta" : coverage < 0.5 ? "baja" : "media";
-    return { ...c, score, parts, coverage, confidence, uprightPct };
+    return { ...c, score, parts, coverage, confidence, uprightPct, clearanceMm };
   });
 }
 

@@ -20,30 +20,32 @@ export function filterCandidates(bikes: Bike[], a: Answers): Candidate[] {
   const limitCents = budgetLimit(a.presupuesto) * 100;
   const out: Candidate[] = [];
   for (const bike of bikes) {
-    if (!bike.inStock || !matchesUse(bike, a.uso) || !matchesElectric(bike, a.electrica)) continue;
+    // En infantil no se pregunta por motor: no hay eléctricas infantiles
+    if (!bike.inStock || !matchesUse(bike, a.uso) || (a.uso !== "infantil" && !matchesElectric(bike, a.electrica))) continue;
     if (bike.priceCents > limitCents) continue;
-    const sizeFit = fitSize(bike.sizes, a.altura);
+    const sizeFit = fitSize(bike.sizes, a.altura, a.entrepierna);
     if (!sizeFit) continue;
     out.push({ bike, sizeFit, overBudget: bike.priceCents > a.presupuesto * 100 });
   }
   return out;
 }
 
-/** Cuántas bicis quedan tras cada paso de la guía: para el contador en vivo y para no devolver listas vacías */
+/** Cuántas bicis quedan tras cada paso de la guía, en el orden en que se pregunta:
+ * para el contador en vivo y para no llevar a una lista vacía */
 export function funnelCounts(bikes: Bike[], a: Partial<Answers>) {
   let list = bikes.filter((b) => b.inStock);
   const counts: Record<string, number> = { total: list.length };
-  if (a.uso) {
-    list = list.filter((b) => matchesUse(b, a.uso!));
-    counts.uso = list.length;
-  }
-  if (a.electrica) {
+  if (a.electrica && a.uso !== "infantil") {
     list = list.filter((b) => matchesElectric(b, a.electrica!));
     counts.electrica = list.length;
   }
   if (a.presupuesto) {
     list = list.filter((b) => b.priceCents <= budgetLimit(a.presupuesto!) * 100);
     counts.presupuesto = list.length;
+  }
+  if (a.uso) {
+    list = list.filter((b) => matchesUse(b, a.uso!));
+    counts.uso = list.length;
   }
   if (a.altura) {
     list = list.filter((b) => fitSize(b.sizes, a.altura!) !== null);

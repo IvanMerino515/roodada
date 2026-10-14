@@ -16,7 +16,7 @@ async function all<T>(table: string, cols: string, order: string) {
 }
 const t0 = Date.now();
 const rows = await all<ListingRow>("variant_listing", "variant_id,slug,variant_name,model_id,model_name,brand_name,brand_slug,category_slug,is_electric,frame_material,weight_g,model_year,best_final_price_cents,in_stock_offers,main_image_url,official_url,specs", "variant_id");
-const sizes = await all<SizeRow>("variant_sizes", "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm", "id");
+const sizes = await all<SizeRow>("variant_sizes", "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm,standover_mm:geometry->standover_mm", "id");
 const f = await db.from("score_formulas").select("version,weights").order("version", { ascending: false }).limit(1).maybeSingle();
 const bikes = buildCatalog(rows, sizes, f.data ? { version: f.data.version, weights: f.data.weights } : DEFAULT_FORMULA);
 console.log({ bicis: bikes.length, tallas: sizes.length, formula: f.data?.version ?? "por defecto", ms: Date.now() - t0, tipoId: typeof bikes[0].id, kb: Math.round(JSON.stringify(bikes).length / 1024) });

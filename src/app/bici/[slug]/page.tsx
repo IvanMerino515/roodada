@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { Badge, Button, Container, Heading, Section, Split, Stack, Text } from "../../../../design-system/react";
+import { Gallery } from "@/components/Gallery";
 import { GeometryTable } from "@/components/GeometryTable";
 import { QualityBadge } from "@/components/QualityBadge";
 import { SizeFinder } from "@/components/SizeFinder";
-import { SpecTable } from "@/components/SpecTable";
+import { WhyForYou } from "@/components/WhyForYou";
+import { SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getCatalog } from "@/lib/catalog/load";
 import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur } from "@/lib/format";
 
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps<"/bici/[slug]">): P
   };
 }
 
-export default async function BikePage({ params }: PageProps<"/bici/[slug]">) {
+export default async function BikePage({ params, searchParams }: PageProps<"/bici/[slug]">) {
   const bike = await getBike((await params).slug);
   if (!bike) notFound();
   const detail = await getBikeDetail(bike.id);
@@ -37,96 +37,101 @@ export default async function BikePage({ params }: PageProps<"/bici/[slug]">) {
   const order = new Map(bike.sizes.map((s, i) => [s.label, i]));
   const geometry = [...detail.geometry].sort((a, b) => (order.get(a.label) ?? 99) - (order.get(b.label) ?? 99));
   const photos = detail.photos.length ? detail.photos : [{ url: bike.imageUrl, alt: null }];
+  const name = `${bike.brand} ${bike.name}`;
+  const kind = bike.specs.discipline === "infantil" ? CATEGORY_LABEL[bike.category] : DISCIPLINE_LABEL[bike.specs.discipline];
 
   return (
-    <>
-      <Section size="sm">
-        <Container>
-          <Text size="small" as="p">
-            <Link href="/comparador" className="ds-link">Comparador</Link> / {CATEGORY_LABEL[bike.category]} / {bike.brand}
-          </Text>
-          <Split className="mt-3">
-            <Stack>
-              <div className="bg-white">
-                <Image
-                  src={photos[0].url}
-                  alt={photos[0].alt ?? `${bike.brand} ${bike.name}`}
-                  width={1200}
-                  height={800}
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="w-full h-auto aspect-[3/2] object-contain"
-                  preload
-                />
-              </div>
-              {photos.length > 1 && (
-                <ul className="grid grid-cols-4 gap-1" aria-label="Más fotos">
-                  {photos.slice(1, 9).map((p, i) => (
-                    <li key={p.url} className="bg-white">
-                      <a href={p.url} target="_blank" rel="noopener noreferrer" aria-label={`Ver foto ${i + 2} en grande`}>
-                        <Image src={p.url} alt={p.alt ?? ""} width={300} height={200} sizes="12vw" className="w-full h-auto aspect-[3/2] object-contain" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Stack>
-            <Stack>
-              <div className="flex flex-wrap gap-1">
-                <Badge>{DISCIPLINE_LABEL[bike.specs.discipline]}</Badge>
-                {bike.electric && <Badge tone="accent">Eléctrica</Badge>}
-                {!bike.inStock && <Badge tone="warning">Sin stock</Badge>}
-              </div>
-              <div>
-                <Text size="label" as="p">{bike.brand}</Text>
-                <Heading level={1} size="h2">{bike.name}</Heading>
-              </div>
-              <div className="flex flex-wrap items-baseline gap-2">
-                <Text as="p" className="text-h3 font-display">{eur(detail.offer?.priceCents ?? bike.priceCents)}</Text>
-                <QualityBadge bike={bike} />
-              </div>
-              <Button href={`/ir/${bike.slug}`} rel="nofollow noopener" target="_blank">
-                Ver en {detail.offer?.store ?? "la web oficial"}
-              </Button>
-              <Text size="small">Precio y stock de la web oficial de la marca. Te llevamos a su ficha.</Text>
-              <Stack className="mt-2">
-                <Heading level={2} size="h4">¿Es para ti?</Heading>
-                <Suspense fallback={null}>
-                  <SizeFinder sizes={bike.sizes} />
-                </Suspense>
-              </Stack>
-            </Stack>
-          </Split>
-        </Container>
-      </Section>
+    <div className="wrap pt-2 pb-4 grid gap-4">
+      <nav aria-label="Estás en" className="eyebrow">
+        <ol className="flex flex-wrap gap-1 list-none m-0 p-0">
+          <li><Link href="/comparador" className="link">Comparador</Link> /</li>
+          <li><Link href={`/comparador?categoria=${bike.category}`} className="link">{CATEGORY_LABEL[bike.category]}</Link> /</li>
+          <li aria-current="page">{bike.brand}</li>
+        </ol>
+      </nav>
 
-      <Section size="sm">
-        <Container>
-          <Split>
-            <Stack>
-              <Heading level={2} size="h3">Especificaciones</Heading>
-              <SpecTable bike={bike} />
-            </Stack>
-            <Stack>
-              <Heading level={2} size="h3">Geometría</Heading>
-              <GeometryTable geometry={geometry} />
-              {detail.components.length > 0 && (
-                <details>
-                  <summary className="text-label cursor-pointer py-1">Montaje completo ({detail.components.length} piezas)</summary>
-                  <dl className="text-small grid grid-cols-[auto_1fr] gap-x-2">
-                    {detail.components.map((c, i) => (
-                      <div key={`${c.role}-${i}`} className="contents">
-                        <dt className="py-1 border-t border-border">{COMPONENT_LABEL[c.role] ?? c.role}</dt>
-                        <dd className="py-1 border-t border-border">{c.description}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </details>
-              )}
-            </Stack>
-          </Split>
-        </Container>
-      </Section>
-    </>
+      {/* Desde los resultados de la guía: la explicación larga. La ficha sigue siendo estática; esto se rellena aparte */}
+      <Suspense fallback={null}>
+        <WhyForYou bike={bike} searchParams={searchParams} />
+      </Suspense>
+
+      {/* Ficha: marco con cabecera, producto y filas de dato, como una etiqueta de producto */}
+      <article className="border border-border bg-white" aria-labelledby="nombre">
+        <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-2 py-2 border-b border-border">
+          <p className="font-display text-h2 uppercase leading-none">{bike.brand}</p>
+          <p className="eyebrow">
+            {[kind, bike.electric ? "Eléctrica" : null, bike.modelYear].filter(Boolean).join(" · ")}
+          </p>
+        </header>
+
+        <div className="lg:grid lg:grid-cols-12">
+          <div className="lg:col-span-7 lg:border-r border-border">
+            <Gallery photos={photos} name={name} />
+          </div>
+
+          <dl className="lg:col-span-5 m-0 border-t border-border lg:border-t-0 [&>div:first-child]:border-t-0">
+            <SpecRow label="Modelo">
+              <h1 id="nombre" className="font-display text-h3 leading-tight">{bike.name}</h1>
+            </SpecRow>
+            <SpecRow label="Precio">
+              <span className="font-display text-h3 num">{eur(detail.offer?.priceCents ?? bike.priceCents)}</span>
+              <span className="block text-small">
+                {bike.inStock ? "En stock" : "Sin stock"} en {detail.offer?.store ?? "la web oficial"}
+              </span>
+            </SpecRow>
+            {bike.category !== "bici-infantil" && (
+              <SpecRow label="Calidad-precio">
+                <QualityBadge bike={bike} large />
+                <span className="block text-small mt-0.5">
+                  Frente a otras bicis de su tipo. Datos disponibles: {Math.round(bike.quality.coverage * 100)} %.
+                </span>
+              </SpecRow>
+            )}
+            <SpecRow label="¿Es para ti?">
+              <Suspense fallback={null}>
+                <SizeFinder sizes={bike.sizes} />
+              </Suspense>
+            </SpecRow>
+            <div className="border-t border-border p-2 grid gap-1">
+              <a href={`/ir/${bike.slug}`} rel="nofollow noopener" target="_blank" className="btn btn-solid btn-lg w-full">
+                Comprar en la web oficial
+                <span aria-hidden="true">↗</span>
+                <span className="sr-only">(se abre en otra pestaña)</span>
+              </a>
+              <p className="text-small">Te llevamos a la ficha de la bici en la web de {bike.brand}: precio y stock son los suyos.</p>
+            </div>
+          </dl>
+        </div>
+      </article>
+
+      <section aria-labelledby="specs" className="border border-border">
+        <h2 id="specs" className="font-display text-h3 uppercase px-2 py-2">Especificaciones</h2>
+        <SpecTable bike={bike} />
+      </section>
+
+      <section aria-labelledby="geo" className="border border-border">
+        <h2 id="geo" className="font-display text-h3 uppercase px-2 py-2">Geometría</h2>
+        <GeometryTable geometry={geometry} />
+      </section>
+
+      {detail.components.length > 0 && (
+        <details className="border border-border group">
+          <summary className="flex items-center justify-between gap-2 px-2 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            <h2 className="font-display text-h3 uppercase">Montaje completo</h2>
+            <span className="eyebrow num">
+              {detail.components.length} piezas <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
+            </span>
+          </summary>
+          <dl className="m-0 lg:columns-2 lg:gap-0 lg:[column-rule:1px_solid_var(--ds-border)]">
+            {detail.components.map((c, i) => (
+              <div key={`${c.role}-${i}`} className="break-inside-avoid">
+                <SpecRow label={COMPONENT_LABEL[c.role] ?? c.role}>{c.description}</SpecRow>
+              </div>
+            ))}
+          </dl>
+        </details>
+      )}
+    </div>
   );
 }
 

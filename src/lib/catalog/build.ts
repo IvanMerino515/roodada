@@ -18,7 +18,7 @@ export type ListingRow = {
   frame_material: string | null;
   weight_g: number | null;
   model_year: number | null;
-  best_final_price_cents: number;
+  best_final_price_cents: number | null;
   in_stock_offers: number;
   main_image_url: string;
   official_url: string;
@@ -34,6 +34,7 @@ export type SizeRow = {
   rider_height_source: string | null;
   stack_mm: number | null;
   reach_mm: number | null;
+  standover_mm: unknown;
 };
 
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
@@ -77,6 +78,7 @@ function mapSize(r: SizeRow): Size {
     heightSource: r.rider_height_source === "oficial" || r.rider_height_source === "estimado" ? r.rider_height_source : null,
     stackMm: r.stack_mm,
     reachMm: r.reach_mm,
+    standoverMm: num(r.standover_mm),
   };
 }
 
@@ -113,8 +115,9 @@ export function buildCatalog(rows: ListingRow[], sizeRows: SizeRow[], formula: Q
       frameMaterial: r.frame_material,
       weightG: r.weight_g,
       modelYear: r.model_year,
-      priceCents: r.best_final_price_cents,
-      inStock: r.in_stock_offers > 0,
+      priceCents: r.best_final_price_cents ?? 0,
+      // Sin precio publicado no se puede recomendar por presupuesto: cuenta como no disponible
+      inStock: r.in_stock_offers > 0 && r.best_final_price_cents !== null,
       imageUrl: r.main_image_url,
       officialUrl: r.official_url,
       specs,

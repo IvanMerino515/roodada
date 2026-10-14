@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 
-import { Button, Cards, Cluster, Container, Field, Heading, Input, Section, Select, Stack, Text } from "../../../design-system/react";
-import { BikeCard } from "@/components/BikeCard";
+import { BikeCard, FeatureTile } from "@/components/BikeCard";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
+import { FilterRow, FilterSelect } from "@/components/FilterBar";
 import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
 } from "@/lib/catalogFilters";
-import { CATEGORY_LABEL, label } from "@/lib/format";
+import { CATEGORY_LABEL, eur, label } from "@/lib/format";
 import type { Category } from "@/lib/catalog/types";
 
 export const metadata: Metadata = {
@@ -17,21 +17,15 @@ export const metadata: Metadata = {
   description: "Filtra más de 1.600 bicis por tipo, precio, marca y material, y compara hasta cuatro lado a lado.",
 };
 
+const PRICE_STEPS = [500, 1000, 1500, 2000, 3000, 5000, 8000];
+
 export default function ComparatorPage({ searchParams }: PageProps<"/comparador">) {
   return (
-    <Section size="sm">
-      <Container size="wide">
-        <Stack>
-          <Heading level={1} size="h2">Comparador</Heading>
-          <Text>Filtra, marca hasta cuatro bicis y compáralas lado a lado.</Text>
-          <Suspense fallback={<Text>Cargando bicis…</Text>}>
-            {searchParams.then((sp) => (
-              <Catalog filters={parseFilters(sp)} />
-            ))}
-          </Suspense>
-        </Stack>
-      </Container>
-    </Section>
+    <Suspense fallback={<p className="wrap py-4 eyebrow">Cargando bicis…</p>}>
+      {searchParams.then((sp) => (
+        <Catalog filters={parseFilters(sp)} />
+      ))}
+    </Suspense>
   );
 }
 
@@ -42,95 +36,137 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   const page = Math.min(f.pagina, pages);
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const prices = f.precioMax && !PRICE_STEPS.includes(f.precioMax) ? [...PRICE_STEPS, f.precioMax].sort((a, b) => a - b) : PRICE_STEPS;
+  const filtered = filtersToSearch({ ...f, orden: "calidad", pagina: 1 }) !== "";
 
   return (
-    <Stack>
-      <form method="get" action="/comparador" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 items-end">
-        <Field label="Buscar" htmlFor="q">
-          <Input id="q" name="q" type="search" defaultValue={f.q} placeholder="Marca, modelo o grupo" />
-        </Field>
-        <Field label="Tipo" htmlFor="categoria">
-          <Select id="categoria" name="categoria" defaultValue={f.categoria ?? ""}>
+    <>
+      <div className="wrap grid-swiss gap-y-2 pt-4 pb-3 items-end">
+        <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">Comparador</h1>
+        <p className="col-span-4 md:col-span-3 lg:col-span-4 text-small">
+          <span className="block font-display text-h3 num" aria-live="polite">
+            {list.length.toLocaleString("es-ES")} {list.length === 1 ? "bici" : "bicis"}
+          </span>
+          Filtra, marca hasta cuatro y compáralas lado a lado.
+        </p>
+      </div>
+
+      <form method="get" action="/comparador" aria-label="Filtros" className="border-b border-border">
+        <FilterRow label="Filtros principales">
+          <FilterSelect id="categoria" name="categoria" label="Tipo" defaultValue={f.categoria ?? ""}>
             <option value="">Todos</option>
             {facets.categoria.map(([k, n]) => (
               <option key={k} value={k}>{CATEGORY_LABEL[k as Category]} ({n})</option>
             ))}
-          </Select>
-        </Field>
-        <Field label="Eléctrica" htmlFor="electrica">
-          <Select id="electrica" name="electrica" defaultValue={f.electrica ?? ""}>
-            <option value="">Indiferente</option>
+          </FilterSelect>
+          <FilterSelect id="electrica" name="electrica" label="Eléctrica" defaultValue={f.electrica ?? ""}>
+            <option value="">Igual</option>
             <option value="si">Sí</option>
             <option value="no">No</option>
-          </Select>
-        </Field>
-        <Field label="Precio máximo (€)" htmlFor="precioMax">
-          <Input id="precioMax" name="precioMax" type="number" inputMode="numeric" min={0} step={100} defaultValue={f.precioMax} />
-        </Field>
-        <Field label="Marca" htmlFor="marca">
-          <Select id="marca" name="marca" defaultValue={f.marca ?? ""}>
+          </FilterSelect>
+          <FilterSelect id="precioMax" name="precioMax" label="Hasta" defaultValue={f.precioMax ? String(f.precioMax) : ""}>
+            <option value="">Cualquier precio</option>
+            {prices.map((p) => (
+              <option key={p} value={p}>{eur(p * 100)}</option>
+            ))}
+          </FilterSelect>
+          <FilterSelect id="marca" name="marca" label="Marca" defaultValue={f.marca ?? ""}>
             <option value="">Todas</option>
             {facets.marca.map(([k, n]) => (
               <option key={k} value={k}>{facets.marcaNombre[k]} ({n})</option>
             ))}
-          </Select>
-        </Field>
-        <Field label="Cuadro" htmlFor="material">
-          <Select id="material" name="material" defaultValue={f.material ?? ""}>
+          </FilterSelect>
+          <FilterSelect id="orden" name="orden" label="Orden" defaultValue={f.orden}>
+            {Object.entries(SORTS).map(([k, l]) => (
+              <option key={k} value={k}>{l}</option>
+            ))}
+          </FilterSelect>
+        </FilterRow>
+        <FilterRow label="Más filtros">
+          <div className="flex items-center border-b border-border md:border-r lg:border-b-0">
+            <label htmlFor="q" className="eyebrow pl-2 whitespace-nowrap">Buscar:</label>
+            <input
+              id="q"
+              name="q"
+              type="search"
+              defaultValue={f.q}
+              placeholder="Marca, modelo o grupo"
+              className="select normal-case tracking-normal placeholder:text-text placeholder:opacity-60"
+            />
+          </div>
+          <FilterSelect id="material" name="material" label="Cuadro" defaultValue={f.material ?? ""} className="lg:border-b-0">
             <option value="">Todos</option>
             {facets.material.map(([k, n]) => (
               <option key={k} value={k}>{label(k)} ({n})</option>
             ))}
-          </Select>
-        </Field>
-        <Field label="Suspensión" htmlFor="suspension">
-          <Select id="suspension" name="suspension" defaultValue={f.suspension ?? ""}>
+          </FilterSelect>
+          <FilterSelect id="suspension" name="suspension" label="Suspensión" defaultValue={f.suspension ?? ""} className="lg:border-b-0">
             <option value="">Todas</option>
             {facets.suspension.map(([k, n]) => (
               <option key={k} value={k}>{label(k)} ({n})</option>
             ))}
-          </Select>
-        </Field>
-        <Field label="Ordenar" htmlFor="orden">
-          <Select id="orden" name="orden" defaultValue={f.orden}>
-            {Object.entries(SORTS).map(([k, l]) => (
-              <option key={k} value={k}>{l}</option>
-            ))}
-          </Select>
-        </Field>
-        <Cluster className="sm:col-span-2 lg:col-span-4">
-          <Button type="submit">Filtrar</Button>
-          <Button variant="ghost" href="/comparador">Quitar filtros</Button>
-        </Cluster>
+          </FilterSelect>
+          <div className="grid grid-cols-2">
+            {filtered ? (
+              <Link href="/comparador" className="eyebrow flex items-center justify-center min-h-6 border-r border-border hover:underline">
+                Quitar filtros
+              </Link>
+            ) : <span className="border-r border-border" />}
+            <button type="submit" className="eyebrow min-h-6 bg-accent text-on-accent cursor-pointer hover:underline">
+              Aplicar
+            </button>
+          </div>
+        </FilterRow>
       </form>
 
-      <Text size="small" aria-live="polite">
-        {list.length.toLocaleString("es-ES")} {list.length === 1 ? "bici" : "bicis"}
-        {pages > 1 ? ` · página ${page} de ${pages}` : ""}
-      </Text>
-
       <CompareProvider>
-        <Cards>
-          {shown.map((b, i) => (
-            <BikeCard key={b.id} bike={b} preload={i < 4}>
-              <div className="mt-auto">
-                <CompareToggle slug={b.slug} />
-              </div>
-            </BikeCard>
-          ))}
-        </Cards>
-      </CompareProvider>
-
-      {pages > 1 && (
-        <nav aria-label="Páginas" className="flex justify-between gap-2">
-          {page > 1 ? (
-            <Link className="ds-link" href={`/comparador${filtersToSearch({ ...f, pagina: page - 1 })}`}>← Anteriores</Link>
-          ) : <span />}
-          {page < pages && (
-            <Link className="ds-link" href={`/comparador${filtersToSearch({ ...f, pagina: page + 1 })}`}>Siguientes →</Link>
+        <div className="wrap py-2">
+          <h2 className="sr-only">Bicis</h2>
+          {shown.length === 0 ? (
+            <div className="grid-swiss py-8">
+              <p className="col-span-4 md:col-span-6 font-display text-h2">Ninguna bici cumple todos los filtros.</p>
+              <p className="col-span-4 md:col-span-6 mt-2">
+                <Link href="/comparador" className="link">Quitar filtros</Link> o prueba la <Link href="/guia" className="link">guía</Link>.
+              </p>
+            </div>
+          ) : (
+            <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 md:gap-2 list-none m-0 p-0">
+              {shown.map((b, i) => (
+                <Fragment key={b.id}>
+                  {page === 1 && i === 1 && (
+                    <li>
+                      <FeatureTile eyebrow="¿No sabes cuál?" title="Seis preguntas y te decimos cuál te encaja" href="/guia" cta="Empezar la guía" className="h-full">
+                        Uso, presupuesto y altura: te enseñamos tu talla en cada bici y por qué te la recomendamos.
+                      </FeatureTile>
+                    </li>
+                  )}
+                  <li>
+                    <BikeCard bike={b} preload={i < 4} corner={<CompareToggle slug={b.slug} name={`${b.brand} ${b.name}`} />} />
+                  </li>
+                </Fragment>
+              ))}
+            </ul>
           )}
-        </nav>
-      )}
-    </Stack>
+        </div>
+
+        {pages > 1 && (
+          <nav aria-label="Páginas" className="wrap">
+            <div className="grid grid-cols-3 items-center border-y border-border eyebrow num">
+              {page > 1 ? (
+                <Link className="min-h-6 flex items-center hover:underline" href={`/comparador${filtersToSearch({ ...f, pagina: page - 1 })}`}>
+                  <span aria-hidden="true">←&nbsp;</span>Anteriores
+                </Link>
+              ) : <span />}
+              <p className="text-center">Página {page} de {pages}</p>
+              {page < pages ? (
+                <Link className="min-h-6 flex items-center justify-end hover:underline" href={`/comparador${filtersToSearch({ ...f, pagina: page + 1 })}`}>
+                  Siguientes<span aria-hidden="true">&nbsp;→</span>
+                </Link>
+              ) : <span />}
+            </div>
+          </nav>
+        )}
+      </CompareProvider>
+    </>
   );
 }

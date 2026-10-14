@@ -123,7 +123,7 @@
     color: var(--_fg);
     background: var(--_bg);
     border: var(--ds-border-width) solid var(--_bd);
-    border-radius: var(--ds-radius-full);
+    border-radius: 0;
     cursor: pointer;
     transition: background-color var(--ds-duration-fast) var(--ds-ease), color var(--ds-duration-fast) var(--ds-ease), border-color var(--ds-duration-fast) var(--ds-ease), transform var(--ds-duration-fast) var(--ds-ease), box-shadow var(--ds-duration-fast) var(--ds-ease);
   }
@@ -331,7 +331,7 @@
     max-width: 100%;
     overflow-x: auto;
     border: var(--ds-border-width) solid var(--ds-border);
-    border-radius: var(--ds-radius-full);
+    border-radius: 0;
   }
   .ds-tab {
     min-height: 40px;

@@ -1,6 +1,6 @@
 # Sistema de diseño · Roodada
 
-> Generado con Office (Digital Dementia) el 11 de octubre de 2026. **No edites estos ficheros a mano**: el sistema se mantiene en Office y se vuelve a exportar.
+> Generado con Office (Digital Dementia) el 14 de octubre de 2026. **No edites estos ficheros a mano**: el sistema se mantiene en Office y se vuelve a exportar.
 
 ## Instalación
 
@@ -13,7 +13,7 @@
 ```
 
 Sin Tailwind: importa solo `tokens.css` y `components.css`.
-Fuentes (Google Fonts): **DM mono**, **Space Mono**, **DM MONO**. Cárgalas en el `<head>` o con `@fontsource`.
+Fuentes (Google Fonts): **poppins**. Cárgalas en el `<head>` o con `@fontsource`.
 Componentes React: `design-system/react` (`import { Button, Field, Input } from '…/design-system/react'`).
 
 ## Reglas (obligatorias al construir interfaz)
@@ -31,9 +31,9 @@ Componentes React: `design-system/react` (`import { Button, Field, Input } from 
 
 | Rol | Uso | Claro | Oscuro |
 |---|---|---|---|
-| `bg` | Fondo de página | roodada-principal · #FF716A | neutral-950 · #FF00FF |
-| `surface` | Tarjetas, campos, paneles | roodada-texto2 · #EEE7E9 | neutral-900 · #FF00FF |
-| `surface-alt` | Zonas destacadas, hover | roodada-principal · #FF716A | neutral-800 · #FF00FF |
+| `bg` | Fondo de página | roodada-texto2 · #EEE7E9 | neutral-950 · #FF00FF |
+| `surface` | Tarjetas, campos, paneles | roodada-terciario · #FFC35C | neutral-900 · #FF00FF |
+| `surface-alt` | Zonas destacadas, hover | roodada-terciario · #FFC35C | neutral-800 · #FF00FF |
 | `text` | Texto principal | roodada-textos · #373435 | neutral-50 · #FF00FF |
 | `text-muted` | Ayudas, metadatos | roodada-texto2 · #EEE7E9 | neutral-400 · #FF00FF |
 | `border` | Bordes y divisores | roodada-textos · #373435 | neutral-800 · #FF00FF |
@@ -48,37 +48,37 @@ Componentes React: `design-system/react` (`import { Button, Field, Input } from 
 
 | Texto / fondo | Claro | Oscuro |
 |---|---|---|
-| text / bg | 4.6:1 AA | 1.0:1 ✕ |
-| text / surface | 10.1:1 AAA | 1.0:1 ✕ |
-| text-muted / bg | 2.2:1 ✕ | 1.0:1 ✕ |
-| text-muted / surface | 1.0:1 ✕ | 1.0:1 ✕ |
+| text / bg | 10.1:1 AAA | 1.0:1 ✕ |
+| text / surface | 7.7:1 AAA | 1.0:1 ✕ |
+| text-muted / bg | 1.0:1 ✕ | 1.0:1 ✕ |
+| text-muted / surface | 1.3:1 ✕ | 1.0:1 ✕ |
 | on-accent / accent | 12.3:1 AAA | 1.0:1 ✕ |
-| accent / bg | 4.6:1 AA | 1.0:1 ✕ |
-| danger / bg | 3.0:1 ✕ | 1.0:1 ✕ |
+| accent / bg | 10.1:1 AAA | 1.0:1 ✕ |
+| danger / bg | 6.6:1 AA | 1.0:1 ✕ |
 
 Primitivos (cada uno con escala 50–950 en `--ds-<nombre>-<paso>`): `roodada-principal` #FF716A, `roodada-textos` #373435, `roodada-secundario` #00D8BC, `roodada-terciario` #FFC35C, `roodada-texto2` #EEE7E9.
 
 ## Tipografía
 
-Familias: display **DM mono**, texto **Space Mono**, mono **DM MONO**. Escala modular 1.25 (escritorio) y 1.2 (móvil) sobre 18 px; los tamaños son fluidos entre 375 y 1440 px de ancho.
+Familias: display **poppins**, texto **poppins**, mono **poppins**. Escala modular 1.125 (escritorio) y 1.2 (móvil) sobre 18 px; los tamaños son fluidos entre 375 y 1440 px de ancho.
 
 | Rol | Clase / utilidad | Familia | Móvil → escritorio | Peso | Interlineado | Tracking |
 |---|---|---|---|---|---|---|
-| display | `.ds-display` · `text-display` | display | 53.7 → 68.7 px | 600 | 0.95 | -0.03em |
-| h1 | `.ds-h1` · `text-h1` | display | 44.8 → 54.9 px | 600 | 1.05 | -0.025em |
-| h2 | `.ds-h2` · `text-h2` | display | 37.3 → 43.9 px | 600 | 1.1 | -0.02em |
-| h3 | `.ds-h3` · `text-h3` | display | 25.9 → 28.1 px | 600 | 1.2 | -0.01em |
-| h4 | `.ds-h4` · `text-h4` | display | 21.6 → 22.5 px | 600 | 1.3 | 0 |
-| body | `.ds-body` · `text-body` | body | 18 → 18 px | 400 | 1.55 | 0 |
-| small | `.ds-small` · `text-small` | body | 15 → 14.4 px | 400 | 1.45 | 0 |
-| label | `.ds-label-text` · `text-label` | body | 15 → 14.4 px | 600 | 1.2 | 0.02em |
-| mono | `.ds-mono` · `text-mono` | mono | 15 → 14.4 px | 400 | 1.5 | 0 |
+| display | `.ds-display` · `text-display` | display | 53.7 → 36.5 px | 800 | 0.95 | -0.075em |
+| h1 | `.ds-h1` · `text-h1` | display | 44.8 → 32.4 px | 700 | 1.05 | -0.05em |
+| h2 | `.ds-h2` · `text-h2` | display | 37.3 → 28.8 px | 600 | 1.1 | -0.05em |
+| h3 | `.ds-h3` · `text-h3` | display | 25.9 → 22.8 px | 600 | 1.2 | -0.05em |
+| h4 | `.ds-h4` · `text-h4` | display | 21.6 → 20.3 px | 600 | 1.3 | 0 |
+| body | `.ds-body` · `text-body` | body | 18 → 18 px | 500 | 1.55 | 0 |
+| small | `.ds-small` · `text-small` | body | 15 → 16 px | 500 | 1.45 | 0 |
+| label | `.ds-label-text` · `text-label` | body | 15 → 16 px | 600 | 1.2 | 0.02em |
+| mono | `.ds-mono` · `text-mono` | mono | 15 → 16 px | 400 | 1.5 | 0 |
 
 ## Espacio, forma y layout
 
 - Unidad base **8 px**; escala `--ds-space-{1,2,3,4,5,6,8,10,12,16,20,24}` = n × 8 px.
-- Radios: sm 0 px · md 0 px · lg 0 px · full. Borde 3 px. Sombras: suaves.
-- Movimiento: 120 / 200 / 320 ms, easing `cubic-bezier(0.2, 0.7, 0.2, 1)`.
+- Radios: sm 0 px · md 0 px · lg 0 px · full. Borde 2 px. Sombras: suaves.
+- Movimiento: 120 / 200 / 320 ms, easing `steps(4, end)`.
 
 ## Layout
 
@@ -108,7 +108,7 @@ Para composiciones que no encajen en un patrón, usa `Grid` con `col-span-*` de 
 
 ## Líneas e iconografía
 
-- Bordes 3 px (`--ds-border-width`) y fuertes 3 px (`--ds-border-strong`). Divisores continuos: `<hr class="ds-divider">` (o `ds-divider--strong`).
+- Bordes 2 px (`--ds-border-width`) y fuertes 2 px (`--ds-border-strong`). Divisores continuos: `<hr class="ds-divider">` (o `ds-divider--strong`).
 - Iconos de línea a 24 px con trazo 1.75, terminaciones redondeadas y uniones redondeadas. Usa `<Icon name="…" />` (hereda el color del texto) o los SVG de `design-system/icons/`. **No mezcles otros sets de iconos**: si falta uno, dibújalo con el mismo trazo o añádelo al sistema en Office.
 - Disponibles: `search`, `menu`, `close`, `plus`, `minus`, `check`, `chevron-down`, `chevron-right`, `arrow-right`, `arrow-left`, `external`, `home`, `user`, `users`, `heart`, `star`, `cart`, `bag`, `ticket`, `calendar`, `clock`, `map-pin`, `mail`, `phone`, `share`, `download`, `upload`, `settings`, `bell`, `lock`, `eye`, `trash`, `edit`, `filter`, `info`, `warning`, `play`, `music`, `camera`, `image`.
 - Base: [Lucide](https://lucide.dev) (licencia ISC) con el estilo de la marca.
@@ -131,7 +131,7 @@ Implementados en `design-system/react` (React) y `components.css` (clases `ds-*`
 | Layout (`Container`, `Section`, `Stack`…) | Ver la sección Layout | `<Section><Container>…</Container></Section>` |
 | `Heading`, `Text` | Tipografía | `<Heading level={1} size="display">…</Heading>` · `<Text muted size="small">…</Text>` |
 
-Estilo de botón: primario con el color de acento, radio full (999 px), familia mono, peso 600; hover: se invierte (fondo transparente).
+Estilo de botón: primario con el color de acento, radio none (0 px), familia mono, peso 600; hover: se invierte (fondo transparente).
 Campos: estilo underline. Tarjetas: border, padding 24 px. Etiquetas: redondeadas.
 
 **Lo que no está aquí** (cabeceras, pies, menús, modales, tablas…) se construye con estos tokens y componentes siguiendo las reglas de arriba.

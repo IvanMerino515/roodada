@@ -4,3 +4,203 @@
 @import "../../design-system/components/components.css";
 
 @source "../../design-system/react";
+
+/* Del sistema de diseño solo usamos colores y tipografías; la composición es propia:
+   retícula suiza, filetes de 1 px y etiquetas en mayúsculas. */
+
+@layer base {
+  html {
+    scroll-padding-top: var(--ds-space-10);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--ds-font-display);
+    margin: 0;
+    text-wrap: balance;
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: inherit;
+  }
+  img {
+    max-width: 100%;
+  }
+}
+
+@layer components {
+  /* Marco de la página: la retícula de 4 / 8 / 12 columnas vive dentro */
+  .wrap {
+    width: 100%;
+    max-width: var(--ds-container-wide);
+    margin-inline: auto;
+    padding-inline: var(--ds-space-2);
+  }
+  @media (min-width: 768px) {
+    .wrap {
+      padding-inline: var(--ds-space-4);
+    }
+  }
+
+  .grid-swiss {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--ds-space-2);
+  }
+  @media (min-width: 768px) {
+    .grid-swiss {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      column-gap: var(--ds-space-3);
+    }
+  }
+  @media (min-width: 1024px) {
+    .grid-swiss {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+  }
+
+  /* Etiqueta: mono, mayúsculas, pequeña. Es la voz de los datos */
+  .eyebrow {
+    font-family: var(--ds-font-mono);
+    font-size: var(--ds-text-label);
+    line-height: var(--ds-leading-label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Botones rectos con borde fino; al pasar por encima se invierten */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-2);
+    min-height: var(--ds-space-6);
+    padding-inline: var(--ds-space-3);
+    border: 1px solid currentColor;
+    background: transparent;
+    font-family: var(--ds-font-mono);
+    font-size: var(--ds-text-label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--ds-duration-fast) var(--ds-ease), color var(--ds-duration-fast) var(--ds-ease);
+  }
+  .btn:hover {
+    background: var(--ds-accent);
+    color: var(--ds-on-accent);
+    border-color: var(--ds-accent);
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background: transparent;
+    color: inherit;
+  }
+  .btn-solid {
+    background: var(--ds-accent);
+    color: var(--ds-on-accent);
+    border-color: var(--ds-accent);
+  }
+  .btn-solid:hover {
+    background: transparent;
+    color: var(--ds-accent);
+  }
+  .btn-lg {
+    min-height: var(--ds-space-8);
+    font-size: var(--ds-text-body);
+  }
+
+  /* Enlace de texto subrayado */
+  .link {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  .link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* Desplegable plano para barras de filtros */
+  .select {
+    appearance: none;
+    width: 100%;
+    min-height: var(--ds-space-6);
+    padding: 0 var(--ds-space-5) 0 var(--ds-space-2);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-family: var(--ds-font-mono);
+    font-size: var(--ds-text-label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  /* Campo de texto con filete inferior */
+  .input {
+    width: 100%;
+    min-height: var(--ds-space-6);
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--ds-border);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+  .input[aria-invalid="true"] {
+    border-bottom-color: var(--ds-danger);
+  }
+
+  /* Fotos de producto con fondo blanco: se funden con la casilla */
+  .product {
+    mix-blend-mode: multiply;
+  }
+}
+
+/* Intro de la portada: el logo aparece, luego el claim y el botón */
+@keyframes intro-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ds-space-2)) scale(0.97);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes intro-bounce {
+  50% {
+    transform: translateY(var(--ds-space-1));
+  }
+}
+.intro-in {
+  animation: intro-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.intro-logo {
+  animation-delay: 0.3s;
+  animation-duration: 1.6s;
+}
+.intro-claim {
+  animation-delay: 1.3s;
+}
+.intro-cta {
+  animation-delay: 1.8s;
+}
+.intro-bounce {
+  animation: intro-bounce 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-in,
+  .intro-bounce {
+    animation: none;
+  }
+}

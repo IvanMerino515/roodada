@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { Container, Section } from "../../../design-system/react";
 import { Guide } from "@/components/Guide";
 
 export const metadata: Metadata = {
@@ -10,10 +9,8 @@ export const metadata: Metadata = {
 
 export default function GuidePage() {
   return (
-    <Section>
-      <Container>
-        <Guide />
-      </Container>
-    </Section>
+    <div className="wrap pt-4 pb-8">
+      <Guide />
+    </div>
   );
 }

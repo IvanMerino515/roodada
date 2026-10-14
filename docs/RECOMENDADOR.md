@@ -8,10 +8,10 @@ Documento vivo. Si cambias la lógica de `src/lib/recommender/`, actualízalo. O
 |---|---|---|
 | Roodada Inicio | `/` | estático (cifras del catálogo en caché) |
 | Formulario | `/guia` | estático + `/api/contador` para el contador en vivo |
-| Catálogo personalizado | `/guia/resultados?uso=…&electrica=…&presupuesto=…&altura=…&nivel=…&prioridades=…` | dinámico, sin indexar |
+| Catálogo personalizado | `/guia/resultados?nivel=…&electrica=…&presupuesto=…&uso=…&altura=…[&entrepierna=…][&prioridades=…]` | dinámico, sin indexar |
 | Comparador | `/comparador?categoria=…&marca=…&orden=…&pagina=…` | dinámico |
 | Comparativa | `/comparativa?bicis=slug1,slug2` (2–4) | dinámico, sin indexar |
-| Ficha de bici | `/bici/[slug]` (`?altura=` desde la guía) | estática, las 1.636 en el build |
+| Ficha de bici | `/bici/[slug]` (desde la guía, con las respuestas: añade «Por qué es para ti») | estática, las 1.636 en el build; la explicación se rellena aparte |
 | — | `/ir/[slug]` | redirección 302 a la tienda (fase 2: afiliación) |
 | — | `/sitemap.xml`, `/robots.txt` | |
 
@@ -33,14 +33,33 @@ Fotos: se sirven desde la web de cada marca a través del optimizador de imágen
 - Un dato ausente vale 0,5 y baja la cobertura, que se muestra en la ficha.
 - En infantil no se muestra: gama y material no reflejan la calidad de una bici infantil.
 
+## Preguntas (`questions.ts`)
+
+Orden: **tipo de Roodador → ¿eléctrica? → presupuesto (solo la bici) → uso → altura → prioridades**.
+
+| Roodador | Usos | Entrepierna | Prioridades |
+|---|---|---|---|
+| Novato, curioso | amplios: carretera, montaña, gravel, ciudad, paseo, infantil | no | no se preguntan |
+| Avanzado, experto | detallados: carretera rápida / cómoda, montaña suave / técnica… | opcional | hasta 2 |
+
+En infantil no se aplica el filtro de eléctrica ni se preguntan prioridades.
+
 ## Recomendador
 
-1. **Filtros duros** (`filters.ts`): uso → categoría + disciplinas (`questions.ts`), eléctrica, presupuesto + 10 %, en stock y talla que encaje.
-2. **Talla** (`sizing.ts`): oficial · estimada · entre dos tallas (solape o hueco ≤ 3 cm). Si no hay talla, la bici queda fuera.
+1. **Filtros duros** (`filters.ts`): uso → categoría + disciplinas, eléctrica, presupuesto + 10 %, en stock y talla que encaje.
+2. **Talla** (`sizing.ts`): oficial · estimada · entre dos tallas (solape o hueco ≤ 3 cm). Si no hay talla, la bici queda fuera. Con entrepierna: holgura = entrepierna − standover (64 % de las tallas lo publican). Entre dos tallas, si la elegida deja menos de 2 cm y la otra no, se cambia; si no pasa por encima del tubo, la talla puntúa la mitad.
 3. **Puntuación** (`score.ts`, pesos en `weights.ts`): `100 · (0,25 talla + 0,20 calidad-precio + 0,55 prioridades)`, × 0,85 si supera el presupuesto.
-   - Las prioridades elegidas pesan 1. El nivel añade implícitas de peso 0,5: quien empieza, comodidad; quien compite, componentes y postura deportiva. Sin prioridades: componentes + comodidad.
+   - Prioridades según el Roodador (`LEVEL_PRIORITIES`). Si no elige (novato y curioso nunca eligen), cuentan las de base con peso 1; las implícitas suman con peso 0,5.
+     - Novato: comodidad + ahorro (implícita).
+     - Curioso: comodidad y componentes.
+     - Avanzado: componentes y ligereza.
+     - Experto: componentes y ligereza + postura deportiva (implícita).
    - Comodidad = percentil de stack/reach de su talla frente a las demás candidatas.
-4. **Orden y variedad** (`index.ts`): por puntuación, con como mucho 2 variantes por modelo y 24 resultados.
-5. **Explicación** (`explain.ts`): la talla siempre primero, luego lo que más destaca de lo pedido, y avisos de datos que faltan o de sobreprecio.
+4. **De 3 a 5** (`index.ts`): por puntuación, una versión por modelo. Pasada la 3.ª, solo las que no se quedan a más de 10 puntos de la 1.ª (`RESULTS`).
+5. **Pros y contras** (`explain.ts`), comparando las recomendadas entre sí:
+   - A favor: la talla primero y luego en qué es la mejor del grupo (precio, calidad-precio, grupo, peso, postura, batería, cubiertas, equipamiento) o lo que destaca de lo pedido.
+   - En contra: sobreprecio, holgura, entre tallas o talla estimada, frenos, equipamiento que falta, datos no publicados y en qué es la peor del grupo (solo con 3 o más).
+   - Explicación larga (`story`) para la ficha: talla, lo que pediste con cifras, frente a las demás, calidad-precio y encaje.
+6. **Compra**: botón a la web oficial de la marca (`/ir/[slug]`). Hoy cada bici tiene una sola oferta, la oficial; cuando haya tiendas se ofrecerán desde ahí.
 
 Pruebas: `npm test` usa una muestra real del catálogo (`__tests__/fixtures/catalogo.json`; regenerar con `npx tsx --env-file=.env.local scripts/analysis/fixture.mts`).

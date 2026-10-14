@@ -10,7 +10,7 @@ const LISTING_COLUMNS =
   "variant_id,slug,variant_name,model_id,model_name,brand_name,brand_slug,category_slug,is_electric," +
   "frame_material,weight_g,model_year,best_final_price_cents,in_stock_offers,main_image_url,official_url,specs";
 const SIZE_COLUMNS =
-  "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm";
+  "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm,standover_mm:geometry->standover_mm";
 
 async function loadFormula(): Promise<QualityFormula> {
   const { data, error } = await supabase()

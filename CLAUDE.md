@@ -16,4 +16,6 @@ Guía de compra de bicicletas: una guía de preguntas (`/guia`) que recomienda b
 ## Sistema de diseño
 
 Este proyecto usa el sistema de diseño de Roodada (carpeta `design-system/`, generada desde Office).
-Para cualquier trabajo de interfaz sigue `design-system/DESIGN.md`: usa los componentes de `design-system/react` y los tokens `--ds-*` o las utilidades del tema de Tailwind. No inventes colores, tamaños, radios ni sombras, y no edites los ficheros de `design-system/` a mano.
+Del sistema se usan **solo colores y tipografías** (tokens `--ds-*` o utilidades del tema: `bg-bg`, `bg-surface`, `text-h2`…). No inventes colores ni tamaños de letra, y no edites los ficheros de `design-system/` a mano.
+
+La composición es propia (decisión de Iván, 14-10-2026): retícula suiza (`.grid-swiss` 4/8/12 columnas, `.wrap`), filetes de 1 px, etiquetas `.eyebrow` en mayúsculas y botones `.btn` rectos, todo en `src/app/globals.css`. No se usan los componentes de `design-system/react` salvo `Icon`. Referencias: catálogo en casillas lisas con una casilla de color que rompe la rejilla; ficha como etiqueta de producto (marco + filas etiqueta/valor). Casillas de bici en blanco sobre `bg`; lo destacado en `surface`; lo activo en `accent`.

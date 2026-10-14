@@ -1,12 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { createContext, useContext, useState, type ReactNode } from "react";
-
-import { Button, Checkbox, Text } from "../../design-system/react";
 
 export const MAX_COMPARE = 4;
 
-type Ctx = { selected: string[]; toggle: (slug: string) => void };
+type Ctx = { selected: string[]; toggle: (slug: string) => void; clear: () => void };
 const CompareContext = createContext<Ctx | null>(null);
 
 /** Selección de 2 a 4 bicis para la comparativa, con una barra fija abajo. */
@@ -15,36 +14,52 @@ export function CompareProvider({ children }: { children: ReactNode }) {
   const toggle = (slug: string) =>
     setSelected((s) => (s.includes(slug) ? s.filter((x) => x !== slug) : s.length < MAX_COMPARE ? [...s, slug] : s));
   return (
-    <CompareContext.Provider value={{ selected, toggle }}>
+    <CompareContext.Provider value={{ selected, toggle, clear: () => setSelected([]) }}>
       {children}
-      {selected.length > 0 && (
-        <div className="sticky bottom-0 z-10 bg-surface border-t-[length:var(--ds-border-width)] border-border">
-          <div className="ds-container flex flex-wrap items-center justify-between gap-2 py-2">
-            <Text size="label" as="p" aria-live="polite">
-              {selected.length} de {MAX_COMPARE} para comparar
-              {selected.length < 2 ? " · elige al menos 2" : ""}
-            </Text>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => selected.forEach(toggle)}>
-                Vaciar
-              </Button>
-              {selected.length >= 2 && (
-                <Button size="sm" href={`/comparativa?bicis=${selected.join(",")}`}>
-                  Comparar
-                </Button>
-              )}
+      <div aria-live="polite" className="sticky bottom-0 z-20">
+        {selected.length > 0 && (
+          <div className="bg-accent text-on-accent">
+            <div className="wrap flex flex-wrap items-center justify-between gap-2 py-1">
+              <p className="eyebrow num">
+                Comparar {selected.length}/{MAX_COMPARE}
+                {selected.length < 2 ? " · elige al menos 2" : ""}
+              </p>
+              <div className="flex gap-1">
+                <button type="button" className="btn" onClick={() => setSelected([])}>
+                  Vaciar
+                </button>
+                {selected.length >= 2 && (
+                  <Link className="btn bg-on-accent text-accent border-on-accent" href={`/comparativa?bicis=${selected.join(",")}`}>
+                    Comparar <span aria-hidden="true">→</span>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </CompareContext.Provider>
   );
 }
 
-export function CompareToggle({ slug }: { slug: string }) {
+export function CompareToggle({ slug, name }: { slug: string; name: string }) {
   const ctx = useContext(CompareContext);
   if (!ctx) return null;
   const checked = ctx.selected.includes(slug);
   const full = ctx.selected.length >= MAX_COMPARE;
-  return <Checkbox label="Comparar" checked={checked} disabled={!checked && full} onChange={() => ctx.toggle(slug)} />;
+  return (
+    <label
+      className={`eyebrow flex items-center gap-1 min-h-6 px-2 cursor-pointer select-none ${checked ? "bg-accent text-on-accent" : "hover:underline"} has-disabled:cursor-not-allowed has-disabled:opacity-50`}
+    >
+      <input
+        type="checkbox"
+        className="size-2 accent-[var(--ds-accent)] cursor-[inherit]"
+        checked={checked}
+        disabled={!checked && full}
+        onChange={() => ctx.toggle(slug)}
+        aria-label={`Comparar ${name}`}
+      />
+      <span aria-hidden="true">Comparar</span>
+    </label>
+  );
 }

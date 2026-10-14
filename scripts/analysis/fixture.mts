@@ -14,7 +14,8 @@ const { rows: listing } = await c.query(`
   from variant_listing where variant_id % 3 = 0 order by variant_id`);
 for (const r of listing) r.specs = Object.fromEntries(Object.entries(r.specs ?? {}).filter(([k]) => KEEP.includes(k)));
 const { rows: sizes } = await c.query(`
-  select variant_id::int, size_label, sort_order, rider_height_min_cm, rider_height_max_cm, rider_height_source, stack_mm, reach_mm
+  select variant_id::int, size_label, sort_order, rider_height_min_cm, rider_height_max_cm, rider_height_source, stack_mm, reach_mm,
+    (geometry->>'standover_mm')::float as standover_mm
   from variant_sizes where variant_id % 3 = 0 order by id`);
 writeFileSync("src/lib/recommender/__tests__/fixtures/catalogo.json", JSON.stringify({ generated: new Date().toISOString().slice(0, 10), listing, sizes }));
 console.log(listing.length, "bicis,", sizes.length, "tallas");

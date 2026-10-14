@@ -4,6 +4,8 @@
 import type { Size } from "../catalog/types";
 
 export const GAP_CM = 3;
+/** Holgura mínima cómoda entre la entrepierna y el tubo horizontal */
+export const STANDOVER_MARGIN_MM = 20;
 
 export type SizeFit = {
   fit: "oficial" | "estimada" | "entre";
@@ -16,7 +18,29 @@ const hasRange = (s: Size): s is Size & { heightMin: number; heightMax: number }
   s.heightMin !== null && s.heightMax !== null;
 const center = (s: Size & { heightMin: number; heightMax: number }) => (s.heightMin + s.heightMax) / 2;
 
-export function fitSize(sizes: Size[], heightCm: number): SizeFit | null {
+/**
+ * Talla por altura. Con la entrepierna, si estás entre dos tallas y la elegida te deja poca holgura
+ * sobre el tubo, se prefiere la otra.
+ */
+export function fitSize(sizes: Size[], heightCm: number, inseamCm?: number): SizeFit | null {
+  const fit = fitByHeight(sizes, heightCm);
+  if (fit?.fit === "entre" && fit.alternative && inseamCm) {
+    const main = standoverClearance(fit.size, inseamCm);
+    const alt = standoverClearance(fit.alternative, inseamCm);
+    if (main !== null && alt !== null && main < STANDOVER_MARGIN_MM && alt >= STANDOVER_MARGIN_MM) {
+      return { fit: "entre", size: fit.alternative, alternative: fit.size };
+    }
+  }
+  return fit;
+}
+
+/** Milímetros entre la entrepierna y el tubo horizontal; negativo = no pasas por encima. null sin datos. */
+export function standoverClearance(size: Size, inseamCm?: number): number | null {
+  if (!inseamCm || size.standoverMm === null) return null;
+  return inseamCm * 10 - size.standoverMm;
+}
+
+function fitByHeight(sizes: Size[], heightCm: number): SizeFit | null {
   const ranged = sizes.filter(hasRange).sort((a, b) => a.heightMin - b.heightMin);
   if (ranged.length === 0) return null;
 

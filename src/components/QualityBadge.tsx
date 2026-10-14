@@ -1,4 +1,3 @@
-import { Badge } from "../../design-system/react";
 import type { Bike } from "@/lib/catalog/types";
 import { decimal } from "@/lib/format";
 
@@ -6,13 +5,21 @@ import { decimal } from "@/lib/format";
  * Nota calidad-precio. En infantil no se muestra: la fórmula mide gama de grupo y material,
  * que en bicis infantiles no reflejan la calidad (todas salen bajas).
  */
-export function QualityBadge({ bike }: { bike: Bike }) {
+export function QualityBadge({ bike, large = false }: { bike: Bike; large?: boolean }) {
   if (bike.category === "bici-infantil") return null;
-  const q = bike.quality.total;
-  const tone = q >= 7 ? "success" : q >= 5 ? "neutral" : "warning";
+  const q = decimal(bike.quality.total);
+  if (large) {
+    return (
+      <p className="flex items-baseline gap-1">
+        <span className="font-display text-h2 num leading-none">{q}</span>
+        <span className="eyebrow">/10 calidad-precio</span>
+      </p>
+    );
+  }
   return (
-    <Badge tone={tone} title={`Calidad-precio frente a otras bicis de su tipo. Datos disponibles: ${Math.round(bike.quality.coverage * 100)} %`}>
-      Calidad-precio {decimal(q)}/10
-    </Badge>
+    <span className="eyebrow num">
+      <span aria-hidden="true">C/P {q}</span>
+      <span className="sr-only">Calidad-precio {q} sobre 10</span>
+    </span>
   );
 }

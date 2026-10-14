@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { Alert, Badge, Button, Cards, Cluster, Container, Heading, Section, Stack, Text } from "../../../../design-system/react";
-import { BikeCard } from "@/components/BikeCard";
+import { QualityBadge } from "@/components/QualityBadge";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
 import { getCatalog } from "@/lib/catalog/load";
 import { eur } from "@/lib/format";
-import { recommend } from "@/lib/recommender";
-import { ELECTRIC, LEVELS, PRIORITIES, USES, parseAnswers, type Answers } from "@/lib/recommender/questions";
+import { recommend, type Recommendation } from "@/lib/recommender";
+import { answersToSearch, ELECTRIC, LEVELS, PRIORITIES, USES, parseAnswers, type Answers } from "@/lib/recommender/questions";
 
 export const metadata: Metadata = {
   title: "Tus bicis recomendadas",
@@ -17,15 +17,11 @@ export const metadata: Metadata = {
 
 export default function ResultsPage({ searchParams }: PageProps<"/guia/resultados">) {
   return (
-    <Section size="sm">
-      <Container>
-        <Suspense fallback={<Text>Buscando tus bicis…</Text>}>
-          {searchParams.then((sp) => (
-            <Results params={sp} />
-          ))}
-        </Suspense>
-      </Container>
-    </Section>
+    <Suspense fallback={<p className="wrap py-4 eyebrow">Buscando tus bicis…</p>}>
+      {searchParams.then((sp) => (
+        <Results params={sp} />
+      ))}
+    </Suspense>
   );
 }
 
@@ -33,87 +29,142 @@ async function Results({ params }: { params: Record<string, string | string[] | 
   const answers = parseAnswers(params);
   if (!answers) {
     return (
-      <Alert tone="warning" title="Faltan respuestas">
-        No hemos podido leer tus respuestas. <Link href="/guia" className="ds-link">Vuelve a la guía</Link>.
-      </Alert>
+      <div className="wrap grid-swiss py-8">
+        <h1 className="col-span-4 md:col-span-6 font-display text-h2">Faltan respuestas</h1>
+        <p className="col-span-4 md:col-span-6 mt-2">
+          No hemos podido leer tus respuestas. <Link href="/guia" className="link">Vuelve a la guía</Link>.
+        </p>
+      </div>
     );
   }
 
   const { results, matched } = recommend(await getCatalog(), answers);
+  const shown = results.length;
+  const query = answersToSearch(answers);
 
   return (
-    <Stack>
-      <Heading level={1} size="h2">
-        {results.length ? `Tus ${results.length === 1 ? "bici" : `${results.length} bicis`}` : "Sin resultados"}
-      </Heading>
-      <Summary answers={answers} matched={matched} shown={results.length} />
+    <>
+      <div className="wrap grid-swiss gap-y-2 pt-4 pb-3 items-end">
+        <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">
+          {shown ? <>Tus {shown === 1 ? "bici" : <><span className="num">{shown}</span> bicis</>}</> : "Sin resultados"}
+        </h1>
+        <p className="col-span-4 md:col-span-3 lg:col-span-4 text-small">
+          {matched > shown
+            ? `De ${matched} bicis que encajan contigo, estas son las ${shown} que mejor cumplen lo que nos has contado.`
+            : `${matched} ${matched === 1 ? "bici encaja" : "bicis encajan"} con tus respuestas.`}{" "}
+          Cada una con lo bueno y lo malo frente a las demás.
+        </p>
+      </div>
 
-      {results.length === 0 ? (
-        <Alert tone="warning" title="Ninguna bici encaja con todo">
-          Prueba a subir el presupuesto, a cambiar si la quieres eléctrica o a revisar tu altura.{" "}
-          <Link href="/guia" className="ds-link">Cambiar respuestas</Link>
-        </Alert>
+      <Summary answers={answers} />
+
+      {shown === 0 ? (
+        <div className="wrap grid-swiss py-8">
+          <p className="col-span-4 md:col-span-6 font-display text-h2">Ninguna bici encaja con todo.</p>
+          <p className="col-span-4 md:col-span-6 mt-2">
+            Prueba a subir el presupuesto, a cambiar si la quieres eléctrica o a revisar tu altura.{" "}
+            <Link href="/guia" className="link">Cambiar respuestas</Link>
+          </p>
+        </div>
       ) : (
         <CompareProvider>
-          <Cards>
+          <ol className="wrap list-none m-0 py-2 grid gap-2">
             {results.map((r, i) => (
-              <BikeCard
-                key={r.bike.id}
-                bike={r.bike}
-                href={`/bici/${r.bike.slug}?altura=${answers.altura}`}
-                preload={i < 4}
-                topBadge={i === 0 ? <Badge tone="success">La que más encaja</Badge> : undefined}
-              >
-                <ul className="grid gap-1 text-small list-none p-0">
-                  {r.reasons.map((reason) => (
-                    <li key={reason}>✓ {reason}</li>
-                  ))}
-                </ul>
-                {r.warnings.length > 0 && (
-                  <ul className="grid gap-1 text-small list-none p-0">
-                    {r.warnings.map((w) => (
-                      <li key={w}>! {w}</li>
-                    ))}
-                  </ul>
-                )}
-                <div className="flex items-center justify-between gap-2 mt-auto">
-                  <Text size="label" as="p" title={`Confianza ${r.confidence}: según los datos que publica la marca`}>
-                    Encaje {r.score}/100
-                  </Text>
-                  <CompareToggle slug={r.bike.slug} />
-                </div>
-              </BikeCard>
+              <li key={r.bike.id}>
+                <Pick r={r} n={i + 1} href={`/bici/${r.bike.slug}?${query}`} top={i === 0} />
+              </li>
             ))}
-          </Cards>
+          </ol>
         </CompareProvider>
       )}
-    </Stack>
+    </>
   );
 }
 
-function Summary({ answers: a, matched, shown }: { answers: Answers; matched: number; shown: number }) {
-  const bits = [
-    USES[a.uso].label,
-    a.uso === "infantil" ? null : ELECTRIC[a.electrica],
-    `hasta ${eur(a.presupuesto * 100)}`,
-    `${a.altura} cm`,
-    a.uso === "infantil" ? null : LEVELS[a.nivel].label,
-    ...a.prioridades.map((p) => PRIORITIES[p].label),
-  ].filter(Boolean);
+/** Una recomendación: número, foto, datos y acciones, y a favor / en contra. La primera, en color. */
+function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string; top: boolean }) {
+  const name = `${r.bike.brand} ${r.bike.name}`;
   return (
-    <Stack>
-      <Cluster>
-        {bits.map((b) => (
-          <Badge key={b}>{b}</Badge>
+    <article className={`grid lg:grid-cols-12 border border-border ${top ? "bg-surface" : "bg-white"}`} aria-labelledby={`pick-${r.bike.id}`}>
+      <div className="lg:col-span-4 grid grid-cols-[auto_1fr] border-b lg:border-b-0 lg:border-r border-border">
+        <p className="font-display text-h1 num leading-none p-2 border-r border-border" aria-hidden="true">{String(n).padStart(2, "0")}</p>
+        <Link href={href} tabIndex={-1} aria-hidden="true" className="bg-white flex items-center justify-center p-2">
+          <Image src={r.bike.imageUrl} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
+        </Link>
+      </div>
+
+      <div className="lg:col-span-4 p-2 md:p-3 grid gap-2 content-start border-b lg:border-b-0 lg:border-r border-border">
+        <p className="eyebrow">{top ? `La que más encaja · ${r.score}/100` : `Encaje ${r.score}/100`}</p>
+        <h2 id={`pick-${r.bike.id}`} className="font-display text-h3 uppercase leading-tight">
+          <span className="block eyebrow normal-case">{r.bike.brand}</span>
+          {r.bike.name}
+        </h2>
+        <p className="flex items-baseline justify-between gap-2 border-t border-border pt-1">
+          <span className="font-display text-h3 num">{eur(r.bike.priceCents)}</span>
+          <QualityBadge bike={r.bike} />
+        </p>
+        <div className="grid gap-1">
+          <Link href={href} className="btn btn-solid w-full">
+            Por qué es para ti <span aria-hidden="true">→</span>
+          </Link>
+          <a href={`/ir/${r.bike.slug}`} rel="nofollow noopener" target="_blank" className="btn w-full">
+            Web oficial de {r.bike.brand} <span aria-hidden="true">↗</span>
+            <span className="sr-only">(se abre en otra pestaña)</span>
+          </a>
+          <div className="border border-border w-fit">
+            <CompareToggle slug={r.bike.slug} name={name} />
+          </div>
+        </div>
+      </div>
+
+      <div className="lg:col-span-4 p-2 md:p-3 grid gap-3 content-start text-small">
+        <section aria-label={`A favor de ${name}`}>
+          <h3 className="eyebrow mb-1">A favor</h3>
+          <ul className="grid gap-1 list-none m-0 p-0">
+            {r.pros.map((p) => (
+              <li key={p} className="grid grid-cols-[auto_1fr] gap-1"><span aria-hidden="true">+</span>{p}</li>
+            ))}
+          </ul>
+        </section>
+        {r.cons.length > 0 && (
+          <section aria-label={`En contra de ${name}`}>
+            <h3 className="eyebrow mb-1">En contra</h3>
+            <ul className="grid gap-1 list-none m-0 p-0">
+              {r.cons.map((c) => (
+                <li key={c} className="grid grid-cols-[auto_1fr] gap-1"><span aria-hidden="true">−</span>{c}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
+    </article>
+  );
+}
+
+/** Tus respuestas, como la barra de filtros del catálogo. */
+function Summary({ answers: a }: { answers: Answers }) {
+  const items: [string, string][] = [
+    ["Roodador", LEVELS[a.nivel].label.replace("Roodador ", "")],
+    ...(a.uso === "infantil" ? [] : [["Eléctrica", ELECTRIC[a.electrica]] as [string, string]]),
+    ["Hasta", eur(a.presupuesto * 100)],
+    ["Uso", USES[a.uso].label],
+    ["Altura", `${a.altura} cm`],
+    ...(a.entrepierna ? [["Entrepierna", `${a.entrepierna} cm`] as [string, string]] : []),
+    ...(a.prioridades.length ? [["Prioridad", a.prioridades.map((p) => PRIORITIES[p].label).join(", ")] as [string, string]] : []),
+  ];
+  return (
+    <div className="border-y border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-none lg:grid-flow-col lg:auto-cols-auto">
+      <dl className="contents">
+        {items.map(([k, v]) => (
+          <div key={k} className="flex items-center gap-1 min-h-6 px-2 border-b sm:border-r border-border lg:border-b-0">
+            <dt className="eyebrow">{k}:</dt>
+            <dd className="m-0 eyebrow">{v}</dd>
+          </div>
         ))}
-        <Button variant="ghost" size="sm" href="/guia">Cambiar respuestas</Button>
-      </Cluster>
-      <Text size="small">
-        {matched > shown
-          ? `${matched} bicis encajan; te enseñamos las ${shown} mejores, con como mucho dos versiones de cada modelo.`
-          : `${matched} ${matched === 1 ? "bici encaja" : "bicis encajan"} con tus respuestas.`}{" "}
-        Ordenadas por encaje: talla, calidad-precio y lo que has dicho que te importa.
-      </Text>
-    </Stack>
+      </dl>
+      <Link href="/guia" className="eyebrow flex items-center justify-center min-h-6 px-2 bg-accent text-on-accent hover:underline">
+        Cambiar respuestas
+      </Link>
+    </div>
   );
 }

@@ -14,7 +14,7 @@
 
    Ajusta las rutas según dónde esté tu CSS. Sin Tailwind, importa solo tokens.css y components.css.
 3. Pega el contenido de `CLAUDE.snippet.md` en el `CLAUDE.md` del proyecto.
-4. Carga las fuentes: DM mono, Space Mono, DM MONO (Google Fonts).
+4. Carga las fuentes: poppins (Google Fonts).
 5. Si tu proyecto no usa el alias `@/`, importa los componentes con la ruta relativa a `design-system/react`.
 
 En Claude Code, pide la interfaz con normalidad: la skill se activa sola al trabajar en UI.

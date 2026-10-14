@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
-import { Container, Text } from "../../design-system/react";
+import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,39 +17,39 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // Modo claro fijo: el modo oscuro del sistema de diseño aún no tiene colores definidos en Office
     <html lang="es" data-theme="light">
       <head>
-        {/* Las familias de los tokens (DM Mono, Space Mono) se cargan con su nombre real para que coincidan */}
+        {/* Familia de los tokens: Poppins */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         />
       </head>
       <body className="min-h-dvh flex flex-col bg-bg text-text font-body">
-        <a href="#contenido" className="sr-only focus:not-sr-only">
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-1 focus:left-1 focus:z-50 focus:bg-accent focus:text-on-accent focus:p-2 eyebrow"
+        >
           Saltar al contenido
         </a>
-        <header className="border-b-[length:var(--ds-border-width)] border-border">
-          <Container className="flex items-center justify-between gap-3 py-2">
-            <Link href="/" aria-label="Roodada, inicio">
-              <Image src="/logo.png" alt="Roodada" width={160} height={40} preload />
-            </Link>
-            <nav aria-label="Principal" className="flex gap-3 text-label">
-              <Link href="/guia" className="ds-link">Guía</Link>
-              <Link href="/comparador" className="ds-link">Comparador</Link>
-            </nav>
-          </Container>
-        </header>
+        <SiteHeader />
         <main id="contenido" className="flex-1">
           {children}
         </main>
-        <footer className="border-t-[length:var(--ds-border-width)] border-border">
-          <Container className="py-4">
-            <Text size="small">
-              Roodada compara datos publicados por cada marca. Precios y disponibilidad de su web oficial; compruébalos
+        <footer className="border-t border-border mt-12">
+          <div className="wrap grid-swiss gap-y-3 py-4">
+            <p className="col-span-4 md:col-span-4 lg:col-span-6 font-display text-h3">
+              Elegir bici con datos, no con anuncios.
+            </p>
+            <ul className="col-span-2 md:col-span-2 lg:col-span-2 list-none m-0 p-0 grid gap-1 content-start eyebrow">
+              <li><Link href="/guia" className="link">Guía</Link></li>
+              <li><Link href="/comparador" className="link">Comparador</Link></li>
+            </ul>
+            <p className="col-span-4 md:col-span-2 lg:col-span-4 text-small">
+              Roodada compara los datos que publica cada marca. Precio y disponibilidad de su web oficial: compruébalos
               antes de comprar.
-            </Text>
-          </Container>
+            </p>
+          </div>
         </footer>
       </body>
     </html>
