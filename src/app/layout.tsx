@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { SiteHeader } from "@/components/SiteHeader";
+import { MODO_PRUEBA } from "@/lib/site";
 import "./globals.css";
 
 // Poppins, la familia de los tokens, servida desde nuestro dominio: sin pedir nada a Google en cada visita
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
     images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Roodada: deja de buscar, empieza a rodar" }],
   },
   twitter: { card: "summary_large_image" },
+  // En modo prueba, ninguna página se indexa (las páginas que fijan su propio robots ya son noindex)
+  ...(MODO_PRUEBA ? { robots: { index: false, follow: false } } : {}),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -16,8 +16,15 @@ const imageHosts = [
   "www.cannondale.com",
 ];
 
+// Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
+// indexa nada. Se quita la variable el día del lanzamiento y se vuelve a publicar.
+const modoPrueba = process.env.ROODADA_MODO_PRUEBA === "1";
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  async headers() {
+    return modoPrueba ? [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }] : [];
+  },
   partialPrefetching: true,
   images: {
     remotePatterns: imageHosts.map((hostname) => ({ protocol: "https" as const, hostname })),

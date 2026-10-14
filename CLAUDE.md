@@ -8,6 +8,7 @@ Guía de compra de bicicletas: una guía de preguntas (`/guia`) que recomienda b
 - Datos: Supabase `recomendador_bicicletas` (tablas `variants`, `variant_sizes`, `variant_components`, vista `variant_listing`). La web solo lee, con anon key y RLS.
 - Recomendador: `src/lib/recommender/`, funciones puras con tests (`npm test`). Un dato ausente puntúa neutro y baja la confianza; nunca se inventa.
 - Análisis: `npm run analysis` (rol de solo lectura, `ANALYSIS_DATABASE_URL`) genera `docs/data/ANALISIS-bruto.md`.
+- Modo prueba: con `ROODADA_MODO_PRUEBA=1` (variable de Vercel) la web no se indexa (cabecera `X-Robots-Tag`, meta robots y `robots.txt`). Quitarla el día del lanzamiento.
 - Verificación: `npm run typecheck`, `npm test`, `npm run build`. No abrir el navegador para verificar: Iván revisa lo visual en las previews de Vercel.
 - Gestor de paquetes: npm.
 - Next.js 16 con Cache Components: los datos se cargan con `'use cache'` + `cacheLife` (`src/lib/catalog/load.ts`); `params`/`searchParams` son promesas y lo que depende de ellos va dentro de `<Suspense>`.
