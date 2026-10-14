@@ -86,8 +86,8 @@ export function Guide() {
             <p className="eyebrow num" aria-live="polite">{remaining.toLocaleString("es-ES")} bicis encajan</p>
           )}
         </div>
-        <div className="h-0.5 bg-surface lg:hidden" aria-hidden="true">
-          <div className="h-full bg-accent transition-[width] motion-reduce:transition-none" style={{ width: `${((position + 1) / visible.length) * 100}%` }} />
+        <div className="h-0.5 bg-white lg:hidden" aria-hidden="true">
+          <div className="h-full bg-choice transition-[width] motion-reduce:transition-none" style={{ width: `${((position + 1) / visible.length) * 100}%` }} />
         </div>
         <ol className="hidden lg:grid list-none m-0 p-0" aria-label="Pasos de la guía">
           {visible.map((st, i) => {
@@ -319,7 +319,7 @@ function Option({
       aria-pressed={selected}
       disabled={empty || disabled}
       onClick={onClick}
-      className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 gap-y-0.5 text-left border-t border-border px-1 py-2 cursor-pointer hover:bg-surface aria-pressed:bg-accent aria-pressed:text-on-accent disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent -outline-offset-2"
+      className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 gap-y-0.5 text-left border-t border-border px-1 py-2 cursor-pointer hover:bg-white aria-pressed:bg-choice aria-pressed:text-on-choice disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent focus-inset"
     >
       <span className="eyebrow num">{pad(n)}</span>
       <span className="font-display text-h4 uppercase">{title}</span>

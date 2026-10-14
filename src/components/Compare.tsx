@@ -18,7 +18,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
       {children}
       <div aria-live="polite" className="sticky bottom-0 z-20">
         {selected.length > 0 && (
-          <div className="bg-accent text-on-accent">
+          <div className="bg-choice text-on-choice border-t border-border">
             <div className="wrap flex flex-wrap items-center justify-between gap-2 py-1">
               <p className="eyebrow num">
                 Comparar {selected.length}/{MAX_COMPARE}
@@ -29,7 +29,7 @@ export function CompareProvider({ children }: { children: ReactNode }) {
                   Vaciar
                 </button>
                 {selected.length >= 2 && (
-                  <Link className="btn bg-on-accent text-accent border-on-accent" href={`/comparativa?bicis=${selected.join(",")}`}>
+                  <Link className="btn btn-solid" href={`/comparativa?bicis=${selected.join(",")}`}>
                     Comparar <span aria-hidden="true">→</span>
                   </Link>
                 )}
@@ -49,7 +49,7 @@ export function CompareToggle({ slug, name }: { slug: string; name: string }) {
   const full = ctx.selected.length >= MAX_COMPARE;
   return (
     <label
-      className={`eyebrow flex items-center gap-1 min-h-6 px-2 cursor-pointer select-none ${checked ? "bg-accent text-on-accent" : "hover:underline"} has-disabled:cursor-not-allowed has-disabled:opacity-50`}
+      className={`eyebrow flex items-center gap-1 min-h-6 px-2 cursor-pointer select-none ${checked ? "bg-choice text-on-choice" : "hover:underline"} has-disabled:cursor-not-allowed has-disabled:opacity-50`}
     >
       <input
         type="checkbox"

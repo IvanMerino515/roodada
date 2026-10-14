@@ -8,6 +8,40 @@
 /* Del sistema de diseño solo usamos colores y tipografías; la composición es propia:
    retícula suiza, filetes de 1 px y etiquetas en mayúsculas. */
 
+/* Reparto de color (decisión de Iván, 14-10-2026), cada color con un solo significado:
+   - accent (gris oscuro): lo activo y la navegación, y las acciones principales (.btn-solid).
+   - choice (coral, roodada-principal, con texto oscuro: 4,6:1): lo tuyo, lo que has elegido o lo que
+     más te encaja: opciones marcadas, la bici n.º 1, "Por qué es para ti", tu talla, tu selección para comparar.
+     Nunca con texto blanco (2,6:1).
+   - surface (amarillo): lo editorial, las casillas que rompen la rejilla. */
+@theme inline {
+  --color-choice: var(--ds-roodada-principal);
+  --color-on-choice: var(--ds-roodada-textos);
+}
+
+/* Correcciones a los tokens exportados de Office (14-10-2026). Van fuera de capas y después de los
+   imports para ganar a tokens.css. Cuando se corrijan en Office y se reexporte, se borra este bloque.
+   - Escala: en el export cada clamp() tiene el mínimo mayor que el máximo y se queda congelado en el
+     mínimo (display 54 px en cualquier pantalla). Aquí crece del móvil al escritorio.
+   - Tracking: los titulares van en mayúsculas; con −0,05/−0,075 em las letras redondas se tocan.
+   - Etiquetas más pequeñas que el texto (13–14 px) para que la jerarquía no dependa solo de la mayúscula.
+   - text-muted era igual al fondo (texto invisible); textos-700 da 5,9:1 sobre bg.
+   - Borde de 1 px, el que usa toda la composición. */
+:root {
+  --ds-text-display: clamp(2.25rem, 1.2rem + 4.5vw, 6rem);
+  --ds-text-h1: clamp(2rem, 1.3rem + 2.6vw, 4rem);
+  --ds-text-h2: clamp(1.75rem, 1.25rem + 1.6vw, 2.75rem);
+  --ds-text-h3: clamp(1.375rem, 1.1rem + 0.8vw, 1.875rem);
+  --ds-text-h4: clamp(1.25rem, 1.15rem + 0.3vw, 1.5rem);
+  --ds-text-label: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --ds-tracking-display: -0.015em;
+  --ds-tracking-h1: -0.01em;
+  --ds-tracking-h2: 0;
+  --ds-tracking-h3: 0;
+  --ds-text-muted: var(--ds-roodada-textos-700);
+  --ds-border-width: 1px;
+}
+
 @layer base {
   html {
     scroll-padding-top: var(--ds-space-10);
@@ -25,6 +59,18 @@
   }
   img {
     max-width: 100%;
+  }
+  /* Foco en doble anillo, blanco y oscuro, para que se vea sobre cualquier fondo
+     (el del sistema es del mismo gris que accent y desaparece sobre lo activo) */
+  :focus-visible {
+    outline: 2px solid var(--ds-accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--ds-on-accent);
+  }
+  /* Sobre el vídeo de la intro, al revés: blanco por fuera */
+  .on-dark :focus-visible {
+    outline-color: var(--ds-on-accent);
+    box-shadow: 0 0 0 2px var(--ds-accent);
   }
 }
 
@@ -72,7 +118,13 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Botones rectos con borde fino; al pasar por encima se invierten */
+  /* Foco por dentro, para casillas pegadas unas a otras: blanco en el borde y oscuro dentro */
+  .focus-inset:focus-visible {
+    outline-offset: -4px;
+    box-shadow: inset 0 0 0 2px var(--ds-on-accent);
+  }
+
+  /* Botones rectos con borde fino; al pasar por encima se invierten. Letra de texto pequeño, no de etiqueta */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -83,7 +135,7 @@
     border: 1px solid currentColor;
     background: transparent;
     font-family: var(--ds-font-mono);
-    font-size: var(--ds-text-label);
+    font-size: var(--ds-text-small);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-decoration: none;
@@ -136,7 +188,7 @@
     background: transparent;
     color: inherit;
     font-family: var(--ds-font-mono);
-    font-size: var(--ds-text-label);
+    font-size: var(--ds-text-small);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
@@ -183,17 +235,16 @@
   }
 }
 .intro-in {
-  animation: intro-in 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: intro-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 .intro-logo {
-  animation-delay: 0.3s;
-  animation-duration: 1.6s;
+  animation-delay: 0.1s;
 }
 .intro-claim {
-  animation-delay: 1.3s;
+  animation-delay: 0.45s;
 }
 .intro-cta {
-  animation-delay: 1.8s;
+  animation-delay: 0.75s;
 }
 .intro-bounce {
   animation: intro-bounce 1.6s ease-in-out infinite;

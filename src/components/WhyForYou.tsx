@@ -19,8 +19,9 @@ export async function WhyForYou({ bike, searchParams }: { bike: Bike; searchPara
   const back = `/guia/resultados?${answersToSearch(answers)}`;
 
   return (
-    <section aria-labelledby="para-ti" className="border border-border bg-surface">
-      <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-2 py-2 border-b border-border">
+    <section aria-labelledby="para-ti" className="border border-border bg-white">
+      {/* Cabecera en coral (lo tuyo); el texto largo, sobre blanco, que se lee mejor */}
+      <header className="bg-choice text-on-choice flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-2 py-2 border-b border-border">
         <h2 id="para-ti" className="font-display text-h2 uppercase leading-none">Por qué es para ti</h2>
         <p className="eyebrow num">
           {index === 0 ? "La que más encaja" : `Recomendación ${index + 1} de ${results.length}`} · Encaje {r.score}/100
@@ -28,9 +29,22 @@ export async function WhyForYou({ bike, searchParams }: { bike: Bike; searchPara
       </header>
       <div className="lg:grid lg:grid-cols-12">
         <div className="lg:col-span-7 p-2 md:p-3 grid gap-2 content-start lg:border-r border-border">
-          {r.story.map((p) => (
-            <p key={p}>{p}</p>
-          ))}
+          {/* El primer párrafo a la vista y el resto plegado: así la bici no queda debajo de un muro de texto */}
+          {r.story[0] && <p>{r.story[0]}</p>}
+          {r.story.length > 1 && (
+            <details className="group">
+              <summary className="eyebrow inline-flex items-center gap-1 min-h-6 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <span className="link group-open:hidden">Leer la explicación completa</span>
+                <span className="link hidden group-open:inline">Plegar la explicación</span>
+                <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
+              </summary>
+              <div className="grid gap-2 mt-1">
+                {r.story.slice(1).map((p) => (
+                  <p key={p}>{p}</p>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
         <div className="lg:col-span-5 p-2 md:p-3 grid gap-3 content-start text-small border-t lg:border-t-0 border-border">
           <div>

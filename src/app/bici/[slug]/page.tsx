@@ -58,7 +58,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
       {/* Ficha: marco con cabecera, producto y filas de dato, como una etiqueta de producto */}
       <article className="border border-border bg-white" aria-labelledby="nombre">
         <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-2 py-2 border-b border-border">
-          <p className="font-display text-h2 uppercase leading-none">{bike.brand}</p>
+          <p className="font-display text-h4 uppercase leading-none">{bike.brand}</p>
           <p className="eyebrow">
             {[kind, bike.electric ? "Eléctrica" : null, bike.modelYear].filter(Boolean).join(" · ")}
           </p>
@@ -71,7 +71,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
 
           <dl className="lg:col-span-5 m-0 border-t border-border lg:border-t-0 [&>div:first-child]:border-t-0">
             <SpecRow label="Modelo">
-              <h1 id="nombre" className="font-display text-h3 leading-tight">{bike.name}</h1>
+              <h1 id="nombre" className="font-display text-h2 leading-tight">{bike.name}</h1>
             </SpecRow>
             <SpecRow label="Precio">
               <span className="font-display text-h3 num">{eur(detail.offer?.priceCents ?? bike.priceCents)}</span>

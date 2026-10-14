@@ -21,9 +21,8 @@ type Props = {
 export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, preload }: Props) {
   return (
     <article className="relative flex flex-col h-full bg-white">
-      <Link href={href} className="group flex flex-col flex-1 p-2 no-underline -outline-offset-2">
-        <div className="flex items-center justify-between gap-1 min-h-4 pr-12">
-          <QualityBadge bike={bike} />
+      <Link href={href} className="group flex flex-col flex-1 p-2 no-underline focus-inset">
+        <div className="flex items-center min-h-4 pr-12">
           {bike.electric && <span className="eyebrow">Eléctrica</span>}
         </div>
         <div className="aspect-[4/3] flex items-center justify-center my-1">
@@ -40,7 +39,9 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
         <div className="mt-auto grid gap-0.5">
           <p className="eyebrow">{bike.brand}</p>
           <h3 className="text-body font-display leading-tight group-hover:underline">{bike.name}</h3>
-          <p className="eyebrow num mt-0.5">{eur(bike.priceCents)}</p>
+          {/* El precio es el dato con el que se decide: pesa más que la marca */}
+          <p className="font-display font-semibold num mt-0.5">{eur(bike.priceCents)}</p>
+          <QualityBadge bike={bike} />
         </div>
       </Link>
       {children && <div className="px-2 pb-2 grid gap-1 text-small">{children}</div>}

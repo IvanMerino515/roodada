@@ -4,7 +4,7 @@ import { Icon } from "../../design-system/react";
 
 /** Celda de una barra de filtros: etiqueta visible a la izquierda y desplegable plano. */
 export function FilterSelect({
-  id, label, name, defaultValue, children, className = "",
+  id, label, name, defaultValue, children, className = "", extra = false,
 }: {
   id: string;
   label: string;
@@ -12,9 +12,11 @@ export function FilterSelect({
   defaultValue?: string;
   children: ReactNode;
   className?: string;
+  /** Filtro secundario: en móvil se pliega tras "Más filtros" (ver FilterForm) */
+  extra?: boolean;
 }) {
   return (
-    <div className={`relative flex items-center border-b border-border md:border-r ${className}`}>
+    <div className={`relative items-center border-b border-border md:border-r ${extra ? EXTRA : "flex"} ${className}`}>
       <label htmlFor={id} className="eyebrow pl-2 whitespace-nowrap">{label}:</label>
       <select id={id} name={name} defaultValue={defaultValue} className="select pl-1">
         {children}
@@ -23,6 +25,9 @@ export function FilterSelect({
     </div>
   );
 }
+
+/** Clases de una celda secundaria: oculta en móvil salvo con "Más filtros" abierto; siempre visible desde lg */
+export const EXTRA = "hidden group-data-open/filtros:flex lg:flex";
 
 /** Rejilla de celdas que se parte en 1 / 2 / n columnas según el ancho. */
 export function FilterRow({ children, label }: { children: ReactNode; label: string }) {

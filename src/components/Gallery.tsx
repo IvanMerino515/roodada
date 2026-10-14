@@ -33,7 +33,7 @@ export function Gallery({ photos, name }: { photos: Photo[]; name: string }) {
                 onClick={() => setCurrent(i)}
                 aria-pressed={i === current}
                 aria-label={`Ver foto ${i + 1} de ${shown.length}`}
-                className="block w-full p-1 cursor-pointer aria-pressed:shadow-[inset_0_-4px_0_var(--ds-accent)] hover:opacity-80 -outline-offset-2"
+                className="block w-full p-1 cursor-pointer aria-pressed:shadow-[inset_0_-4px_0_var(--ds-accent)] hover:opacity-80 focus-inset"
               >
                 <Image src={p.url} alt="" width={200} height={133} sizes="12vw" className="product w-full h-auto aspect-[3/2] object-contain" />
               </button>

@@ -85,7 +85,7 @@ async function Results({ params }: { params: Record<string, string | string[] | 
 function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string; top: boolean }) {
   const name = `${r.bike.brand} ${r.bike.name}`;
   return (
-    <article className={`grid lg:grid-cols-12 border border-border ${top ? "bg-surface" : "bg-white"}`} aria-labelledby={`pick-${r.bike.id}`}>
+    <article className={`grid lg:grid-cols-12 border border-border ${top ? "bg-choice text-on-choice" : "bg-white"}`} aria-labelledby={`pick-${r.bike.id}`}>
       <div className="lg:col-span-4 grid grid-cols-[auto_1fr] border-b lg:border-b-0 lg:border-r border-border">
         <p className="font-display text-h1 num leading-none p-2 border-r border-border" aria-hidden="true">{String(n).padStart(2, "0")}</p>
         <Link href={href} tabIndex={-1} aria-hidden="true" className="bg-white flex items-center justify-center p-2">
@@ -143,28 +143,38 @@ function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string;
 
 /** Tus respuestas, como la barra de filtros del catálogo. */
 function Summary({ answers: a }: { answers: Answers }) {
-  const items: [string, string][] = [
-    ["Roodador", LEVELS[a.nivel].label.replace("Roodador ", "")],
-    ...(a.uso === "infantil" ? [] : [["Eléctrica", ELECTRIC[a.electrica]] as [string, string]]),
-    ["Hasta", eur(a.presupuesto * 100)],
+  // [etiqueta, valor, valor que se entiende sin etiqueta (la línea de móvil)]
+  type Item = [string, string, string?];
+  const items: Item[] = [
+    ["Roodador", LEVELS[a.nivel].label.replace("Roodador ", ""), LEVELS[a.nivel].label],
+    ...(a.uso === "infantil" ? [] : [["Eléctrica", ELECTRIC[a.electrica], MOBILE_ELECTRIC[a.electrica]] as Item]),
+    ["Hasta", eur(a.presupuesto * 100), `Hasta ${eur(a.presupuesto * 100)}`],
     ["Uso", USES[a.uso].label],
-    ["Altura", `${a.altura} cm`],
-    ...(a.entrepierna ? [["Entrepierna", `${a.entrepierna} cm`] as [string, string]] : []),
-    ...(a.prioridades.length ? [["Prioridad", a.prioridades.map((p) => PRIORITIES[p].label).join(", ")] as [string, string]] : []),
+    ["Altura", `${a.altura} cm`, `Mides ${a.altura} cm`],
+    ...(a.entrepierna ? [["Entrepierna", `${a.entrepierna} cm`, `entrepierna ${a.entrepierna} cm`] as Item] : []),
+    ...(a.prioridades.length ? [["Prioridad", a.prioridades.map((p) => PRIORITIES[p].label).join(", ")] as Item] : []),
   ];
+  // En móvil, una línea de valores ("Novato · 1.500 € · Ciudad…") para no empujar las bicis bajo el pliegue;
+  // desde lg, la barra con etiqueta y valor como la de filtros del catálogo
   return (
-    <div className="border-y border-border grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-none lg:grid-flow-col lg:auto-cols-auto">
-      <dl className="contents">
-        {items.map(([k, v]) => (
-          <div key={k} className="flex items-center gap-1 min-h-6 px-2 border-b sm:border-r border-border lg:border-b-0">
-            <dt className="eyebrow">{k}:</dt>
-            <dd className="m-0 eyebrow">{v}</dd>
+    <div className="border-y border-border flex items-stretch">
+      <dl className="flex-1 flex flex-wrap items-center gap-x-1 px-2 py-1 m-0 lg:flex-nowrap lg:gap-0 lg:p-0">
+        {items.map(([k, v, alone], i) => (
+          <div key={k} className="flex items-center gap-1 lg:min-h-6 lg:px-2 lg:border-r border-border">
+            <dt className="eyebrow sr-only lg:not-sr-only">{k}:</dt>
+            <dd className="m-0 eyebrow">
+              <span className="lg:hidden">{alone ?? v}</span>
+              <span className="hidden lg:inline">{v}</span>
+              {i < items.length - 1 && <span aria-hidden="true" className="lg:hidden"> ·</span>}
+            </dd>
           </div>
         ))}
       </dl>
-      <Link href="/guia" className="eyebrow flex items-center justify-center min-h-6 px-2 bg-accent text-on-accent hover:underline">
-        Cambiar respuestas
+      <Link href="/guia" className="eyebrow flex items-center justify-center text-center min-h-6 px-2 bg-accent text-on-accent hover:underline">
+        Cambiar<span className="sr-only lg:not-sr-only">&nbsp;respuestas</span>
       </Link>
     </div>
   );
 }
+
+const MOBILE_ELECTRIC: Record<keyof typeof ELECTRIC, string> = { si: "Eléctrica", no: "Sin motor", igual: "Eléctrica o no" };

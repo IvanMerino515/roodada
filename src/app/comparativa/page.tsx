@@ -41,7 +41,7 @@ async function Comparison({ slugs }: { slugs: string[] }) {
       <div className="wrap grid-swiss gap-y-2 pt-4 pb-3 items-end">
         <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">Comparativa</h1>
         <p className="col-span-4 md:col-span-3 lg:col-span-4 text-small">
-          Marcada con ●, la mejor en cada dato que se puede medir. Las filas que cambian entre bicis, con fondo.
+          Marcada con ●, la mejor en cada dato que se puede medir. Las filas que cambian entre bicis, en blanco y con una raya a la izquierda.
           «{MISSING}» significa que la marca no lo da.
         </p>
       </div>
@@ -106,8 +106,8 @@ function Row({ row, bikes }: { row: SpecRow; bikes: Bike[] }) {
       : null;
   const allSame = new Set(values).size === 1;
   return (
-    <tr className={`border-t border-border ${!allSame ? "bg-surface" : ""}`}>
-      <th scope="row" className="eyebrow text-left font-normal px-2 py-1 border-r border-border">{row.label}</th>
+    <tr className={`border-t border-border ${!allSame ? "bg-white" : ""}`}>
+      <th scope="row" className={`eyebrow text-left font-normal px-2 py-1 border-r border-border ${!allSame ? "shadow-[inset_4px_0_0_var(--ds-accent)]" : ""}`}>{row.label}</th>
       {values.map((v, i) => {
         const isBest = best !== null && nums[i] === best;
         return (

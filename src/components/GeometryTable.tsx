@@ -32,7 +32,7 @@ export function GeometryTable({ geometry, highlight }: { geometry: BikeDetail["g
           <tr className="border-t border-border">
             <th scope="col" className="eyebrow text-left font-normal py-1 px-2">Talla</th>
             {geometry.map((s) => (
-              <th key={s.label} scope="col" className={`font-display text-body py-1 px-1 text-right ${s.label === highlight ? "bg-accent text-on-accent" : ""}`}>
+              <th key={s.label} scope="col" className={`font-display text-body py-1 px-1 text-right ${s.label === highlight ? "bg-choice text-on-choice" : ""}`}>
                 {s.label}
               </th>
             ))}
@@ -43,7 +43,7 @@ export function GeometryTable({ geometry, highlight }: { geometry: BikeDetail["g
             <tr key={key} className="border-t border-border">
               <th scope="row" className="eyebrow text-left font-normal py-1 px-2 whitespace-nowrap">{label} <span className="normal-case">({unit})</span></th>
               {geometry.map((s) => (
-                <td key={s.label} className={`py-1 px-1 text-right font-mono ${s.label === highlight ? "bg-accent text-on-accent" : ""}`}>
+                <td key={s.label} className={`py-1 px-1 text-right font-mono ${s.label === highlight ? "bg-choice text-on-choice" : ""}`}>
                   {s.values[key] ?? "–"}
                 </td>
               ))}

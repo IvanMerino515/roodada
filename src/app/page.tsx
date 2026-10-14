@@ -18,28 +18,13 @@ export default async function HomePage() {
     <>
       <Intro bikes={n(bikes.length)} />
 
-      {/* Qué es Roodada: titular a toda la retícula y cifras en la columna derecha */}
-      <section id="descubre" className="wrap grid-swiss gap-y-3 pt-6 pb-6 border-b border-border" aria-labelledby="titular">
-        <p className="col-span-4 md:col-span-4 lg:col-span-6 eyebrow">Guía de compra de bicicletas</p>
-        <p className="hidden md:block md:col-span-4 lg:col-span-6 eyebrow md:text-right num">
-          {n(bikes.length)} bicis · {brands} marcas
-        </p>
-        <h2 id="titular" className="col-span-4 md:col-span-8 lg:col-span-10 text-display uppercase mt-4 md:mt-8">
-          Encuentra la bici que te encaja
-        </h2>
-        <p className="col-span-4 md:col-span-5 lg:col-span-5 lg:col-start-1 mt-2">
-          Seis preguntas y te enseñamos las bicis que encajan con tu uso, tu altura y tu presupuesto, y por qué. Solo con
-          los datos que publica cada marca.
-        </p>
-      </section>
-
-      {/* Los dos caminos, uno al lado del otro */}
-      <section className="grid md:grid-cols-2 border-b border-border" aria-label="Por dónde empezar">
+      {/* Justo después de la intro, los dos caminos, uno al lado del otro */}
+      <section id="descubre" className="grid md:grid-cols-2 border-b border-border" aria-label="Por dónde empezar">
         <Link href="/guia" className="group bg-surface text-text p-2 md:p-4 grid gap-3 content-between min-h-50 no-underline">
           <span className="font-display text-display num leading-none" aria-hidden="true">01</span>
           <span className="grid gap-1">
             <span className="font-display text-h2 uppercase">Guía</span>
-            <span className="max-w-60">Responde seis preguntas y te decimos qué bicis te encajan, en qué talla y por qué.</span>
+            <span className="max-w-60">Unas pocas preguntas, más o menos según lo que sepas de bicis, y te decimos qué bicis te encajan, en qué talla y por qué.</span>
           </span>
           <span className="eyebrow flex items-center justify-between border-t border-current pt-1">
             Empezar la guía <span aria-hidden="true" className="transition-transform group-hover:translate-x-1 motion-reduce:transition-none">→</span>
@@ -57,8 +42,8 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* Método: etiqueta en la columna izquierda, tres pasos en la derecha */}
-      <section className="wrap grid-swiss gap-y-3 py-6 border-b border-border" aria-labelledby="metodo">
+      {/* Método: etiqueta en la columna izquierda, tres pasos y las cifras en la derecha */}
+      <section className="wrap grid-swiss gap-y-6 py-6 border-b border-border" aria-labelledby="metodo">
         <h2 id="metodo" className="col-span-4 md:col-span-2 lg:col-span-3 eyebrow">Cómo elegimos</h2>
         <ol className="col-span-4 md:col-span-6 lg:col-span-9 grid md:grid-cols-3 gap-3 list-none m-0 p-0">
           {STEPS.map(([title, text], i) => (
@@ -69,17 +54,13 @@ export default async function HomePage() {
             </li>
           ))}
         </ol>
-      </section>
-
-      {/* Cifras */}
-      <section className="wrap grid-swiss py-6 border-b border-border" aria-label="El catálogo en cifras">
-        <dl className="col-span-4 md:col-span-8 lg:col-span-9 lg:col-start-4 grid grid-cols-3 gap-2 m-0">
+        <dl aria-label="El catálogo en cifras" className="col-span-4 md:col-span-6 md:col-start-3 lg:col-span-9 lg:col-start-4 grid grid-cols-3 gap-3 m-0">
           {[
             [n(bikes.length), "bicis analizadas"],
             [n(brands), "marcas"],
             [n(sizes), "tallas con medidas"],
           ].map(([value, text]) => (
-            <div key={text} className="flex flex-col-reverse gap-1">
+            <div key={text} className="flex flex-col-reverse gap-1 border-t border-border pt-1">
               <dt className="eyebrow">{text}</dt>
               <dd className="m-0 font-display text-h1 num leading-none">{value}</dd>
             </div>
@@ -111,7 +92,7 @@ export default async function HomePage() {
 
 const STEPS: [string, string][] = [
   ["Tu talla primero", "Te decimos si la talla sale de la tabla oficial de la marca, si es una estimación o si estás entre dos."],
-  ["Lo que te importa", "Comodidad, ligereza, componentes, autonomía… Ordenamos según lo que tú eliges."],
+  ["Lo que te importa", "Ordenamos según el tipo de ciclista que eres y, si lo eliges, lo que más te importa: comodidad, ligereza, componentes, autonomía…"],
   ["Sin inventar", "Si una marca no publica un dato, te lo decimos. Nunca lo rellenamos."],
 ];
 

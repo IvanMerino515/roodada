@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { Icon } from "../../design-system/react";
+
 /**
  * Intro de la portada: vídeo a pantalla completa, el logo en blanco apareciendo en el centro,
  * el claim y el botón de empezar. El vídeo es decorativo (sin sonido) y se puede pausar;
@@ -26,7 +28,7 @@ export function Intro({ bikes }: { bikes: string }) {
   };
 
   return (
-    <section aria-labelledby="claim" className="relative h-svh min-h-100 overflow-hidden bg-black text-white">
+    <section id="intro" aria-labelledby="claim" className="on-dark relative h-svh min-h-100 overflow-hidden bg-black text-white">
       <video
         ref={video}
         className="absolute inset-0 size-full object-cover"
@@ -42,9 +44,9 @@ export function Intro({ bikes }: { bikes: string }) {
       >
         <source src="/intro.mp4" type="video/mp4" />
       </video>
-      {/* Velo para que el blanco se lea sobre el cielo del vídeo */}
-      <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
-      <div className="absolute inset-0 bg-linear-to-b from-black/30 via-transparent to-black/60" aria-hidden="true" />
+      {/* Velo ligero para no apagar el vídeo, y sombra solo detrás del texto para que el blanco se lea sobre el cielo */}
+      <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/10 to-black/55" aria-hidden="true" />
+      <div className="absolute inset-0 bg-radial from-black/45 via-black/20 via-45% to-transparent to-75%" aria-hidden="true" />
 
       <div className="relative h-full flex flex-col items-center justify-center gap-3 px-2 text-center">
         <Image
@@ -53,14 +55,14 @@ export function Intro({ bikes }: { bikes: string }) {
           width={800}
           height={200}
           preload
-          sizes="(min-width: 768px) 640px, 80vw"
-          className="intro-in intro-logo w-[min(80vw,640px)] h-auto"
+          sizes="(min-width: 768px) 400px, 70vw"
+          className="intro-in intro-logo w-[min(70vw,400px)] h-auto"
         />
-        <h1 id="claim" className="intro-in intro-claim text-h2 uppercase max-w-80">
+        <h1 id="claim" className="intro-in intro-claim text-display uppercase max-w-120">
           Deja de buscar. Empieza a rodar.
         </h1>
         <p className="intro-in intro-claim max-w-60">
-          Seis preguntas y te decimos qué bici te encaja, con datos reales de {bikes} bicis.
+          Unas pocas preguntas y te decimos qué bici te encaja, con datos reales de {bikes} bicis.
         </p>
         <Link
           href="/guia"
@@ -76,9 +78,17 @@ export function Intro({ bikes }: { bikes: string }) {
       <button
         type="button"
         onClick={toggle}
-        className="absolute bottom-2 right-2 eyebrow min-h-6 px-2 border border-white/60 hover:bg-white hover:text-black cursor-pointer"
+        aria-label={playing ? "Pausar vídeo" : "Reproducir vídeo"}
+        className="absolute bottom-2 right-2 grid place-items-center size-6 border border-white/60 hover:bg-white hover:text-black cursor-pointer"
       >
-        {playing ? "Pausar vídeo" : "Reproducir vídeo"}
+        {playing ? (
+          <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor" aria-hidden="true">
+            <rect x="6" y="5" width="4" height="14" />
+            <rect x="14" y="5" width="4" height="14" />
+          </svg>
+        ) : (
+          <Icon name="play" size={20} />
+        )}
       </button>
     </section>
   );

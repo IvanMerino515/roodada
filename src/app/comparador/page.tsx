@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Fragment, Suspense } from "react";
+import { Fragment, Suspense, type ReactNode } from "react";
 
 import { BikeCard, FeatureTile } from "@/components/BikeCard";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
-import { FilterRow, FilterSelect } from "@/components/FilterBar";
+import { EXTRA, FilterRow, FilterSelect } from "@/components/FilterBar";
+import { FilterForm, MoreFiltersToggle } from "@/components/FilterForm";
 import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
 } from "@/lib/catalogFilters";
-import { CATEGORY_LABEL, eur, label } from "@/lib/format";
-import type { Category } from "@/lib/catalog/types";
+import { CATEGORY_LABEL, decimal, eur, label } from "@/lib/format";
+import type { Bike, Category } from "@/lib/catalog/types";
 
 export const metadata: Metadata = {
   title: "Comparador de bicicletas",
@@ -38,6 +39,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const prices = f.precioMax && !PRICE_STEPS.includes(f.precioMax) ? [...PRICE_STEPS, f.precioMax].sort((a, b) => a - b) : PRICE_STEPS;
   const filtered = filtersToSearch({ ...f, orden: "calidad", pagina: 1 }) !== "";
+  const tiles = featureTiles(shown, page);
 
   return (
     <>
@@ -51,7 +53,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
         </p>
       </div>
 
-      <form method="get" action="/comparador" aria-label="Filtros" className="border-b border-border">
+      <FilterForm action="/comparador">
         <FilterRow label="Filtros principales">
           <FilterSelect id="categoria" name="categoria" label="Tipo" defaultValue={f.categoria ?? ""}>
             <option value="">Todos</option>
@@ -59,7 +61,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               <option key={k} value={k}>{CATEGORY_LABEL[k as Category]} ({n})</option>
             ))}
           </FilterSelect>
-          <FilterSelect id="electrica" name="electrica" label="Eléctrica" defaultValue={f.electrica ?? ""}>
+          <FilterSelect id="electrica" name="electrica" label="Eléctrica" defaultValue={f.electrica ?? ""} extra>
             <option value="">Igual</option>
             <option value="si">Sí</option>
             <option value="no">No</option>
@@ -70,7 +72,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               <option key={p} value={p}>{eur(p * 100)}</option>
             ))}
           </FilterSelect>
-          <FilterSelect id="marca" name="marca" label="Marca" defaultValue={f.marca ?? ""}>
+          <FilterSelect id="marca" name="marca" label="Marca" defaultValue={f.marca ?? ""} extra>
             <option value="">Todas</option>
             {facets.marca.map(([k, n]) => (
               <option key={k} value={k}>{facets.marcaNombre[k]} ({n})</option>
@@ -83,7 +85,8 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
           </FilterSelect>
         </FilterRow>
         <FilterRow label="Más filtros">
-          <div className="flex items-center border-b border-border md:border-r lg:border-b-0">
+          <MoreFiltersToggle active={[f.electrica, f.marca, f.q, f.material, f.suspension].filter(Boolean).length} />
+          <div className={`${EXTRA} items-center border-b border-border md:border-r lg:border-b-0`}>
             <label htmlFor="q" className="eyebrow pl-2 whitespace-nowrap">Buscar:</label>
             <input
               id="q"
@@ -94,13 +97,13 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               className="select normal-case tracking-normal placeholder:text-text placeholder:opacity-60"
             />
           </div>
-          <FilterSelect id="material" name="material" label="Cuadro" defaultValue={f.material ?? ""} className="lg:border-b-0">
+          <FilterSelect id="material" name="material" label="Cuadro" defaultValue={f.material ?? ""} className="lg:border-b-0" extra>
             <option value="">Todos</option>
             {facets.material.map(([k, n]) => (
               <option key={k} value={k}>{label(k)} ({n})</option>
             ))}
           </FilterSelect>
-          <FilterSelect id="suspension" name="suspension" label="Suspensión" defaultValue={f.suspension ?? ""} className="lg:border-b-0">
+          <FilterSelect id="suspension" name="suspension" label="Suspensión" defaultValue={f.suspension ?? ""} className="lg:border-b-0" extra>
             <option value="">Todas</option>
             {facets.suspension.map(([k, n]) => (
               <option key={k} value={k}>{label(k)} ({n})</option>
@@ -117,7 +120,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
             </button>
           </div>
         </FilterRow>
-      </form>
+      </FilterForm>
 
       <CompareProvider>
         <div className="wrap py-2">
@@ -133,11 +136,10 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
             <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 md:gap-2 list-none m-0 p-0">
               {shown.map((b, i) => (
                 <Fragment key={b.id}>
-                  {page === 1 && i === 1 && (
-                    <li>
-                      <FeatureTile eyebrow="¿No sabes cuál?" title="Seis preguntas y te decimos cuál te encaja" href="/guia" cta="Empezar la guía" className="h-full">
-                        Uso, presupuesto y altura: te enseñamos tu talla en cada bici y por qué te la recomendamos.
-                      </FeatureTile>
+                  {tiles.get(i) && (
+                    // Dos filas de alto: rompe el ritmo de la rejilla sin dejar huecos en 2, 3 o 4 columnas
+                    <li className="row-span-2">
+                      {tiles.get(i)}
                     </li>
                   )}
                   <li>
@@ -169,4 +171,36 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
       </CompareProvider>
     </>
   );
+}
+
+/**
+ * Casillas de color entre las bicis, cada una con un mensaje distinto: la guía, la mejor calidad-precio
+ * de la página y la talla. La clave es la posición de la bici delante de la que va.
+ */
+function featureTiles(shown: Bike[], page: number) {
+  const best = shown
+    .filter((b) => b.category !== "bici-infantil" && b.quality.coverage >= 0.8)
+    .sort((a, b) => b.quality.total - a.quality.total)[0];
+  const guide = (
+    <FeatureTile eyebrow="¿No sabes cuál?" title="Te decimos cuál te encaja" href="/guia" cta="Empezar la guía" className="h-full">
+      Unas pocas preguntas sobre uso, presupuesto y altura, y te enseñamos tus bicis con lo bueno y lo malo de cada una.
+    </FeatureTile>
+  );
+  const top = best && (
+    <FeatureTile eyebrow="Mejor calidad-precio de esta página" title={`${best.brand} ${best.name}`} href={`/bici/${best.slug}`} cta="Ver la ficha" className="h-full">
+      {decimal(best.quality.total)} sobre 10 por {eur(best.priceCents)}, frente a otras bicis de su tipo.
+    </FeatureTile>
+  );
+  const size = (
+    <FeatureTile eyebrow="¿Qué talla es la tuya?" title="Tu talla en cada bici" href="/guia" cta="Calcularla en la guía" className="h-full">
+      Con tu altura, y la entrepierna si la sabes, elegimos la talla de cada bici con la tabla oficial de la marca.
+    </FeatureTile>
+  );
+  const order = page === 1 ? [guide, top, size] : [top, guide];
+  const slots = [1, 9, 18];
+  const map = new Map<number, ReactNode>();
+  order.filter(Boolean).forEach((tile, i) => {
+    if (slots[i] < shown.length) map.set(slots[i], tile);
+  });
+  return map;
 }

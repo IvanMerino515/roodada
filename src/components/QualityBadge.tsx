@@ -18,8 +18,7 @@ export function QualityBadge({ bike, large = false }: { bike: Bike; large?: bool
   }
   return (
     <span className="eyebrow num">
-      <span aria-hidden="true">C/P {q}</span>
-      <span className="sr-only">Calidad-precio {q} sobre 10</span>
+      Calidad-precio {q}<span className="sr-only"> sobre 10</span>
     </span>
   );
 }
