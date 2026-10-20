@@ -8,6 +8,7 @@ Documento vivo. Si cambias la lógica de `src/lib/recommender/`, actualízalo. O
 |---|---|---|
 | Roodada Inicio | `/` | estático (cifras del catálogo en caché) |
 | Formulario | `/guia` | estático + `/api/contador` para el contador en vivo |
+| Guía conversacional (prueba) | `/guia/chat` | estático, sin indexar; la conversación va en el navegador + `/api/contador` y `/api/recomendar` |
 | Catálogo personalizado | `/guia/resultados?nivel=…&electrica=…&presupuesto=…&uso=…&altura=…[&entrepierna=…][&prioridades=…]` | dinámico, sin indexar |
 | Comparador | `/comparador?categoria=…&marca=…&orden=…&pagina=…` | dinámico |
 | Comparativa | `/comparativa?bicis=slug1,slug2` (2–4) | dinámico, sin indexar |
@@ -43,6 +44,20 @@ Orden: **tipo de Roodador → ¿eléctrica? → presupuesto (solo la bici) → u
 | Avanzado, experto | detallados: carretera rápida / cómoda, montaña suave / técnica… | opcional | hasta 2 |
 
 En infantil no se aplica el filtro de eléctrica ni se preguntan prioridades.
+
+## Guía conversacional (`/guia/chat`, prueba)
+
+Chat con el asistente «Radio» que sustituirá a las preguntas cerradas de `/guia` si la prueba convence. Todo en el navegador, sin IA ni backend: `src/lib/chat/` (funciones puras con tests).
+
+- `extract.ts` lee el texto libre (minúsculas, sin tildes, números en letra) y saca los datos. Solo apunta lo que la persona dice; un número suelto solo cuenta si se acaba de preguntar por ese dato.
+- `engine.ts` decide la respuesta: apunta, da un consejo parcial si un dato nuevo lo permite (`advice.ts`, uno por turno) y pregunta lo que falta, como mucho 3 datos por turno y con ejemplos que no obligan.
+- Primero el perfil (novato, curioso, avanzado, pro). Datos mínimos por perfil, cada uno suma un grupo: novato = uso, presupuesto, eléctrica, duración de las salidas y altura; curioso + material del cuadro y tipo de cambio; avanzado + uso concreto, desarrollos y peso; pro + campo libre con sugerencias. Infantil: solo uso, presupuesto y altura del niño.
+- «No sé» en eléctrica, material, cambio, desarrollos o peso vale como respuesta (queda abierto). En uso, presupuesto, altura o duración se le ayuda con ejemplos y no se cierra sin el dato.
+- Con todo, resume el perfil en una frase y pide confirmación. Luego pide a `/api/recomendar` las bicis reales (el mismo `recommend()` de `/guia/resultados`, con las respuestas traducidas por `toAnswers`), en el mismo orden: la que más encaja primero.
+- «Por qué te encaja» (`why.ts`): une lo que contó (presupuesto, altura, salidas, material, cambio, peso, uso, necesidades) con los datos publicados de cada bici; si la ficha no trae algo que pidió, lo dice. Añade un pro y los contras del recomendador sin repetir tema. Las demás bicis se presentan por lo que destacan (la más barata, la más ligera, la mejor montada…).
+- Aparte, plegado: qué buscar en otras tiendas (tipo de bici, gamas, ruedas y pesos orientativos de `advice.ts`, no datos de una bici concreta), qué confirmar y un consejo.
+- Sin IA: reglas sobre el texto. Si se conecta un modelo, iría en el servidor (clave fuera del navegador) y solo para entender el texto y redactar; las bicis y sus datos seguirían saliendo de `recommend()`.
+- Conversaciones de ejemplo de los cuatro perfiles en `demos.ts` (botones «Probar con un ejemplo»).
 
 ## Recomendador
 

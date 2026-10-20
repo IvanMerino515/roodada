@@ -272,3 +272,56 @@
     animation: none;
   }
 }
+
+/* Guía conversacional (/guia/chat): todo entra a saltos, con la curva del sistema (steps) */
+@keyframes chat-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--ds-space-1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.chat-in {
+  animation: chat-in var(--ds-duration-slow) var(--ds-ease) both;
+}
+/* «Radio está escribiendo»: tres casillas que se encienden por turnos */
+@keyframes chat-dot {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.chat-dot {
+  animation: chat-dot calc(var(--ds-duration-slow) * 3) var(--ds-ease) infinite;
+}
+.chat-dot:nth-child(2) {
+  animation-delay: var(--ds-duration-slow);
+}
+.chat-dot:nth-child(3) {
+  animation-delay: calc(var(--ds-duration-slow) * 2);
+}
+/* Dato recién apuntado en la ficha: se enciende en coral y se apaga */
+@keyframes chat-flash {
+  from {
+    background: var(--color-choice);
+  }
+  to {
+    background: transparent;
+  }
+}
+.chat-flash {
+  animation: chat-flash calc(var(--ds-duration-slow) * 4) var(--ds-ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-in,
+  .chat-dot,
+  .chat-flash {
+    animation: none;
+  }
+}
