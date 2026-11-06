@@ -12,9 +12,13 @@ import { SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getCatalog } from "@/lib/catalog/load";
 import { CATEGORY_LABEL, day, DISCIPLINE_LABEL, eur } from "@/lib/format";
 
-// Todas las fichas se generan en el build: son las páginas que posiciona Google
+// En el build solo se generan unas pocas fichas: las 2.100+ de golpe agotan la memoria del build de
+// Vercel. El resto se genera en la primera visita y queda en caché igual que si fuera del build
+// (dynamicParams sigue activo), así que Google recibe siempre una página ya hecha.
+const FICHAS_EN_BUILD = 100;
+
 export async function generateStaticParams() {
-  return (await getCatalog()).map((b) => ({ slug: b.slug }));
+  return (await getCatalog()).slice(0, FICHAS_EN_BUILD).map((b) => ({ slug: b.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/bici/[slug]">): Promise<Metadata> {
