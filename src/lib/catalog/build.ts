@@ -14,6 +14,7 @@ export type ListingRow = {
   brand_name: string;
   brand_slug: string;
   category_slug: string;
+  category_kind: string;
   is_electric: boolean;
   frame_material: string | null;
   weight_g: number | null;
@@ -100,7 +101,8 @@ export function buildCatalog(rows: ListingRow[], sizeRows: SizeRow[], formula: Q
     sizesByBike.set(r.variant_id, list);
   }
 
-  const bikes = rows.map((r) => {
+  // Defensa en profundidad: aunque load.ts ya filtra, aquí solo entran bicis (nunca cascos ni accesorios)
+  const bikes = rows.filter((r) => r.category_kind === "bici").map((r) => {
     const specs = mapSpecs(r.specs);
     return {
       id: r.variant_id,

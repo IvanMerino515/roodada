@@ -10,11 +10,13 @@ export function supabase() {
 }
 
 // PostgREST devuelve como mucho 1.000 filas por petición: se pide por páginas.
+// match: filtros de igualdad (p. ej. { category_kind: "bici" }), aplicados en la base.
 export async function selectAll<T>(
   table: string,
   columns: string,
   orderBy: string,
   pageSize = 1000,
+  match: Record<string, string | number | boolean> = {},
 ): Promise<T[]> {
   const db = supabase();
   const rows: T[] = [];
@@ -22,6 +24,7 @@ export async function selectAll<T>(
     const { data, error } = await db
       .from(table)
       .select(columns)
+      .match(match)
       .order(orderBy)
       .range(from, from + pageSize - 1);
     if (error) throw new Error(`${table}: ${error.message}`);

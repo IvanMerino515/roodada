@@ -7,7 +7,7 @@ import { buildCatalog, type ListingRow, type SizeRow } from "./build";
 import type { Bike } from "./types";
 
 const LISTING_COLUMNS =
-  "variant_id,slug,variant_name,model_id,model_name,brand_name,brand_slug,category_slug,is_electric," +
+  "variant_id,slug,variant_name,model_id,model_name,brand_name,brand_slug,category_slug,category_kind,is_electric," +
   "frame_material,weight_g,model_year,best_final_price_cents,in_stock_offers,main_image_url,official_url,specs";
 const SIZE_COLUMNS =
   "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm,standover_mm:geometry->standover_mm";
@@ -23,13 +23,14 @@ async function loadFormula(): Promise<QualityFormula> {
   return { version: data.version, weights: data.weights as Record<string, number> };
 }
 
-/** Catálogo completo (≈1.600 bicis) en caché: el recomendador y el comparador trabajan sobre él. */
+/** Catálogo completo de bicis (≈2.100) en caché: el recomendador y el comparador trabajan sobre él.
+ *  Solo categorías de bici: los cascos y demás accesorios tienen su propia carga (loadCascos.ts). */
 export async function getCatalog(): Promise<Bike[]> {
   "use cache";
   cacheLife("hours");
   cacheTag("catalogo");
   const [rows, sizes, formula] = await Promise.all([
-    selectAll<ListingRow>("variant_listing", LISTING_COLUMNS, "variant_id"),
+    selectAll<ListingRow>("variant_listing", LISTING_COLUMNS, "variant_id", 1000, { category_kind: "bici" }),
     selectAll<SizeRow>("variant_sizes", SIZE_COLUMNS, "id"),
     loadFormula(),
   ]);

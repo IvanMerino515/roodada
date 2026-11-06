@@ -9,7 +9,7 @@ const c = new Client({ connectionString: process.env.ANALYSIS_DATABASE_URL, ssl:
 await c.connect();
 await c.query("set session characteristics as transaction read only");
 const { rows: listing } = await c.query(`
-  select variant_id::int, slug, variant_name, model_id::int, model_name, brand_name, brand_slug, category_slug, is_electric,
+  select variant_id::int, slug, variant_name, model_id::int, model_name, brand_name, brand_slug, category_slug, category_kind, is_electric,
          frame_material, weight_g, model_year, best_final_price_cents, in_stock_offers::int, main_image_url, official_url, specs
   from variant_listing where variant_id % 3 = 0 order by variant_id`);
 for (const r of listing) r.specs = Object.fromEntries(Object.entries(r.specs ?? {}).filter(([k]) => KEEP.includes(k)));
