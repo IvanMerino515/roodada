@@ -25,7 +25,7 @@ export const DISCIPLINE_LABEL: Record<Discipline, string> = {
   competicion: "Competición", aero: "Aero", endurance: "Endurance", triatlon: "Triatlón",
   ciclocross: "Ciclocross", gravel: "Gravel", xc: "XC", trail: "Trail", enduro: "Enduro",
   descenso: "Descenso", dirt: "Dirt", fat: "Fat bike", urbana: "Urbana", trekking: "Trekking",
-  cargo: "Cargo", infantil: "Infantil",
+  cargo: "Cargo", plegable: "Plegable", infantil: "Infantil",
 };
 
 const LABELS: Record<string, string> = {

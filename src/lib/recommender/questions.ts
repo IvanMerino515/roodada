@@ -15,7 +15,7 @@ export const USES = {
   montana: { label: "Montaña", hint: "Pistas, senderos y monte", category: "bici-mtb", disciplines: ["xc", "trail", "enduro", "descenso"], audience: "basico" },
   "montana-suave": { label: "Montaña suave", hint: "Pistas y senderos fáciles, rodar rápido", category: "bici-mtb", disciplines: ["xc"], audience: "detallado" },
   "montana-tecnica": { label: "Montaña técnica", hint: "Bajadas, raíces y piedras", category: "bici-mtb", disciplines: ["trail", "enduro", "descenso"], audience: "detallado" },
-  ciudad: { label: "Ciudad y desplazamientos", hint: "Ir al trabajo, recados, día a día", category: "bici-urbana", disciplines: ["urbana", "cargo"], audience: "todos" },
+  ciudad: { label: "Ciudad y desplazamientos", hint: "Ir al trabajo, recados, día a día", category: "bici-urbana", disciplines: ["urbana", "cargo", "plegable"], audience: "todos" },
   paseo: { label: "Viajes y paseos", hint: "Rutas tranquilas, cicloturismo", category: "bici-urbana", disciplines: ["trekking"], audience: "todos" },
   infantil: { label: "Para un niño o niña", hint: "Según su altura", category: "bici-infantil", disciplines: ["infantil"], audience: "todos" },
 } as const satisfies Record<string, { label: string; hint: string; category: Category; disciplines: Discipline[]; audience: "basico" | "detallado" | "todos" }>;

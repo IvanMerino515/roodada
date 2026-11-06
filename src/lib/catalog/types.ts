@@ -6,7 +6,7 @@ export type Category = "bici-carretera" | "bici-gravel" | "bici-mtb" | "bici-urb
 export type Discipline =
   | "competicion" | "aero" | "endurance" | "triatlon" | "ciclocross" | "gravel"
   | "xc" | "trail" | "enduro" | "descenso" | "dirt" | "fat"
-  | "urbana" | "trekking" | "cargo" | "infantil";
+  | "urbana" | "trekking" | "cargo" | "plegable" | "infantil";
 
 export type Specs = {
   discipline: Discipline;
