@@ -10,6 +10,8 @@ export type SpecRow = {
   /** Para resaltar la mejor en la comparativa: mayor o menor es mejor */
   better?: "higher" | "lower";
   numeric?: (b: Bike) => number | null;
+  /** Aclaración visible bajo el valor (p. ej. que el dato es una estimación) */
+  note?: (b: Bike) => string | null;
 };
 
 const mm = (v: number | null) => (v === null ? null : `${v} mm`);
@@ -21,7 +23,15 @@ export const SPEC_ROWS: SpecRow[] = [
   { group: "General", label: "Tipo", value: (b) => `${CATEGORY_LABEL[b.category]} · ${DISCIPLINE_LABEL[b.specs.discipline]}` },
   { group: "General", label: "Eléctrica", value: (b) => yes(b.electric) },
   { group: "General", label: "Cuadro", value: (b) => label(b.frameMaterial) },
-  { group: "General", label: "Peso", value: (b) => kg(b.weightG), better: "lower", numeric: (b) => b.weightG },
+  {
+    group: "General",
+    label: "Peso",
+    value: (b) => kg(b.weightG) ?? b.weightEstimate?.label ?? null,
+    better: "lower",
+    // La estimación no compite por "la más ligera": solo pesos oficiales
+    numeric: (b) => b.weightG,
+    note: (b) => (b.weightG === null && b.weightEstimate ? `Peso estimado: ${b.brand} no publica el peso oficial de esta bici.` : null),
+  },
   { group: "General", label: "Año", value: (b) => (b.modelYear ? String(b.modelYear) : null) },
   { group: "Transmisión", label: "Grupo", value: (b) => b.specs.groupset },
   { group: "Transmisión", label: "Gama", value: (b) => (b.tier ? TIER_LABELS[b.tier] : null), better: "higher", numeric: (b) => b.tier },

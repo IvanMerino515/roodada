@@ -25,6 +25,13 @@ export type ListingRow = {
   specs: Record<string, unknown> | null;
 };
 
+/** Peso estimado de `variants` (scripts/catalogo/modelo_peso.py en la base de datos) */
+export type WeightEstimateRow = {
+  id: number;
+  weight_estimated_g: number | null;
+  weight_estimate_label: string | null;
+};
+
 export type SizeRow = {
   variant_id: number;
   size_label: string;
@@ -92,7 +99,18 @@ export function compareSizes(a: Size, b: Size) {
 
 export const cohortKey = (b: Pick<Bike, "category" | "electric">) => `${b.category}|${b.electric ? "e" : "m"}`;
 
-export function buildCatalog(rows: ListingRow[], sizeRows: SizeRow[], formula: QualityFormula): Bike[] {
+export function buildCatalog(
+  rows: ListingRow[],
+  sizeRows: SizeRow[],
+  formula: QualityFormula,
+  estimateRows: WeightEstimateRow[] = [],
+): Bike[] {
+  const estimates = new Map<number, { grams: number; label: string }>();
+  for (const e of estimateRows) {
+    if (e.weight_estimated_g !== null && e.weight_estimate_label) {
+      estimates.set(e.id, { grams: e.weight_estimated_g, label: e.weight_estimate_label });
+    }
+  }
   const sizesByBike = new Map<number, Size[]>();
   for (const r of sizeRows) {
     const list = sizesByBike.get(r.variant_id) ?? [];
@@ -114,6 +132,8 @@ export function buildCatalog(rows: ListingRow[], sizeRows: SizeRow[], formula: Q
       electric: r.is_electric,
       frameMaterial: r.frame_material,
       weightG: r.weight_g,
+      // Solo si falta el oficial: la estimación nunca sustituye a un dato de la marca
+      weightEstimate: r.weight_g === null ? (estimates.get(r.variant_id) ?? null) : null,
       modelYear: r.model_year,
       priceCents: r.best_final_price_cents ?? 0,
       // Sin precio publicado no se puede recomendar por presupuesto: cuenta como no disponible

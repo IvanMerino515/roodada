@@ -3,7 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { DEFAULT_FORMULA, type QualityFormula } from "../recommender/quality";
 import { selectAll, supabase } from "../supabase/server";
-import { buildCatalog, type ListingRow, type SizeRow } from "./build";
+import { buildCatalog, type ListingRow, type SizeRow, type WeightEstimateRow } from "./build";
 import type { Bike } from "./types";
 
 const LISTING_COLUMNS =
@@ -28,12 +28,13 @@ export async function getCatalog(): Promise<Bike[]> {
   "use cache";
   cacheLife("hours");
   cacheTag("catalogo");
-  const [rows, sizes, formula] = await Promise.all([
+  const [rows, sizes, formula, estimates] = await Promise.all([
     selectAll<ListingRow>("variant_listing", LISTING_COLUMNS, "variant_id"),
     selectAll<SizeRow>("variant_sizes", SIZE_COLUMNS, "id"),
     loadFormula(),
+    selectAll<WeightEstimateRow>("variants", "id,weight_estimated_g,weight_estimate_label", "id"),
   ]);
-  return buildCatalog(rows, sizes, formula);
+  return buildCatalog(rows, sizes, formula, estimates);
 }
 
 export async function getBike(slug: string): Promise<Bike | undefined> {

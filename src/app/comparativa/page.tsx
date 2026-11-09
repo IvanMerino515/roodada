@@ -110,10 +110,12 @@ function Row({ row, bikes }: { row: SpecRow; bikes: Bike[] }) {
       <th scope="row" className={`eyebrow text-left font-normal px-2 py-1 border-r border-border ${!allSame ? "shadow-[inset_4px_0_0_var(--ds-accent)]" : ""}`}>{row.label}</th>
       {values.map((v, i) => {
         const isBest = best !== null && nums[i] === best;
+        const note = row.note?.(bikes[i]);
         return (
           <td key={bikes[i].id} className={`px-2 py-1 border-r border-border last:border-r-0 ${v === null ? "italic" : ""} ${isBest ? "font-bold" : ""}`}>
             {v ?? MISSING}
             {isBest && <> <span aria-hidden="true">●</span><span className="sr-only">(la mejor)</span></>}
+            {note && <span className="block font-normal">{note}</span>}
           </td>
         );
       })}

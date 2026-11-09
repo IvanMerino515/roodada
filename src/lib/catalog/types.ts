@@ -57,6 +57,8 @@ export type Bike = {
   electric: boolean;
   frameMaterial: string | null;
   weightG: number | null;
+  /** Peso calculado por el modelo de la base cuando la marca no publica el oficial; null si hay oficial */
+  weightEstimate: { grams: number; label: string } | null;
   modelYear: number | null;
   priceCents: number;
   inStock: boolean;

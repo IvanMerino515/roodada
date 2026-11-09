@@ -28,9 +28,11 @@ export function SpecTable({ bike }: { bike: Bike }) {
               .filter((r) => r.group === g)
               .map((r) => {
                 const v = r.value(bike);
+                const note = r.note?.(bike);
                 return (
                   <SpecRow key={r.label} label={r.label} muted={v === null}>
                     {v ?? MISSING}
+                    {note && <span className="block text-small">{note}</span>}
                   </SpecRow>
                 );
               })}
