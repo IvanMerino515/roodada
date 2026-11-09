@@ -16,6 +16,7 @@ const imageHosts = [
   "www.cannondale.com",
   "static.scott-sports.com", // <-- añadido por edgar
   "file.cube.eu", // <-- añadido por edgar
+  "www.cervelo.com", // <-- añadido por edgar
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
