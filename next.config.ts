@@ -19,6 +19,7 @@ const imageHosts = [
   "www.cervelo.com", // <-- añadido por edgar
   "cdn.shopify.com", // <-- añadido por edgar
   "es.bmc-switzerland.com", //añadido por edgar.
+  "www.santacruzbicycles.com" //añadido por edgar.
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
