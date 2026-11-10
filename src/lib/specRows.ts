@@ -16,6 +16,22 @@ export type SpecRow = {
 
 const mm = (v: number | null) => (v === null ? null : `${v} mm`);
 const yes = (v: boolean | null) => (v === null ? null : v ? "Sí" : "No");
+const SYSTEM_LABEL: Record<string, string> = { di2: "Di2", axs: "AXS", eps: "EPS" };
+const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+/** «Di2 (electrónico)», «105 (mecánico)», «Electrónico», «Mecánico» */
+function shiftingText(b: Bike): string | null {
+  const { shifting, shiftingSystem, groupset, groupsetBrand } = b.specs;
+  if (shifting === "electronico") {
+    const sys = shiftingSystem ? SYSTEM_LABEL[shiftingSystem] : undefined;
+    return sys ? `${sys} (electrónico)` : "Electrónico";
+  }
+  if (shifting === "mecanico") {
+    const line = groupset && groupsetBrand ? groupset.replace(new RegExp(`^${groupsetBrand}\\s+`, "i"), "").trim() : groupset;
+    return line && line.toLowerCase() !== (groupsetBrand ?? "").toLowerCase() ? `${line} (mecánico)` : "Mecánico";
+  }
+  return null;
+}
 
 export const SPEC_ROWS: SpecRow[] = [
   { group: "General", label: "Precio", value: (b) => eur(b.priceCents), better: "lower", numeric: (b) => b.priceCents },
@@ -34,8 +50,8 @@ export const SPEC_ROWS: SpecRow[] = [
   },
   { group: "General", label: "Año", value: (b) => (b.modelYear ? String(b.modelYear) : null) },
   { group: "Transmisión", label: "Grupo", value: (b) => b.specs.groupset },
-  { group: "Transmisión", label: "Gama", value: (b) => (b.tier ? TIER_LABELS[b.tier] : null), better: "higher", numeric: (b) => b.tier },
-  { group: "Transmisión", label: "Cambio", value: (b) => label(b.specs.shifting) },
+  { group: "Transmisión", label: "Gama", value: (b) => (b.tier ? cap(TIER_LABELS[b.tier]) : null), better: "higher", numeric: (b) => b.tier },
+  { group: "Transmisión", label: "Cambio", value: (b) => shiftingText(b) },
   { group: "Transmisión", label: "Velocidades", value: (b) => (b.specs.speeds ? String(b.specs.speeds) : null) },
   { group: "Transmisión", label: "Platos", value: (b) => label(b.specs.drivetrain) },
   { group: "Frenos y ruedas", label: "Frenos", value: (b) => label(b.specs.brakes) },

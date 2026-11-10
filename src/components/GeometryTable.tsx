@@ -20,6 +20,11 @@ const GEOMETRY_LABELS: [key: string, label: string, unit: string][] = [
   ["dropper_travel_mm", "Recorrido de tija", "mm"],
 ];
 
+/** Tallas con alguna medida de la tabla publicada (contador del desplegable de la ficha). */
+export function geometrySizeCount(geometry: BikeDetail["geometry"]): number {
+  return geometry.filter((s) => GEOMETRY_LABELS.some(([key]) => s.values[key] !== null && s.values[key] !== undefined)).length;
+}
+
 /** Geometría por talla. Solo muestra las medidas que la marca publica para alguna talla. */
 export function GeometryTable({ geometry, highlight }: { geometry: BikeDetail["geometry"]; highlight?: string }) {
   const rows = GEOMETRY_LABELS.filter(([key]) => geometry.some((s) => s.values[key] !== null && s.values[key] !== undefined));

@@ -47,6 +47,17 @@ export type SizeRow = {
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v : null);
 
+const SYSTEMS = ["di2", "axs", "eps", "electronico_otro"] as const;
+// specs.shifting = sistema (mecanico, di2, axs, eps, electronico_otro); specs.shifting_type = tipo (mecanico, electronico)
+function mapShifting(s: Record<string, unknown>): Pick<Specs, "shifting" | "shiftingSystem"> {
+  const sys = str(s.shifting);
+  const type = str(s.shifting_type) ?? (sys === null ? null : sys === "mecanico" ? "mecanico" : "electronico");
+  return {
+    shifting: type === "mecanico" || type === "electronico" ? type : null,
+    shiftingSystem: (SYSTEMS as readonly string[]).includes(sys ?? "") ? (sys as Specs["shiftingSystem"]) : null,
+  };
+}
+
 export function mapSpecs(raw: Record<string, unknown> | null): Specs {
   const s = raw ?? {};
   const motor = (s.motor ?? {}) as Record<string, unknown>;
@@ -54,7 +65,7 @@ export function mapSpecs(raw: Record<string, unknown> | null): Specs {
     discipline: (str(s.discipline) ?? "urbana") as Specs["discipline"],
     groupset: str(s.groupset),
     groupsetBrand: str(s.groupset_brand),
-    shifting: str(s.shifting) as Specs["shifting"],
+    ...mapShifting(s),
     speeds: num(s.speeds),
     drivetrain: str(s.drivetrain),
     brakes: str(s.brakes),

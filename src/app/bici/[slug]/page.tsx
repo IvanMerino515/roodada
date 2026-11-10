@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { Gallery } from "@/components/Gallery";
-import { GeometryTable } from "@/components/GeometryTable";
+import { GeometryTable, geometrySizeCount } from "@/components/GeometryTable";
 import { QualityBadge } from "@/components/QualityBadge";
 import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
@@ -40,6 +40,8 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
   // Mismo orden de tallas que el catálogo (por altura), no el sort_order de la base
   const order = new Map(bike.sizes.map((s, i) => [s.label, i]));
   const geometry = [...detail.geometry].sort((a, b) => (order.get(a.label) ?? 99) - (order.get(b.label) ?? 99));
+  // Tallas con alguna medida publicada (contador del desplegable de geometría)
+  const geoSizes = geometrySizeCount(geometry);
   const photos = detail.photos.length ? detail.photos : [{ url: bike.imageUrl, alt: null }];
   const name = `${bike.brand} ${bike.name}`;
   const kind = bike.specs.discipline === "infantil" ? CATEGORY_LABEL[bike.category] : DISCIPLINE_LABEL[bike.specs.discipline];
@@ -114,10 +116,15 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
         <SpecTable bike={bike} />
       </section>
 
-      <section aria-labelledby="geo" className="border border-border">
-        <h2 id="geo" className="font-display text-h3 uppercase px-2 py-2">Geometría</h2>
+      <details className="border border-border group">
+        <summary className="flex items-center justify-between gap-2 px-2 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+          <h2 id="geo" className="font-display text-h3 uppercase">Geometría</h2>
+          <span className="eyebrow num">
+            {geoSizes > 0 ? `${geoSizes} ${geoSizes === 1 ? "talla" : "tallas"}` : "No publicada"} <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
+          </span>
+        </summary>
         <GeometryTable geometry={geometry} />
-      </section>
+      </details>
 
       {detail.components.length > 0 && (
         <details className="border border-border group">

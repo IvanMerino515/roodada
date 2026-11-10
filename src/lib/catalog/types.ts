@@ -13,6 +13,7 @@ export type Specs = {
   groupset: string | null;
   groupsetBrand: string | null;
   shifting: "mecanico" | "electronico" | null;
+  shiftingSystem: "di2" | "axs" | "eps" | "electronico_otro" | null;
   speeds: number | null;
   drivetrain: string | null;
   brakes: string | null;
