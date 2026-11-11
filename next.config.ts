@@ -27,7 +27,8 @@ const imageHosts = [
   "www.ktm-bikes.at", //añadido por edgar.
   "images.cyclingfactory.be", // añadido por edgar.
   "wilier-cdn.thron.com", //añadido por edgar.
-  "api.wilier.com", //añadido por edgar.
+  "api.wilier.com",
+  "www.commencal.com" //añadido por edgar.
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
