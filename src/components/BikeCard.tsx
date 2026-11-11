@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import type { Bike } from "@/lib/catalog/types";
 import { eur } from "@/lib/format";
 import { QualityBadge } from "./QualityBadge";
+import { sinOptimizar } from "@/lib/imagen";
 
 type Props = {
   bike: Bike;
@@ -29,6 +30,7 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
         <div className="relative aspect-[4/3] my-1">
           <Image
             src={bike.imageUrl}
+            unoptimized={sinOptimizar(bike.imageUrl)}
             alt=""
             width={600}
             height={400}

@@ -9,6 +9,7 @@ import { getCatalog } from "@/lib/catalog/load";
 import { eur } from "@/lib/format";
 import { recommend, type Recommendation } from "@/lib/recommender";
 import { answersToSearch, ELECTRIC, LEVELS, PRIORITIES, USES, parseAnswers, type Answers } from "@/lib/recommender/questions";
+import { sinOptimizar } from "@/lib/imagen";
 
 export const metadata: Metadata = {
   title: "Tus bicis recomendadas",
@@ -89,7 +90,7 @@ function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string;
       <div className="lg:col-span-4 grid grid-cols-[auto_1fr] border-b lg:border-b-0 lg:border-r border-border">
         <p className="font-display text-h1 num leading-none p-2 border-r border-border" aria-hidden="true">{String(n).padStart(2, "0")}</p>
         <Link href={href} tabIndex={-1} aria-hidden="true" className="bg-white flex items-center justify-center p-2">
-          <Image src={r.bike.imageUrl} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
+          <Image src={r.bike.imageUrl} unoptimized={sinOptimizar(r.bike.imageUrl)} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
         </Link>
       </div>
 

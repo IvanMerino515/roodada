@@ -7,6 +7,7 @@ import { getCatalog } from "@/lib/catalog/load";
 import type { Bike } from "@/lib/catalog/types";
 import { MISSING } from "@/lib/format";
 import { rowsFor, type SpecRow } from "@/lib/specRows";
+import { sinOptimizar } from "@/lib/imagen";
 
 export const metadata: Metadata = { title: "Comparativa", robots: { index: false } };
 
@@ -56,7 +57,7 @@ async function Comparison({ slugs }: { slugs: string[] }) {
                   <th key={b.id} scope="col" className="align-top text-left font-normal border-r border-border last:border-r-0 p-0">
                     <Link href={`/bici/${b.slug}`} className="group grid gap-1 p-2 no-underline">
                       <span className="block bg-white">
-                        <Image src={b.imageUrl} alt="" width={300} height={200} sizes="25vw" className="product w-full h-auto aspect-[3/2] object-contain" />
+                        <Image src={b.imageUrl} unoptimized={sinOptimizar(b.imageUrl)} alt="" width={300} height={200} sizes="25vw" className="product w-full h-auto aspect-[3/2] object-contain" />
                       </span>
                       <span className="eyebrow">{b.brand}</span>
                       <span className="font-display text-body leading-tight group-hover:underline">{b.name}</span>
