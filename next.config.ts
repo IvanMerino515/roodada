@@ -31,7 +31,7 @@ const imageHosts = [
   "www.commencal.com",
   "cdn.rosebikes.de", //añadido por edgar.
   "storage.rosebikes.com", //añadido por edgar.
-  "www.bike-discount.de" //añadido por edgar.
+  "www.bike-discount.de", //añadido por edgar.
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
