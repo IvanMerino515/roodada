@@ -27,12 +27,14 @@ const imageHosts = [
   "www.ktm-bikes.at", //añadido por edgar.
   "images.cyclingfactory.be", // añadido por edgar.
   "wilier-cdn.thron.com", //añadido por edgar.
-  "api.wilier.com",
-  "www.commencal.com",
+  "api.wilier.com", //añadido por edgar.
+  "www.commencal.com", //añadido por edgar.
   "cdn.rosebikes.de", //añadido por edgar.
   "storage.rosebikes.com", //añadido por edgar.
-  "www.bike-discount.de",
-  "www.lookcycle.com" //añadido por edgar.
+  "www.bike-discount.de", //añadido por edgar.
+  "www.lookcycle.com", //añadido por edgar.
+  "storage.googleapis.com", //  añadido por edgar.
+  "www.yt-industries.com", //añadido por edgar.
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
