@@ -37,6 +37,8 @@ const imageHosts = [
   "www.yt-industries.com", //añadido por edgar.
   "cdn11.bigcommerce.com", //añadido por edgar.
   "cdn.shopify.com", //añadido por edgar.
+  "kdnsbikes.com", //añadido por edgar.
+  "www.stevensbikes.de", //añadido por edgar.
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
