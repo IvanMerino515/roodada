@@ -9,23 +9,39 @@ export function supabase() {
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-// PostgREST devuelve como mucho 1.000 filas por petición: se pide por páginas.
+// PostgREST devuelve como mucho 1.000 filas por petición: se pide por páginas. La primera dice cuántas
+// filas hay y el resto se piden a la vez, de PARALLEL en PARALLEL (en fila, las 19 páginas de tallas
+// tardaban 6,5 s; a la vez, 0,4 s). El tope evita lanzar cientos de peticiones durante la compilación,
+// donde varios procesos cargan el catálogo al mismo tiempo.
+const PARALLEL = 6;
+
 export async function selectAll<T>(
   table: string,
   columns: string,
   orderBy: string,
-  pageSize = 1000,
+  options: { pageSize?: number; notNull?: string } = {},
 ): Promise<T[]> {
+  const { pageSize = 1000, notNull } = options;
   const db = supabase();
-  const rows: T[] = [];
-  for (let from = 0; ; from += pageSize) {
-    const { data, error } = await db
-      .from(table)
-      .select(columns)
-      .order(orderBy)
-      .range(from, from + pageSize - 1);
-    if (error) throw new Error(`${table}: ${error.message}`);
-    rows.push(...(data as T[]));
-    if (!data || data.length < pageSize) return rows;
+  const page = (from: number, count = false) => {
+    let q = db.from(table).select(columns, count ? { count: "exact" } : undefined);
+    if (notNull) q = q.not(notNull, "is", null);
+    return q.order(orderBy).range(from, from + pageSize - 1);
+  };
+
+  const first = await page(0, true);
+  if (first.error) throw new Error(`${table}: ${first.error.message}`);
+  const rows = [...((first.data ?? []) as T[])];
+  const total = first.count ?? rows.length;
+  const starts: number[] = [];
+  for (let from = pageSize; from < total; from += pageSize) starts.push(from);
+
+  for (let i = 0; i < starts.length; i += PARALLEL) {
+    const batch = await Promise.all(starts.slice(i, i + PARALLEL).map((from) => page(from)));
+    for (const r of batch) {
+      if (r.error) throw new Error(`${table}: ${r.error.message}`);
+      rows.push(...((r.data ?? []) as T[]));
+    }
   }
+  return rows;
 }

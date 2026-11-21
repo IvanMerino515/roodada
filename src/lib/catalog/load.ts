@@ -3,12 +3,13 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { DEFAULT_FORMULA, type QualityFormula } from "../recommender/quality";
 import { selectAll, supabase } from "../supabase/server";
-import { buildCatalog, type ListingRow, type SizeRow, type WeightEstimateRow } from "./build";
+import { buildCatalog, foldSpecs, SPEC_COLUMNS, type ListingRow, type SizeRow, type WeightEstimateRow } from "./build";
 import type { Bike } from "./types";
 
 const LISTING_COLUMNS =
   "variant_id,slug,variant_name,model_id,model_name,brand_name,brand_slug,category_slug,is_electric," +
-  "frame_material,weight_g,model_year,best_final_price_cents,in_stock_offers,main_image_url,official_url,specs";
+  "frame_material,weight_g,model_year,best_final_price_cents,in_stock_offers,main_image_url,official_url," +
+  SPEC_COLUMNS;
 const SIZE_COLUMNS =
   "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm,standover_mm:geometry->standover_mm";
 
@@ -23,17 +24,19 @@ async function loadFormula(): Promise<QualityFormula> {
   return { version: data.version, weights: data.weights as Record<string, number> };
 }
 
-/** Catálogo completo (≈1.600 bicis) en caché: el recomendador y el comparador trabajan sobre él. */
+/** Catálogo completo (≈4.200 bicis) en caché: el recomendador y el comparador trabajan sobre él. */
 export async function getCatalog(): Promise<Bike[]> {
   "use cache";
   cacheLife("hours");
   cacheTag("catalogo");
-  const [rows, sizes, formula, estimates] = await Promise.all([
-    selectAll<ListingRow>("variant_listing", LISTING_COLUMNS, "variant_id"),
+  const [raw, sizes, formula, estimates] = await Promise.all([
+    selectAll<Record<string, unknown>>("variant_listing", LISTING_COLUMNS, "variant_id"),
     selectAll<SizeRow>("variant_sizes", SIZE_COLUMNS, "id"),
     loadFormula(),
-    selectAll<WeightEstimateRow>("variants", "id,weight_estimated_g,weight_estimate_label", "id"),
+    // Solo las bicis con estimación (unas 1.000 de 4.700 filas)
+    selectAll<WeightEstimateRow>("variants", "id,weight_estimated_g,weight_estimate_label", "id", { notNull: "weight_estimated_g" }),
   ]);
+  const rows = raw.map((r) => ({ ...r, specs: foldSpecs(r) }) as unknown as ListingRow);
   return buildCatalog(rows, sizes, formula, estimates);
 }
 

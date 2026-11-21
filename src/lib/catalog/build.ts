@@ -58,6 +58,34 @@ function mapShifting(s: Record<string, unknown>): Pick<Specs, "shifting" | "shif
   };
 }
 
+/**
+ * Campos de `specs` que lee mapSpecs. La carga pide solo estos (specs trae 45 campos y algunos, como
+ * el motor, ocupan más de 1 KB por bici). Si mapSpecs lee un campo nuevo, añádelo aquí.
+ */
+export const SPEC_KEYS = [
+  "discipline", "groupset", "groupset_brand", "shifting", "shifting_type", "speeds", "drivetrain", "brakes",
+  "suspension", "suspension_front_mm", "suspension_rear_mm", "wheel_size", "tyre_width_mm", "max_tyre_width_mm",
+  "tubeless_ready", "dropper_post", "battery_wh", "lights", "fenders", "rack", "kickstand",
+] as const;
+/** Del motor solo se usan marca y par */
+export const MOTOR_KEYS = ["brand", "torque_nm"] as const;
+
+/** Columnas de PostgREST para pedir esos campos sueltos: sp_discipline:specs->discipline, … */
+export const SPEC_COLUMNS = [
+  ...SPEC_KEYS.map((k) => `sp_${k}:specs->${k}`),
+  ...MOTOR_KEYS.map((k) => `sp_motor_${k}:specs->motor->${k}`),
+].join(",");
+
+/** Vuelve a juntar los campos sueltos (sp_*) en el objeto specs que espera mapSpecs */
+export function foldSpecs(row: Record<string, unknown>): Record<string, unknown> | null {
+  const specs: Record<string, unknown> = {};
+  const motor: Record<string, unknown> = {};
+  for (const k of SPEC_KEYS) if (row[`sp_${k}`] != null) specs[k] = row[`sp_${k}`];
+  for (const k of MOTOR_KEYS) if (row[`sp_motor_${k}`] != null) motor[k] = row[`sp_motor_${k}`];
+  if (Object.keys(motor).length) specs.motor = motor;
+  return Object.keys(specs).length ? specs : null;
+}
+
 export function mapSpecs(raw: Record<string, unknown> | null): Specs {
   const s = raw ?? {};
   const motor = (s.motor ?? {}) as Record<string, unknown>;
