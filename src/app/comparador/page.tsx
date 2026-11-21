@@ -35,7 +35,8 @@ export default function ComparatorPage({ searchParams }: PageProps<"/comparador"
 }
 
 async function Catalog({ filters: f }: { filters: CatalogFilters }) {
-  const bikes = (await getCatalog()).filter((b) => b.inStock);
+  // Sin tallas: el comparador no las usa y el catálogo pesa la mitad
+  const bikes = (await getCatalog({ sizes: false })).filter((b) => b.inStock);
   const facets = facetOptions(bikes);
   const list = applyFilters(bikes, f);
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { ComparisonSkeleton, ContentEnter } from "@/components/Skeletons";
-import { getCatalog } from "@/lib/catalog/load";
+import { getBikes } from "@/lib/catalog/load";
 import type { Bike } from "@/lib/catalog/types";
 import { MISSING } from "@/lib/format";
 import { rowsFor, type SpecRow } from "@/lib/specRows";
@@ -25,8 +25,8 @@ export default function ComparisonPage({ searchParams }: PageProps<"/comparativa
 }
 
 async function Comparison({ slugs }: { slugs: string[] }) {
-  const catalog = await getCatalog();
-  const bikes = slugs.map((s) => catalog.find((b) => b.slug === s)).filter((b): b is Bike => !!b);
+  // Solo estas 2–4 bicis, no el catálogo entero
+  const bikes = await getBikes(slugs);
   if (bikes.length < 2) {
     return (
       <div className="wrap grid-swiss py-8">

@@ -3,7 +3,10 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import { DEFAULT_FORMULA, type QualityFormula } from "../recommender/quality";
 import { selectAll, supabase } from "../supabase/server";
-import { buildCatalog, foldSpecs, SPEC_COLUMNS, type ListingRow, type SizeRow, type WeightEstimateRow } from "./build";
+import {
+  buildBike, buildCatalog, cohortDistributions, cohortRow, foldSpecs, SPEC_COLUMNS,
+  type Distributions, type ListingRow, type SizeRow, type WeightEstimateRow,
+} from "./build";
 import type { Bike } from "./types";
 
 const LISTING_COLUMNS =
@@ -12,6 +15,22 @@ const LISTING_COLUMNS =
   SPEC_COLUMNS;
 const SIZE_COLUMNS =
   "variant_id,size_label,sort_order,rider_height_min_cm,rider_height_max_cm,rider_height_source,stack_mm,reach_mm,standover_mm:geometry->standover_mm";
+
+const ESTIMATE_COLUMNS = "id,weight_estimated_g,weight_estimate_label";
+
+const toListingRow = (r: Record<string, unknown>) => ({ ...r, specs: foldSpecs(r) }) as unknown as ListingRow;
+
+// Durante la compilación muchas fichas piden a la vez y Supabase a veces responde con un error
+// pasajero: se reintenta un par de veces con pausa antes de rendirse
+async function retry<T extends { error: { message: string } | null }>(load: () => PromiseLike<T>): Promise<T> {
+  let r = await load();
+  for (let attempt = 1; attempt <= 2 && r.error; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+    r = await load();
+  }
+  if (r.error) throw new Error(r.error.message);
+  return r;
+}
 
 async function loadFormula(): Promise<QualityFormula> {
   const { data, error } = await supabase()
@@ -24,24 +43,95 @@ async function loadFormula(): Promise<QualityFormula> {
   return { version: data.version, weights: data.weights as Record<string, number> };
 }
 
-/** Catálogo completo (≈4.200 bicis) en caché: el recomendador y el comparador trabajan sobre él. */
-export async function getCatalog(): Promise<Bike[]> {
+/**
+ * Catálogo completo (≈4.200 bicis) en caché: el recomendador y el comparador trabajan sobre él.
+ * Sin tallas (`sizes: false`) pesa la mitad: el comparador no las usa. Las tallas solo hacen falta
+ * para recomendar (guía, contador, "Por qué es para ti").
+ */
+export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Promise<Bike[]> {
   "use cache";
   cacheLife("hours");
   cacheTag("catalogo");
-  const [raw, sizes, formula, estimates] = await Promise.all([
+  const [raw, sizeRows, formula, estimates] = await Promise.all([
     selectAll<Record<string, unknown>>("variant_listing", LISTING_COLUMNS, "variant_id"),
-    selectAll<SizeRow>("variant_sizes", SIZE_COLUMNS, "id"),
-    loadFormula(),
+    sizes ? selectAll<SizeRow>("variant_sizes", SIZE_COLUMNS, "id") : Promise.resolve([]),
+    getFormula(),
     // Solo las bicis con estimación (unas 1.000 de 4.700 filas)
-    selectAll<WeightEstimateRow>("variants", "id,weight_estimated_g,weight_estimate_label", "id", { notNull: "weight_estimated_g" }),
+    selectAll<WeightEstimateRow>("variants", ESTIMATE_COLUMNS, "id", { notNull: "weight_estimated_g" }),
   ]);
-  const rows = raw.map((r) => ({ ...r, specs: foldSpecs(r) }) as unknown as ListingRow);
-  return buildCatalog(rows, sizes, formula, estimates);
+  return buildCatalog(raw.map(toListingRow), sizeRows, formula, estimates);
 }
 
+/** Fórmula de la nota calidad-precio, en caché aparte para que la ficha no cargue el catálogo */
+export async function getFormula(): Promise<QualityFormula> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo");
+  return loadFormula();
+}
+
+/**
+ * Distribuciones por cohorte (precio, peso, cubierta y batería de todas las bicis), lo único del
+ * catálogo que necesita una ficha suelta para su nota calidad-precio. Son 6 columnas por bici en
+ * vez de todo el catálogo con tallas.
+ */
+export async function getCohortStats(): Promise<Distributions> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo");
+  const rows = await selectAll<Record<string, unknown>>(
+    "variant_listing",
+    "variant_id,category_slug,is_electric,best_final_price_cents,weight_g,sp_tyre_width_mm:specs->tyre_width_mm,sp_battery_wh:specs->battery_wh",
+    "variant_id",
+  );
+  return cohortDistributions(rows.map((r) => cohortRow(toListingRow(r))));
+}
+
+/** Las bicis de estos slugs, cada una calculada igual que en el catálogo pero sin descargarlo entero */
+async function loadBikes(slugs: string[]): Promise<Bike[]> {
+  const db = supabase();
+  const [listing, dist, formula] = await Promise.all([
+    retry(() => db.from("variant_listing").select(LISTING_COLUMNS).in("slug", slugs)),
+    getCohortStats(),
+    getFormula(),
+  ]);
+  const rows = ((listing.data ?? []) as unknown as Record<string, unknown>[]).map(toListingRow);
+  if (!rows.length) return [];
+  const ids = rows.map((r) => r.variant_id);
+  const [sizes, estimates] = await Promise.all([
+    retry(() => db.from("variant_sizes").select(SIZE_COLUMNS).in("variant_id", ids)),
+    retry(() => db.from("variants").select(ESTIMATE_COLUMNS).in("id", ids)),
+  ]);
+  const sizeRows = (sizes.data ?? []) as unknown as SizeRow[];
+  const estimateRows = (estimates.data ?? []) as WeightEstimateRow[];
+  const bikes = rows.map((r) => buildBike(r, sizeRows.filter((s) => s.variant_id === r.variant_id), formula, dist, estimateRows));
+  // En el orden pedido
+  return slugs.map((s) => bikes.find((b) => b.slug === s)).filter((b): b is Bike => !!b);
+}
+
+/** Una bici por su slug (ficha, salida a la tienda). Ya no carga el catálogo entero. */
 export async function getBike(slug: string): Promise<Bike | undefined> {
-  return (await getCatalog()).find((b) => b.slug === slug);
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo");
+  return (await loadBikes([slug]))[0];
+}
+
+/** Varias bicis por slug, en ese orden (comparativa) */
+export async function getBikes(slugs: string[]): Promise<Bike[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo");
+  return slugs.length ? loadBikes(slugs) : [];
+}
+
+/** Solo los slugs (sitemap y fichas que se generan al compilar) */
+export async function getSlugs(): Promise<string[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo");
+  const rows = await selectAll<{ slug: string }>("variant_listing", "slug,variant_id", "variant_id");
+  return rows.map((r) => r.slug);
 }
 
 export type BikeDetail = {

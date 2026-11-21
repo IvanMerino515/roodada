@@ -138,91 +138,137 @@ export function compareSizes(a: Size, b: Size) {
 
 export const cohortKey = (b: Pick<Bike, "category" | "electric">) => `${b.category}|${b.electric ? "e" : "m"}`;
 
-export function buildCatalog(
-  rows: ListingRow[],
-  sizeRows: SizeRow[],
-  formula: QualityFormula,
-  estimateRows: WeightEstimateRow[] = [],
-): Bike[] {
+/** Lo mínimo de cada bici para las distribuciones por cohorte (categoría + eléctrica) */
+export type CohortRow = Pick<Bike, "category" | "electric" | "priceCents" | "weightG"> & {
+  tyreWidthMm: number | null;
+  batteryWh: number | null;
+};
+/** Valores ordenados por cohorte: con ellos se sacan los percentiles y la nota calidad-precio */
+export type Distributions = Record<string, { price: number[]; weight: number[]; tyre: number[]; battery: number[] }>;
+
+export function cohortDistributions(rows: CohortRow[]): Distributions {
+  const cohorts = new Map<string, CohortRow[]>();
+  for (const b of rows) {
+    const k = cohortKey(b);
+    const list = cohorts.get(k);
+    if (list) list.push(b);
+    else cohorts.set(k, [b]);
+  }
+  const dist: Distributions = {};
+  for (const [k, list] of cohorts) {
+    dist[k] = {
+      price: sortedValues(list.map((b) => b.priceCents)),
+      weight: sortedValues(list.map((b) => b.weightG)),
+      tyre: sortedValues(list.map((b) => b.tyreWidthMm)),
+      battery: sortedValues(list.map((b) => b.batteryWh)),
+    };
+  }
+  return dist;
+}
+
+/** Una fila del listado (con o sin specs) reducida a lo que piden las distribuciones */
+export function cohortRow(r: ListingRow): CohortRow {
+  const specs = mapSpecs(r.specs);
+  return {
+    category: r.category_slug as Category,
+    electric: r.is_electric,
+    priceCents: r.best_final_price_cents ?? 0,
+    weightG: r.weight_g,
+    tyreWidthMm: specs.tyreWidthMm,
+    batteryWh: specs.batteryWh,
+  };
+}
+
+type BaseBike = Omit<Bike, "pct" | "quality">;
+
+function baseBike(r: ListingRow, sizes: Size[], estimate: Bike["weightEstimate"] | undefined): BaseBike {
+  const specs = mapSpecs(r.specs);
+  return {
+    id: r.variant_id,
+    slug: r.slug,
+    name: r.variant_name,
+    modelId: r.model_id,
+    modelName: r.model_name,
+    brand: r.brand_name,
+    brandSlug: r.brand_slug,
+    category: r.category_slug as Category,
+    electric: r.is_electric,
+    frameMaterial: r.frame_material,
+    weightG: r.weight_g,
+    // Solo si falta el oficial: la estimación nunca sustituye a un dato de la marca
+    weightEstimate: r.weight_g === null ? (estimate ?? null) : null,
+    modelYear: r.model_year,
+    priceCents: r.best_final_price_cents ?? 0,
+    // Sin precio publicado no se puede recomendar por presupuesto: cuenta como no disponible
+    inStock: r.in_stock_offers > 0 && r.best_final_price_cents !== null,
+    imageUrl: r.main_image_url,
+    officialUrl: r.official_url,
+    specs,
+    sizes: [...sizes].sort(compareSizes),
+    tier: groupsetTier(specs.groupset),
+  };
+}
+
+function finishBike(b: BaseBike, dist: Distributions, formula: QualityFormula): Bike {
+  const d = dist[cohortKey(b)] ?? { price: [], weight: [], tyre: [], battery: [] };
+  const pct = {
+    price: percentile(d.price, b.priceCents) ?? 0.5,
+    weight: percentile(d.weight, b.weightG),
+    tyre: percentile(d.tyre, b.specs.tyreWidthMm),
+    battery: percentile(d.battery, b.specs.batteryWh),
+  };
+  const quality = qualityScore(
+    {
+      tier: b.tier,
+      shifting: b.specs.shifting,
+      brakes: b.specs.brakes,
+      frameMaterial: b.frameMaterial,
+      pricePct: pct.price,
+      weightPct: pct.weight,
+      batteryPct: b.electric ? pct.battery : undefined,
+    },
+    formula,
+  );
+  return { ...b, pct, quality };
+}
+
+function estimateMap(estimateRows: WeightEstimateRow[]) {
   const estimates = new Map<number, { grams: number; label: string }>();
   for (const e of estimateRows) {
     if (e.weight_estimated_g !== null && e.weight_estimate_label) {
       estimates.set(e.id, { grams: e.weight_estimated_g, label: e.weight_estimate_label });
     }
   }
+  return estimates;
+}
+
+export function buildCatalog(
+  rows: ListingRow[],
+  sizeRows: SizeRow[],
+  formula: QualityFormula,
+  estimateRows: WeightEstimateRow[] = [],
+): Bike[] {
+  const estimates = estimateMap(estimateRows);
   const sizesByBike = new Map<number, Size[]>();
   for (const r of sizeRows) {
     const list = sizesByBike.get(r.variant_id) ?? [];
     list.push(mapSize(r));
     sizesByBike.set(r.variant_id, list);
   }
+  const dist = cohortDistributions(rows.map(cohortRow));
+  return rows.map((r) => finishBike(baseBike(r, sizesByBike.get(r.variant_id) ?? [], estimates.get(r.variant_id)), dist, formula));
+}
 
-  const bikes = rows.map((r) => {
-    const specs = mapSpecs(r.specs);
-    return {
-      id: r.variant_id,
-      slug: r.slug,
-      name: r.variant_name,
-      modelId: r.model_id,
-      modelName: r.model_name,
-      brand: r.brand_name,
-      brandSlug: r.brand_slug,
-      category: r.category_slug as Category,
-      electric: r.is_electric,
-      frameMaterial: r.frame_material,
-      weightG: r.weight_g,
-      // Solo si falta el oficial: la estimación nunca sustituye a un dato de la marca
-      weightEstimate: r.weight_g === null ? (estimates.get(r.variant_id) ?? null) : null,
-      modelYear: r.model_year,
-      priceCents: r.best_final_price_cents ?? 0,
-      // Sin precio publicado no se puede recomendar por presupuesto: cuenta como no disponible
-      inStock: r.in_stock_offers > 0 && r.best_final_price_cents !== null,
-      imageUrl: r.main_image_url,
-      officialUrl: r.official_url,
-      specs,
-      sizes: (sizesByBike.get(r.variant_id) ?? []).sort(compareSizes),
-      tier: groupsetTier(specs.groupset),
-    };
-  });
-
-  // Distribuciones por cohorte para los percentiles
-  const cohorts = new Map<string, typeof bikes>();
-  for (const b of bikes) {
-    const k = cohortKey(b);
-    const list = cohorts.get(k);
-    if (list) list.push(b);
-    else cohorts.set(k, [b]);
-  }
-  const dist = new Map<string, { price: number[]; weight: number[]; tyre: number[]; battery: number[] }>();
-  for (const [k, list] of cohorts) {
-    dist.set(k, {
-      price: sortedValues(list.map((b) => b.priceCents)),
-      weight: sortedValues(list.map((b) => b.weightG)),
-      tyre: sortedValues(list.map((b) => b.specs.tyreWidthMm)),
-      battery: sortedValues(list.map((b) => b.specs.batteryWh)),
-    });
-  }
-
-  return bikes.map((b) => {
-    const d = dist.get(cohortKey(b))!;
-    const pct = {
-      price: percentile(d.price, b.priceCents) ?? 0.5,
-      weight: percentile(d.weight, b.weightG),
-      tyre: percentile(d.tyre, b.specs.tyreWidthMm),
-      battery: percentile(d.battery, b.specs.batteryWh),
-    };
-    const quality = qualityScore(
-      {
-        tier: b.tier,
-        shifting: b.specs.shifting,
-        brakes: b.specs.brakes,
-        frameMaterial: b.frameMaterial,
-        pricePct: pct.price,
-        weightPct: pct.weight,
-        batteryPct: b.electric ? pct.battery : undefined,
-      },
-      formula,
-    );
-    return { ...b, pct, quality };
-  });
+/**
+ * Una sola bici, calculada igual que dentro del catálogo entero: las distribuciones de su cohorte
+ * vienen ya hechas (getCohortStats), así la ficha no necesita descargar las 4.200 bicis.
+ */
+export function buildBike(
+  row: ListingRow,
+  sizeRows: SizeRow[],
+  formula: QualityFormula,
+  dist: Distributions,
+  estimateRows: WeightEstimateRow[] = [],
+): Bike {
+  return finishBike(baseBike(row, sizeRows.map(mapSize), estimateMap(estimateRows).get(row.variant_id)), dist, formula);
 }

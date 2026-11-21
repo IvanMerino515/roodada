@@ -9,7 +9,7 @@ import { QualityBadge } from "@/components/QualityBadge";
 import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
 import { SpecRow, SpecTable } from "@/components/SpecTable";
-import { getBike, getBikeDetail, getCatalog } from "@/lib/catalog/load";
+import { getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
 import { CATEGORY_LABEL, day, DISCIPLINE_LABEL, eur } from "@/lib/format";
 
 // En el build solo se generan unas pocas fichas: las 2.100+ de golpe agotan la memoria del build de
@@ -18,7 +18,7 @@ import { CATEGORY_LABEL, day, DISCIPLINE_LABEL, eur } from "@/lib/format";
 const FICHAS_EN_BUILD = 100;
 
 export async function generateStaticParams() {
-  return (await getCatalog()).slice(0, FICHAS_EN_BUILD).map((b) => ({ slug: b.slug }));
+  return (await getSlugs()).slice(0, FICHAS_EN_BUILD).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/bici/[slug]">): Promise<Metadata> {

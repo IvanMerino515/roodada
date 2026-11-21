@@ -12,6 +12,7 @@ Guía de compra de bicicletas: una guía de preguntas (`/guia`) que recomienda b
 - Verificación: `npm run typecheck`, `npm test`, `npm run build`. No abrir el navegador para verificar: Iván revisa lo visual en las previews de Vercel.
 - Gestor de paquetes: npm.
 - Next.js 16 con Cache Components: los datos se cargan con `'use cache'` + `cacheLife` (`src/lib/catalog/load.ts`); `params`/`searchParams` son promesas y lo que depende de ellos va dentro de `<Suspense>`.
+- Carga de datos (21-11-2026), cada página pide solo lo que usa: `getBike`/`getBikes` (ficha, `/ir`, comparativa) traen sus bicis sueltas y calculan la nota con `getCohortStats` (6 columnas de todas las bicis); `getCatalog({ sizes: false })` para el comparador; `getCatalog()` con tallas solo para recomendar (guía, contador, resultados, "Por qué es para ti") y la portada; `getSlugs` para sitemap y fichas del build. `buildBike` y `buildCatalog` dan la misma bici (prueba `buildBike.test.ts`). De `specs` se piden solo `SPEC_KEYS` (junto a `mapSpecs`): si lees un campo nuevo, añádelo ahí.
 - Tailwind usa la escala del sistema de diseño: `--spacing` es 8 px, así que `p-1` = 8 px y `w-20` = 160 px.
 
 ## Sistema de diseño
