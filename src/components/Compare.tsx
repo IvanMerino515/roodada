@@ -58,10 +58,11 @@ export function CompareProvider({ children }: { children: ReactNode }) {
             : ""}
         </p>
         {selected.length > 0 && (
-          <div className="bg-choice text-on-choice border-t border-border">
+          <div className="subir bg-choice text-on-choice border-t border-border">
             <div className="wrap flex flex-wrap items-center justify-between gap-2 py-1">
               <p className="eyebrow num" aria-hidden="true">
-                Comparar {selected.length}/{MAX_COMPARE}
+                {/* La cifra cambia de key en cada cambio: así vuelve a dar el saltito */}
+                Comparar <span key={selected.length} className="saltito">{selected.length}</span>/{MAX_COMPARE}
                 {selected.length < 2 ? " · elige al menos 2" : ""}
               </p>
               <div className="flex gap-1">
@@ -89,7 +90,7 @@ export function CompareToggle({ slug, name }: { slug: string; name: string }) {
   const full = ctx.selected.length >= MAX_COMPARE;
   return (
     <label
-      className={`eyebrow flex items-center gap-1 min-h-6 px-2 cursor-pointer select-none ${checked ? "bg-choice text-on-choice" : "hover:underline"} has-disabled:cursor-not-allowed has-disabled:opacity-50 has-focus-visible:outline-2 has-focus-visible:outline-accent has-focus-visible:-outline-offset-4`}
+      className={`eyebrow flex items-center gap-1 min-h-6 px-2 cursor-pointer select-none transition-colors duration-200 ease-ds motion-reduce:transition-none ${checked ? "bg-choice text-on-choice" : "hover:underline"} has-disabled:cursor-not-allowed has-disabled:opacity-50 has-focus-visible:outline-2 has-focus-visible:outline-accent has-focus-visible:-outline-offset-4`}
     >
       <input
         type="checkbox"

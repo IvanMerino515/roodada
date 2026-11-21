@@ -40,6 +40,9 @@
   --ds-tracking-h3: 0;
   --ds-text-muted: var(--ds-roodada-textos-700);
   --ds-border-width: 1px;
+  /* Movimiento suave en lugar del steps(4) del export (decisión de Iván, 21-11-2026): sale rápido y
+     frena al llegar. Las duraciones (120/200/320 ms) siguen siendo las del sistema. */
+  --ds-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   /* Poppins llega por next/font (layout.tsx) con un nombre de familia propio */
   --ds-font-display: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --ds-font-body: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
@@ -271,4 +274,147 @@
   .intro-bounce {
     animation: none;
   }
+}
+
+/* ───────────── Microinteracciones (21-11-2026) ─────────────
+   Todas con las duraciones del sistema y --ds-ease. Quien tiene el movimiento reducido no ve ninguna
+   (bloque final). Lo que entra lo hace desde un estado visible: nada se queda esperando a opacity 0. */
+
+/* Llegada de contenido: sube un poco y aparece */
+@keyframes llegar {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.llegar { animation: llegar var(--ds-duration-slow) var(--ds-ease) both; }
+
+/* Huecos de carga con la forma real: un brillo los recorre */
+.hueco {
+  position: relative;
+  overflow: hidden;
+  background: var(--ds-roodada-texto2-200);
+}
+.hueco::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--ds-roodada-texto2-50), transparent);
+  transform: translateX(-100%);
+  animation: hueco-brillo 1.2s var(--ds-ease) infinite;
+}
+@keyframes hueco-brillo { to { transform: translateX(100%); } }
+
+/* Barra de navegación arriba de la pantalla */
+.nav-progreso {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 60;
+  height: 3px;
+  width: 100%;
+  background: var(--ds-accent);
+  transform-origin: left;
+  transform: scaleX(0);
+  opacity: 0;
+  pointer-events: none;
+}
+.nav-progreso[data-estado="cargando"] {
+  opacity: 1;
+  transform: scaleX(0.8);
+  transition: transform 8s cubic-bezier(0.1, 0.6, 0.1, 1);
+}
+.nav-progreso[data-estado="hecho"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition: transform var(--ds-duration-fast) var(--ds-ease), opacity var(--ds-duration-base) var(--ds-ease) var(--ds-duration-fast);
+}
+
+/* Casilla de bici pulsada: borde y barra fina mientras se abre la ficha */
+.enlace-pendiente {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  /* Color del texto: oscuro en las casillas, blanco sobre el botón oscuro */
+  background: currentColor;
+  transform-origin: left;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+.enlace-pendiente[data-pendiente] {
+  transform: scaleX(0.85);
+  transition: transform 2.5s cubic-bezier(0.1, 0.6, 0.1, 1);
+}
+.casilla:has(.enlace-pendiente[data-pendiente]) {
+  box-shadow: inset 0 0 0 2px var(--ds-accent);
+  cursor: progress;
+}
+
+/* Guía: la pregunta nueva entra desde el lado hacia el que vas */
+@keyframes pregunta-adelante { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
+@keyframes pregunta-atras { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: none; } }
+.pregunta-adelante { animation: pregunta-adelante var(--ds-duration-slow) var(--ds-ease) both; }
+.pregunta-atras { animation: pregunta-atras var(--ds-duration-slow) var(--ds-ease) both; }
+
+/* Opción elegida: el coral entra de izquierda a derecha y el check se dibuja */
+.opcion { position: relative; isolation: isolate; }
+.opcion::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ds-roodada-principal);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--ds-duration-base) var(--ds-ease);
+}
+.opcion[aria-pressed="true"]::before { transform: scaleX(1); }
+.check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset var(--ds-duration-base) var(--ds-ease) var(--ds-duration-fast);
+}
+[aria-pressed="true"] > .check path, [aria-pressed="true"] .check path { stroke-dashoffset: 0; }
+
+/* Embudo de "Buscando tus bicis": cada filtro se enciende por turno */
+.embudo-paso { opacity: 0.2; transition: opacity var(--ds-duration-base) var(--ds-ease); }
+.embudo-paso[data-on] { opacity: 1; }
+.embudo-barra > span {
+  display: block;
+  height: 100%;
+  background: var(--ds-accent);
+  transition: width var(--ds-duration-slow) var(--ds-ease);
+}
+
+/* Contador de comparar: da un pequeño salto al cambiar */
+@keyframes saltito { 40% { transform: scale(1.3); } }
+.saltito { display: inline-block; animation: saltito var(--ds-duration-slow) var(--ds-ease); }
+@keyframes subir { from { transform: translateY(100%); } to { transform: none; } }
+.subir { animation: subir var(--ds-duration-slow) var(--ds-ease) both; }
+
+/* Transiciones de vista (React ViewTransition). Sin soporte del navegador, simplemente no se animan */
+::view-transition-group(.foto-bici) {
+  animation-duration: var(--ds-duration-slow);
+  animation-timing-function: var(--ds-ease);
+}
+::view-transition-old(.salir) {
+  animation: var(--ds-duration-fast) var(--ds-ease) both vt-fuera;
+}
+::view-transition-new(.entrar) {
+  animation: var(--ds-duration-slow) var(--ds-ease) var(--ds-duration-fast) both llegar;
+}
+::view-transition-old(.fundido) {
+  animation: var(--ds-duration-fast) var(--ds-ease) both vt-fuera;
+}
+::view-transition-new(.fundido) {
+  animation: var(--ds-duration-base) var(--ds-ease) var(--ds-duration-fast) both vt-dentro;
+}
+@keyframes vt-fuera { to { opacity: 0; } }
+@keyframes vt-dentro { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .llegar, .pregunta-adelante, .pregunta-atras, .saltito, .subir { animation: none; }
+  .hueco::after { animation: none; }
+  .nav-progreso, .enlace-pendiente, .opcion::before, .check path, .embudo-paso, .embudo-barra > span { transition: none; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }

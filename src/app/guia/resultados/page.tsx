@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 
+import { LinkPending } from "@/components/LinkPending";
 import { QualityBadge } from "@/components/QualityBadge";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
+import { ContentEnter, ResultsSkeleton } from "@/components/Skeletons";
 import { getCatalog } from "@/lib/catalog/load";
 import { eur } from "@/lib/format";
 import { recommend, type Recommendation } from "@/lib/recommender";
@@ -18,9 +20,11 @@ export const metadata: Metadata = {
 
 export default function ResultsPage({ searchParams }: PageProps<"/guia/resultados">) {
   return (
-    <Suspense fallback={<p className="wrap py-4 eyebrow">Buscando tus bicis…</p>}>
+    <Suspense fallback={<ResultsSkeleton />}>
       {searchParams.then((sp) => (
-        <Results params={sp} />
+        <ContentEnter>
+          <Results params={sp} />
+        </ContentEnter>
       ))}
     </Suspense>
   );
@@ -71,7 +75,8 @@ async function Results({ params }: { params: Record<string, string | string[] | 
         <CompareProvider>
           <ol className="wrap list-none my-0 py-2 grid grid-cols-[minmax(0,1fr)] gap-2">
             {results.map((r, i) => (
-              <li key={r.bike.id}>
+              // Llegan una tras otra: 80 ms entre cada una
+              <li key={r.bike.id} className="llegar" style={{ animationDelay: `${i * 80}ms` }}>
                 <Pick r={r} n={i + 1} href={`/bici/${r.bike.slug}?${query}`} top={i === 0} />
               </li>
             ))}
@@ -86,11 +91,13 @@ async function Results({ params }: { params: Record<string, string | string[] | 
 function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string; top: boolean }) {
   const name = `${r.bike.brand} ${r.bike.name}`;
   return (
-    <article className={`grid lg:grid-cols-12 border border-border ${top ? "bg-choice text-on-choice" : "bg-white"}`} aria-labelledby={`pick-${r.bike.id}`}>
+    <article className={`casilla grid lg:grid-cols-12 border border-border ${top ? "bg-choice text-on-choice" : "bg-white"}`} aria-labelledby={`pick-${r.bike.id}`}>
       <div className="lg:col-span-4 grid grid-cols-[auto_1fr] border-b lg:border-b-0 lg:border-r border-border">
         <p className="font-display text-h1 num leading-none p-2 border-r border-border" aria-hidden="true">{String(n).padStart(2, "0")}</p>
         <Link href={href} tabIndex={-1} aria-hidden="true" className="bg-white flex items-center justify-center p-2">
-          <Image src={r.bike.imageUrl} unoptimized={sinOptimizar(r.bike.imageUrl)} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
+          <ViewTransition name={`foto-${r.bike.id}`} share="foto-bici" default="none">
+            <Image src={r.bike.imageUrl} unoptimized={sinOptimizar(r.bike.imageUrl)} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
+          </ViewTransition>
         </Link>
       </div>
 
@@ -105,8 +112,9 @@ function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string;
           <QualityBadge bike={r.bike} />
         </p>
         <div className="grid gap-1">
-          <Link href={href} className="btn btn-solid w-full">
+          <Link href={href} className="btn btn-solid w-full relative">
             Por qué es para ti <span aria-hidden="true">→</span>
+            <LinkPending />
           </Link>
           <a href={`/ir/${r.bike.slug}`} rel="nofollow noopener" target="_blank" className="btn w-full">
             Web oficial de {r.bike.brand} <span aria-hidden="true">↗</span>

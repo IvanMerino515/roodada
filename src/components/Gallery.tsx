@@ -1,30 +1,33 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import { sinOptimizar } from "@/lib/imagen";
 
 type Photo = { url: string; alt: string | null };
 
 /** Foto grande y miniaturas debajo: cada miniatura cambia la foto grande, sin salir de la página. */
-export function Gallery({ photos, name }: { photos: Photo[]; name: string }) {
+/** `transitionName`: la foto de la casilla del catálogo "viaja" hasta la primera foto de aquí. */
+export function Gallery({ photos, name, transitionName }: { photos: Photo[]; name: string; transitionName?: string }) {
   const [current, setCurrent] = useState(0);
   const shown = photos.slice(0, 8);
   const main = shown[current] ?? shown[0];
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-40">
-        <Image
-          key={main.url}
-          src={main.url}
-          unoptimized={sinOptimizar(main.url)}
-          alt={main.alt ?? name}
-          width={1200}
-          height={800}
-          sizes="(min-width: 1024px) 58vw, 100vw"
-          className="product w-full h-auto aspect-[3/2] object-contain"
-          preload={current === 0}
-        />
+        <ViewTransition name={current === 0 ? transitionName : undefined} share="foto-bici" default="none">
+          <Image
+            key={main.url}
+            src={main.url}
+            unoptimized={sinOptimizar(main.url)}
+            alt={main.alt ?? name}
+            width={1200}
+            height={800}
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            className="product w-full h-auto aspect-[3/2] object-contain"
+            preload={current === 0}
+          />
+        </ViewTransition>
       </div>
       {shown.length > 1 && (
         <ul className="flex overflow-x-auto border-t border-border list-none m-0 p-0" aria-label="Fotos">

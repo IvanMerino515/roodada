@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Link from "next/link";
+import { Suspense } from "react";
 
+import { NavProgress } from "@/components/NavProgress";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MODO_PRUEBA } from "@/lib/site";
@@ -37,6 +39,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Saltar al contenido
         </a>
+        {/* Lee la dirección (useSearchParams): con Cache Components necesita su propio Suspense */}
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <SiteHeader />
         <main id="contenido" className="flex-1">
           {children}

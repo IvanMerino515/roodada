@@ -72,7 +72,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
 
         <div className="lg:grid lg:grid-cols-12">
           <div className="lg:col-span-7 lg:border-r border-border">
-            <Gallery photos={photos} name={name} />
+            <Gallery photos={photos} name={name} transitionName={`foto-${bike.id}`} />
           </div>
 
           <dl className="lg:col-span-5 m-0 border-t border-border lg:border-t-0 [&>div:first-child]:border-t-0">

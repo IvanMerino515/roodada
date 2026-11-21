@@ -7,6 +7,8 @@ import {
   answersToSearch, availablePriorities, BUDGET, ELECTRIC, HEIGHT, INSEAM, isDetailed, LEVELS, MAX_PRIORITIES, PRIORITIES, USES, usesFor,
   type Answers, type ElectricKey, type LevelKey, type PriorityKey, type UseKey,
 } from "@/lib/recommender/questions";
+import { AnimatedCount, CheckMark, SearchFunnel } from "./GuideMotion";
+import { startNavProgress } from "./NavProgress";
 
 type Counts = {
   funnel: Record<string, number>;
@@ -28,6 +30,15 @@ export function Guide() {
   const [counts, setCounts] = useState<Counts | null>(null);
   const [finding, startFinding] = useTransition();
   const index = STEPS.indexOf(step);
+  // Hacia dónde entra la pregunta nueva: desde la derecha al avanzar, desde la izquierda al volver.
+  // null = la primera pregunta, que no se anima
+  const [dir, setDir] = useState<"adelante" | "atras" | null>(null);
+  const stepRef = useRef<Step>(step);
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+  // Pausa breve tras elegir, para que se vea la opción marcada antes de pasar de pregunta
+  const choosing = useRef(false);
 
   // Cada paso es una entrada del historial (?paso=uso): el "atrás" del navegador o del móvil vuelve a la
   // pregunta anterior en lugar de sacarte de la guía. Next integra pushState en su router.
@@ -36,7 +47,9 @@ export function Guide() {
     if (location.search.includes("paso=")) history.replaceState(null, "", location.pathname);
     const onPop = () => {
       const p = new URLSearchParams(location.search).get("paso") as Step | null;
-      setStep(p && STEPS.includes(p) ? p : "nivel");
+      const next = p && STEPS.includes(p) ? p : "nivel";
+      setDir(STEPS.indexOf(next) < STEPS.indexOf(stepRef.current) ? "atras" : "adelante");
+      setStep(next);
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
@@ -74,6 +87,7 @@ export function Guide() {
   }, [a.uso, a.electrica, a.presupuesto, a.altura, index]);
 
   const go = (next: Step) => {
+    setDir(STEPS.indexOf(next) < index ? "atras" : "adelante");
     setStep(next);
     history.pushState(null, "", `?paso=${next}`);
   };
@@ -83,11 +97,20 @@ export function Guide() {
   // Atrás = la entrada anterior del historial, que es siempre la pregunta anterior que viste
   const back = () => history.back();
   const choose = (patch: Partial<Answers>, next: Step) => {
+    if (choosing.current) return;
     setA((prev) => ({ ...prev, ...patch }));
-    go(next);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return go(next);
+    choosing.current = true;
+    setTimeout(() => {
+      choosing.current = false;
+      go(next);
+    }, 260);
   };
-  const finish = (final: Partial<Answers>) =>
+  const finish = (final: Partial<Answers>) => {
+    startNavProgress();
     startFinding(() => router.push(`/guia/resultados?${answersToSearch(final as Answers)}`));
+  };
 
   const remaining = counts ? lastCount(counts.funnel) : null;
   const visible = STEPS.filter((st) => !skipped(st));
@@ -109,11 +132,11 @@ export function Guide() {
         <div className="flex items-baseline justify-between gap-2 lg:hidden border-b border-border pb-1">
           <p className="eyebrow num">Paso {position + 1} de {visible.length}</p>
           {remaining !== null && (
-            <p className="eyebrow num" aria-live="polite">{remaining.toLocaleString("es-ES")} bicis encajan</p>
+            <p className="eyebrow num" aria-live="polite"><AnimatedCount value={remaining} /> bicis encajan</p>
           )}
         </div>
         <div className="h-0.5 bg-white lg:hidden" aria-hidden="true">
-          <div className="h-full bg-choice transition-[width] motion-reduce:transition-none" style={{ width: `${((position + 1) / visible.length) * 100}%` }} />
+          <div className="h-full bg-choice transition-[width] duration-300 ease-ds motion-reduce:transition-none" style={{ width: `${((position + 1) / visible.length) * 100}%` }} />
         </div>
         <ol className="hidden lg:grid list-none m-0 p-0" aria-label="Pasos de la guía">
           {visible.map((st, i) => {
@@ -137,13 +160,18 @@ export function Guide() {
         </ol>
         {remaining !== null && (
           <p className="hidden lg:block border-t border-border pt-2 mt-4" aria-live="polite">
-            <span className="block font-display text-display num leading-none">{remaining.toLocaleString("es-ES")}</span>
+            <AnimatedCount value={remaining} className="block font-display text-display num leading-none" />
             <span className="eyebrow">bicis encajan con lo que llevas</span>
           </p>
         )}
       </aside>
 
       <div className="col-span-4 md:col-span-8 lg:col-span-8 grid gap-3 content-start">
+        {finding ? (
+          <SearchFunnel funnel={counts?.funnel ?? null} answers={a} />
+        ) : (
+        <>
+        <div key={step} className={`grid gap-3 ${dir === "atras" ? "pregunta-atras" : dir ? "pregunta-adelante" : ""}`}>
         {step === "nivel" && (
           <Question title="¿Qué tipo de Roodador eres?">
             <p className="text-small">Roodador: bicicletero. Según lo que sepas, te preguntamos más o menos detalle.</p>
@@ -251,6 +279,7 @@ export function Guide() {
             </Options>
           </Question>
         )}
+        </div>
 
         {remaining === 0 && index >= STEPS.indexOf("presupuesto") && (
           <div role="alert" className="border border-border p-2">
@@ -289,6 +318,8 @@ export function Guide() {
               <FinishButton pending={finding} onClick={() => finish(a)} />
             )}
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
@@ -353,13 +384,13 @@ function Option({
       aria-pressed={selected}
       disabled={empty || disabled}
       onClick={onClick}
-      className="group grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 gap-y-0.5 text-left border-t border-border px-1 py-2 cursor-pointer hover:bg-white aria-pressed:bg-choice aria-pressed:text-on-choice disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent focus-inset"
+      className="opcion group grid grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-x-2 gap-y-0.5 text-left border-t border-border px-1 py-2 cursor-pointer hover:bg-white aria-pressed:text-on-choice disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent focus-inset"
     >
       <span className="eyebrow num">{pad(n)}</span>
       <span className="font-display text-h4 uppercase">{title}</span>
       <span className="eyebrow num text-right">
-        {/* La marca de elegida no depende solo del color */}
-        {selected && <span aria-hidden="true">✓ </span>}
+        {/* La marca de elegida no depende solo del color: el check se dibuja al elegir */}
+        <CheckMark />{" "}
         {count === undefined ? "" : empty ? "Sin bicis" : `${count.toLocaleString("es-ES")} bicis`}
       </span>
       {hint && <span className="col-start-2 col-span-2 text-small">{hint}</span>}

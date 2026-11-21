@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Fragment, Suspense, type ReactNode } from "react";
+import { Fragment, Suspense, ViewTransition, type ReactNode } from "react";
 
 import { BikeCard, FeatureTile } from "@/components/BikeCard";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
 import { EXTRA, FilterRow, FilterSelect } from "@/components/FilterBar";
 import { FilterForm, MoreFiltersToggle } from "@/components/FilterForm";
+import { AnimatedCount } from "@/components/GuideMotion";
+import { CatalogSkeleton, ContentEnter } from "@/components/Skeletons";
 import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
@@ -22,9 +24,11 @@ const PRICE_STEPS = [500, 1000, 1500, 2000, 3000, 5000, 8000];
 
 export default function ComparatorPage({ searchParams }: PageProps<"/comparador">) {
   return (
-    <Suspense fallback={<p className="wrap py-4 eyebrow">Cargando bicis…</p>}>
+    <Suspense fallback={<CatalogSkeleton />}>
       {searchParams.then((sp) => (
-        <Catalog filters={parseFilters(sp)} />
+        <ContentEnter>
+          <Catalog filters={parseFilters(sp)} />
+        </ContentEnter>
       ))}
     </Suspense>
   );
@@ -47,7 +51,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
         <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">Comparador</h1>
         <p className="col-span-4 md:col-span-3 lg:col-span-4 text-small">
           <span className="block font-display text-h3 num" aria-live="polite">
-            {list.length.toLocaleString("es-ES")} {list.length === 1 ? "bici" : "bicis"}
+            <AnimatedCount value={list.length} /> {list.length === 1 ? "bici" : "bicis"}
           </span>
           Filtra, marca hasta cuatro y compáralas lado a lado.
         </p>
@@ -134,6 +138,8 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               </p>
             </div>
           ) : (
+            // Otra búsqueda u otra página = otra key: la lista vieja se funde con la nueva en lugar de saltar
+            <ViewTransition key={filtersToSearch({ ...f, pagina: page })} name="lista-bicis" share="fundido" enter="fundido" default="none">
             <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 md:gap-2 list-none m-0 p-0">
               {shown.map((b, i) => (
                 <Fragment key={b.id}>
@@ -150,6 +156,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
                 </Fragment>
               ))}
             </ul>
+            </ViewTransition>
           )}
         </div>
 

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { ComparisonSkeleton, ContentEnter } from "@/components/Skeletons";
 import { getCatalog } from "@/lib/catalog/load";
 import type { Bike } from "@/lib/catalog/types";
 import { MISSING } from "@/lib/format";
@@ -13,9 +14,11 @@ export const metadata: Metadata = { title: "Comparativa", robots: { index: false
 
 export default function ComparisonPage({ searchParams }: PageProps<"/comparativa">) {
   return (
-    <Suspense fallback={<p className="wrap py-4 eyebrow">Preparando la comparativa…</p>}>
+    <Suspense fallback={<ComparisonSkeleton />}>
       {searchParams.then((sp) => (
-        <Comparison slugs={String(sp.bicis ?? "").split(",").filter(Boolean).slice(0, 4)} />
+        <ContentEnter>
+          <Comparison slugs={String(sp.bicis ?? "").split(",").filter(Boolean).slice(0, 4)} />
+        </ContentEnter>
       ))}
     </Suspense>
   );
