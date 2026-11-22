@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ViewTransition, type ReactNode } from "react";
 
 import type { Bike } from "@/lib/catalog/types";
-import { eur } from "@/lib/format";
+import { priceLabel } from "@/lib/format";
 import { LinkPending } from "./LinkPending";
 import { QualityBadge } from "./QualityBadge";
 import { sinOptimizar } from "@/lib/imagen";
@@ -48,7 +48,7 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
           {/* Hasta 3 líneas: hay nombres de 12 palabras. El texto entero sigue ahí para lectores y en la ficha */}
           <h3 className="text-body font-display leading-tight line-clamp-3 group-hover:underline" title={bike.name}>{bike.name}</h3>
           {/* El precio es el dato con el que se decide: pesa más que la marca */}
-          <p className="font-display font-semibold num mt-0.5">{eur(bike.priceCents)}</p>
+          <p className="font-display font-semibold num mt-0.5">{priceLabel(bike)}</p>
           <QualityBadge bike={bike} />
         </div>
         <LinkPending />

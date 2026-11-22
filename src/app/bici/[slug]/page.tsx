@@ -10,7 +10,9 @@ import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
 import { SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
-import { CATEGORY_LABEL, day, DISCIPLINE_LABEL, eur } from "@/lib/format";
+import { PriceChecked } from "@/components/PriceChecked";
+import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, NO_PRICE, priceLabel } from "@/lib/format";
+import { priceOrigin, shortStore } from "@/lib/priceOrigin";
 
 // En el build solo se generan unas pocas fichas: las 2.100+ de golpe agotan la memoria del build de
 // Vercel. El resto se genera en la primera visita y queda en caché igual que si fuera del build
@@ -27,7 +29,7 @@ export async function generateMetadata({ params }: PageProps<"/bici/[slug]">): P
   const title = `${bike.brand} ${bike.name}`;
   return {
     title,
-    description: `${title}: ${eur(bike.priceCents)}, ${DISCIPLINE_LABEL[bike.specs.discipline].toLowerCase()}${bike.specs.groupset ? `, ${bike.specs.groupset}` : ""}. Talla según tu altura, geometría y especificaciones comparadas.`,
+    description: `${title}: ${priceLabel(bike)}, ${DISCIPLINE_LABEL[bike.specs.discipline].toLowerCase()}${bike.specs.groupset ? `, ${bike.specs.groupset}` : ""}. Talla según tu altura, geometría y especificaciones comparadas.`,
     alternates: { canonical: `/bici/${bike.slug}` },
     openGraph: { images: [bike.imageUrl] },
   };
@@ -42,9 +44,15 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
   const geometry = [...detail.geometry].sort((a, b) => (order.get(a.label) ?? 99) - (order.get(b.label) ?? 99));
   // Tallas con alguna medida publicada (contador del desplegable de geometría)
   const geoSizes = geometrySizeCount(geometry);
-  const photos = detail.photos.length ? detail.photos : [{ url: bike.imageUrl, alt: null }];
+  const photos = detail.photos.length ? detail.photos : [{ url: bike.imageUrl, alt: null }]; // imageUrl ya trae SIN_FOTO si no hay
   const name = `${bike.brand} ${bike.name}`;
   const kind = bike.specs.discipline === "infantil" ? CATEGORY_LABEL[bike.category] : DISCIPLINE_LABEL[bike.specs.discipline];
+  // Precio: el de la mejor oferta activa (aunque esté agotada, la ficha enseña lo que costaba)
+  const offer = detail.offer;
+  const priceCents = offer ? offer.priceCents : null;
+  const from = bike.priceState === "desde";
+  const origin = priceOrigin(offer?.storeSlug ?? null, bike.brand, { from, hasEuros: priceCents !== null });
+  const store = shortStore(offer?.store ?? null, bike.brand);
 
   return (
     <div className="wrap pt-2 pb-4 grid grid-cols-[minmax(0,1fr)] gap-4">
@@ -80,12 +88,46 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
               <h1 id="nombre" className="font-display text-h2 leading-tight">{bike.name}</h1>
             </SpecRow>
             <SpecRow label="Precio">
-              <span className="font-display text-h3 num">{eur(detail.offer?.priceCents ?? bike.priceCents)}</span>
-              <span className="block text-small">
-                {bike.inStock ? "En stock" : "Sin stock"} en {detail.offer?.store ?? "la web oficial"}
-                {detail.offer?.checkedAt && <>. Precio comprobado el {day(detail.offer.checkedAt)}</>}
-              </span>
+              {/* El ⓘ va arriba a la derecha; al abrirlo, la explicación sale bajo el precio */}
+              <div className="relative pr-4">
+                <span className={priceCents === null ? "font-display text-h4" : "font-display text-h3 num"}>
+                  {priceCents === null ? NO_PRICE : `${from ? "Desde " : ""}${eur(priceCents)}`}
+                </span>
+                {priceCents === null && detail.foreignPrice && (
+                  <span className="block text-small">En su web: {detail.foreignPrice} (sin convertir a euros)</span>
+                )}
+                <details>
+                  <summary
+                    aria-label="Cómo leemos este precio"
+                    title="Cómo leemos este precio"
+                    className="absolute top-0 right-0 list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center size-3 rounded-full border border-border text-small font-semibold leading-none select-none hover:bg-surface"
+                  >
+                    i
+                  </summary>
+                  <p className="text-small mt-0.5 border-l-2 border-border pl-1">
+                    Precio de la web oficial de {store}.{origin.help && ` ${origin.help}`}
+                    {origin.costsExtra !== false && " No incluye gastos de envío ni otros costes asociados."}
+                  </p>
+                </details>
+              </div>
             </SpecRow>
+            <SpecRow label="Origen">{origin.label}</SpecRow>
+            <SpecRow label="Disponible">
+              {offer ? (
+                <>
+                  {/* 🟢 en stock · 🔴 sin stock · 🟡 la marca vende por tiendas o por presupuesto: su web no dice si hay */}
+                  <span aria-hidden="true">{!offer.inStock ? "🔴" : origin.stockUnknown ? "🟡" : "🟢"}</span>{" "}
+                  {!offer.inStock ? "Sin stock" : origin.stockUnknown ? "Stock por confirmar en tiendas" : "En stock"}. Enlace a la web más abajo.
+                </>
+              ) : (
+                <><span aria-hidden="true">🔴</span> Sin oferta en la web oficial.</>
+              )}
+            </SpecRow>
+            {offer?.checkedAt && (
+              <SpecRow label="Actualizado">
+                <PriceChecked iso={offer.checkedAt} />
+              </SpecRow>
+            )}
             {bike.category !== "bici-infantil" && (
               <SpecRow label="Calidad-precio">
                 <QualityBadge bike={bike} large />
@@ -105,7 +147,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
                 <span aria-hidden="true">↗</span>
                 <span className="sr-only">(se abre en otra pestaña)</span>
               </a>
-              <p className="text-small">Te llevamos a la ficha de la bici en la web de {bike.brand}: precio y stock son los suyos.</p>
+              <p className="text-small">Link a la web oficial de {store}</p>
             </div>
           </dl>
         </div>

@@ -4,6 +4,7 @@ import { percentile, sortedValues } from "../recommender/percentile";
 import { qualityScore, type QualityFormula } from "../recommender/quality";
 import { groupsetTier } from "../recommender/tiers";
 import type { Bike, Category, Size, Specs } from "./types";
+import { SIN_FOTO } from "../imagen";
 
 export type ListingRow = {
   variant_id: number;
@@ -20,7 +21,7 @@ export type ListingRow = {
   model_year: number | null;
   best_final_price_cents: number | null;
   in_stock_offers: number;
-  main_image_url: string;
+  main_image_url: string | null;
   official_url: string;
   specs: Record<string, unknown> | null;
 };
@@ -65,7 +66,7 @@ function mapShifting(s: Record<string, unknown>): Pick<Specs, "shifting" | "shif
 export const SPEC_KEYS = [
   "discipline", "groupset", "groupset_brand", "shifting", "shifting_type", "speeds", "drivetrain", "brakes",
   "suspension", "suspension_front_mm", "suspension_rear_mm", "wheel_size", "tyre_width_mm", "max_tyre_width_mm",
-  "tubeless_ready", "dropper_post", "battery_wh", "lights", "fenders", "rack", "kickstand",
+  "tubeless_ready", "dropper_post", "battery_wh", "lights", "fenders", "rack", "kickstand", "price_from",
 ] as const;
 /** Del motor solo se usan marca y par */
 export const MOTOR_KEYS = ["brand", "torque_nm"] as const;
@@ -181,6 +182,12 @@ export function cohortRow(r: ListingRow): CohortRow {
 
 type BaseBike = Omit<Bike, "pct" | "quality">;
 
+/** El precio del listado es el mínimo de las ofertas EN STOCK (vista variant_listing) */
+function priceState(r: ListingRow): Bike["priceState"] {
+  if (r.best_final_price_cents === null) return r.in_stock_offers > 0 ? "sin_euros" : "agotada";
+  return r.specs?.price_from === true ? "desde" : "ok";
+}
+
 function baseBike(r: ListingRow, sizes: Size[], estimate: Bike["weightEstimate"] | undefined): BaseBike {
   const specs = mapSpecs(r.specs);
   return {
@@ -199,9 +206,10 @@ function baseBike(r: ListingRow, sizes: Size[], estimate: Bike["weightEstimate"]
     weightEstimate: r.weight_g === null ? (estimate ?? null) : null,
     modelYear: r.model_year,
     priceCents: r.best_final_price_cents ?? 0,
+    priceState: priceState(r),
     // Sin precio publicado no se puede recomendar por presupuesto: cuenta como no disponible
     inStock: r.in_stock_offers > 0 && r.best_final_price_cents !== null,
-    imageUrl: r.main_image_url,
+    imageUrl: r.main_image_url ?? SIN_FOTO,
     officialUrl: r.official_url,
     specs,
     sizes: [...sizes].sort(compareSizes),

@@ -62,6 +62,13 @@ export type Bike = {
   weightEstimate: { grams: number; label: string } | null;
   modelYear: number | null;
   priceCents: number;
+  /**
+   * Cómo se puede mostrar el precio (src/lib/format.ts → priceLabel):
+   * "ok" precio en €; "desde" precio de partida de un configurador; "sin_euros" la oferta está en stock pero sin
+   * precio en € (tienda en $ o £, o la web no lo mostraba); "agotada" sin oferta en stock. Con "sin_euros" y
+   * "agotada", priceCents vale 0 solo para que las cuentas no fallen: nunca se enseña.
+   */
+  priceState: "ok" | "desde" | "sin_euros" | "agotada";
   inStock: boolean;
   imageUrl: string;
   officialUrl: string;

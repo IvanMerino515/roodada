@@ -8,7 +8,7 @@ import { QualityBadge } from "@/components/QualityBadge";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
 import { ContentEnter, ResultsSkeleton } from "@/components/Skeletons";
 import { getCatalog } from "@/lib/catalog/load";
-import { eur } from "@/lib/format";
+import { eur, priceLabel } from "@/lib/format";
 import { recommend, type Recommendation } from "@/lib/recommender";
 import { answersToSearch, ELECTRIC, LEVELS, PRIORITIES, USES, parseAnswers, type Answers } from "@/lib/recommender/questions";
 import { sinOptimizar } from "@/lib/imagen";
@@ -108,7 +108,7 @@ function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string;
           {r.bike.name}
         </h2>
         <p className="flex items-baseline justify-between gap-2 border-t border-border pt-1">
-          <span className="font-display text-h3 num">{eur(r.bike.priceCents)}</span>
+          <span className="font-display text-h3 num">{priceLabel(r.bike)}</span>
           <QualityBadge bike={r.bike} />
         </p>
         <div className="grid gap-1">

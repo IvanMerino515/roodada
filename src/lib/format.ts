@@ -2,7 +2,17 @@
 import type { Category, Discipline } from "./catalog/types";
 
 export const eur = (cents: number) =>
-  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
+  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" }).format(cents / 100);
+
+/** Texto cuando no hay precio en euros que enseñar (tienda en $ o £, o la web no lo mostraba) */
+export const NO_PRICE = "Precio no disponible en €";
+
+/** El precio tal como se enseña en toda la web: «2.999 €», «Desde 2.999 €», «Precio no disponible en €» o «Sin stock». */
+export function priceLabel(b: { priceCents: number; priceState?: "ok" | "desde" | "sin_euros" | "agotada" }) {
+  if (b.priceState === "sin_euros") return NO_PRICE;
+  if (b.priceState === "agotada") return "Sin stock";
+  return b.priceState === "desde" ? `Desde ${eur(b.priceCents)}` : eur(b.priceCents);
+}
 
 export const kg = (g: number | null) =>
   g === null ? null : `${(g / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 })} kg`;

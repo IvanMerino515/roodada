@@ -21,7 +21,7 @@ type Counts = {
 const STEPS = ["nivel", "electrica", "presupuesto", "uso", "altura", "prioridades"] as const;
 type Step = (typeof STEPS)[number];
 
-const eur = (n: number) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+const eur = (n: number) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" }).format(n);
 
 export function Guide() {
   const router = useRouter();

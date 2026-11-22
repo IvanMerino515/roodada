@@ -8,6 +8,7 @@ import {
   type Distributions, type ListingRow, type SizeRow, type WeightEstimateRow,
 } from "./build";
 import type { Bike } from "./types";
+import { foreignPrice } from "../priceOrigin";
 
 const LISTING_COLUMNS =
   "variant_id,slug,variant_name,model_id,model_name,brand_name,brand_slug,category_slug,is_electric," +
@@ -139,7 +140,18 @@ export type BikeDetail = {
   geometryImage: string | null;
   geometry: { label: string; values: Record<string, number | string | null> }[];
   components: { role: string; description: string }[];
-  offer: { id: number; url: string; priceCents: number; inStock: boolean; store: string; checkedAt: string } | null;
+  offer: {
+    id: number;
+    url: string;
+    /** null: la oferta no tiene precio en € (tienda en $ o £, o la web no lo mostraba) */
+    priceCents: number | null;
+    inStock: boolean;
+    store: string;
+    storeSlug: string | null;
+    checkedAt: string;
+  } | null;
+  /** Precio en otra moneda tal cual lo da la tienda («3.449 $»), si no hay precio en € */
+  foreignPrice: string | null;
 };
 
 /** Geometría, componentes, fotos y oferta de una bici (solo para la ficha y la comparativa). */
@@ -153,7 +165,8 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
       db.from("media").select("source_url,kind,sort_order,alt_es").eq("variant_id", id).order("sort_order"),
       db.from("variant_sizes").select("size_label,sort_order,geometry,components").eq("variant_id", id).order("sort_order"),
       db.from("variant_components").select("role,description").eq("variant_id", id),
-      db.from("offers").select("id,url,final_price_cents,in_stock,is_active,last_checked_at,stores(name)").eq("variant_id", id).eq("is_active", true),
+      db.from("offers").select("id,url,final_price_cents,in_stock,is_active,last_checked_at,stores(name,slug)").eq("variant_id", id).eq("is_active", true),
+      db.from("variants").select("data_notes").eq("id", id).maybeSingle(),
     ]);
   // El build pide las 1.600 fichas a la vez y Supabase a veces responde "Internal server error":
   // se reintenta un par de veces con pausa antes de dar el error (que pararía el build)
@@ -162,12 +175,18 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
     await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
     results = await load();
   }
-  const [media, sizes, components, offers] = results;
+  const [media, sizes, components, offers, variant] = results;
   for (const r of results) if (r.error) throw new Error(r.error.message);
 
   const photos = (media.data ?? []).filter((m) => m.kind === "foto").map((m) => ({ url: m.source_url as string, alt: m.alt_es as string | null }));
-  const best = [...(offers.data ?? [])].sort((a, b) => a.final_price_cents - b.final_price_cents)[0];
-  const store = best?.stores as { name: string } | { name: string }[] | null | undefined;
+  // La mejor oferta: primero en stock, luego con precio en €, luego la más barata
+  const rank = (o: { in_stock: boolean; final_price_cents: number | null }) => [o.in_stock ? 0 : 1, o.final_price_cents === null ? 1 : 0, o.final_price_cents ?? 0];
+  const best = [...(offers.data ?? [])].sort((a, b) => {
+    const [x, y] = [rank(a), rank(b)];
+    return x[0] - y[0] || x[1] - y[1] || x[2] - y[2];
+  })[0];
+  const store = best?.stores as { name: string; slug: string } | { name: string; slug: string }[] | null | undefined;
+  const st = Array.isArray(store) ? store[0] : store;
   return {
     photos,
     geometryImage: (media.data ?? []).find((m) => m.kind === "geometria")?.source_url ?? null,
@@ -182,9 +201,11 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
           url: best.url,
           priceCents: best.final_price_cents,
           inStock: best.in_stock,
-          store: (Array.isArray(store) ? store[0]?.name : store?.name) ?? "Web oficial",
+          store: st?.name ?? "Web oficial",
+          storeSlug: st?.slug ?? null,
           checkedAt: best.last_checked_at,
         }
       : null,
+    foreignPrice: foreignPrice((variant.data as { data_notes: string | null } | null)?.data_notes ?? null),
   };
 }

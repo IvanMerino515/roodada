@@ -12,7 +12,7 @@ import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
 } from "@/lib/catalogFilters";
-import { CATEGORY_LABEL, decimal, eur, label } from "@/lib/format";
+import { CATEGORY_LABEL, decimal, eur, label, priceLabel } from "@/lib/format";
 import type { Bike, Category } from "@/lib/catalog/types";
 
 export const metadata: Metadata = {
@@ -198,7 +198,7 @@ function featureTiles(shown: Bike[], page: number) {
   );
   const top = best && (
     <FeatureTile eyebrow="Mejor calidad-precio de esta página" title={`${best.brand} ${best.name}`} href={`/bici/${best.slug}`} cta="Ver la ficha" className="h-full">
-      {decimal(best.quality.total)} sobre 10 por {eur(best.priceCents)}, frente a otras bicis de su tipo.
+      {decimal(best.quality.total)} sobre 10 por {priceLabel(best)}, frente a otras bicis de su tipo.
     </FeatureTile>
   );
   const size = (

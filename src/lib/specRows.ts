@@ -1,6 +1,6 @@
 // Filas de especificaciones: una sola definición para la ficha y la comparativa.
 import type { Bike } from "./catalog/types";
-import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, kg, label } from "./format";
+import { CATEGORY_LABEL, DISCIPLINE_LABEL, kg, label, priceLabel } from "./format";
 import { TIER_LABELS } from "./recommender/tiers";
 
 export type SpecRow = {
@@ -34,7 +34,7 @@ function shiftingText(b: Bike): string | null {
 }
 
 export const SPEC_ROWS: SpecRow[] = [
-  { group: "General", label: "Precio", value: (b) => eur(b.priceCents), better: "lower", numeric: (b) => b.priceCents },
+  { group: "General", label: "Precio", value: (b) => priceLabel(b), better: "lower", numeric: (b) => (b.priceState === "ok" || b.priceState === "desde" ? b.priceCents : null) },
   { group: "General", label: "Calidad-precio", value: (b) => (b.category === "bici-infantil" ? null : `${b.quality.total.toLocaleString("es-ES")}/10`), better: "higher", numeric: (b) => (b.category === "bici-infantil" ? null : b.quality.total) },
   { group: "General", label: "Tipo", value: (b) => `${CATEGORY_LABEL[b.category]} · ${DISCIPLINE_LABEL[b.specs.discipline]}` },
   { group: "General", label: "Eléctrica", value: (b) => yes(b.electric) },

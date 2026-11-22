@@ -21,7 +21,7 @@ const MAX_PROS = 4;
 const MAX_CONS = 4;
 
 const eur = (cents: number) =>
-  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(cents / 100);
+  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" }).format(cents / 100);
 const metres = (cm: number) => (cm / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 }) + " m";
 const kg = (g: number) => (g / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " kg";
 const pct = (v: number) => `${Math.round(v * 100)} %`;

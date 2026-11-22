@@ -41,6 +41,8 @@ const imageHosts = [
   "www.stevensbikes.de", //añadido por edgar.
   "media.ffycdn.net", //añadido por edgar.
   "www.elvesbikes.co.uk", //añadido por edgar.
+  "resource.pon.bike", // Gazelle (22 nov)
+  "a.storyblok.com", // Colnago: 5 fichas (22 nov)
 ];
 
 // Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
