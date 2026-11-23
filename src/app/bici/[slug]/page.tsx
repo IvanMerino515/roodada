@@ -8,7 +8,7 @@ import { GeometryTable, geometrySizeCount } from "@/components/GeometryTable";
 import { QualityBadge } from "@/components/QualityBadge";
 import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
-import { SpecRow, SpecTable } from "@/components/SpecTable";
+import { specCount, SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
 import { PriceChecked } from "@/components/PriceChecked";
 import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, NO_PRICE, priceLabel } from "@/lib/format";
@@ -117,7 +117,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
                 <>
                   {/* 🟢 en stock · 🔴 sin stock · 🟡 la marca vende por tiendas o por presupuesto: su web no dice si hay */}
                   <span aria-hidden="true">{!offer.inStock ? "🔴" : origin.stockUnknown ? "🟡" : "🟢"}</span>{" "}
-                  {!offer.inStock ? "Sin stock" : origin.stockUnknown ? "Stock por confirmar en tiendas" : "En stock"}. Enlace a la web más abajo.
+                  {!offer.inStock ? "Sin stock" : origin.stockUnknown ? "Stock por confirmar en tiendas" : "En stock"}. Link a la web más abajo.
                 </>
               ) : (
                 <><span aria-hidden="true">🔴</span> Sin oferta en la web oficial.</>
@@ -153,19 +153,15 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
         </div>
       </article>
 
-      <section aria-labelledby="specs" className="border border-border">
-        <h2 id="specs" className="font-display text-h3 uppercase px-2 py-2">Especificaciones</h2>
-        <SpecTable bike={bike} />
-      </section>
-
-      <details className="border border-border group">
+      {/* Desplegable como Geometría y Montaje completo; abierto al entrar, que es lo que más se consulta */}
+      <details open className="border border-border group">
         <summary className="flex items-center justify-between gap-2 px-2 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-          <h2 id="geo" className="font-display text-h3 uppercase">Geometría</h2>
+          <h2 id="specs" className="font-display text-h3 uppercase">Especificaciones</h2>
           <span className="eyebrow num">
-            {geoSizes > 0 ? `${geoSizes} ${geoSizes === 1 ? "talla" : "tallas"}` : "No publicada"} <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
+            {specCount(bike)} datos <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
           </span>
         </summary>
-        <GeometryTable geometry={geometry} />
+        <SpecTable bike={bike} />
       </details>
 
       {detail.components.length > 0 && (
@@ -185,6 +181,16 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
           </dl>
         </details>
       )}
+
+      <details className="border border-border group">
+        <summary className="flex items-center justify-between gap-2 px-2 py-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+          <h2 id="geo" className="font-display text-h3 uppercase">Geometría</h2>
+          <span className="eyebrow num">
+            {geoSizes > 0 ? `${geoSizes} ${geoSizes === 1 ? "talla" : "tallas"}` : "No publicada"} <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
+          </span>
+        </summary>
+        <GeometryTable geometry={geometry} />
+      </details>
     </div>
   );
 }

@@ -12,7 +12,12 @@ export type SpecRow = {
   numeric?: (b: Bike) => number | null;
   /** Aclaración visible bajo el valor (p. ej. que el dato es una estimación) */
   note?: (b: Bike) => string | null;
+  /** En General: si ninguna bici tiene el dato, la fila no sale (las demás de General salen siempre) */
+  optional?: boolean;
 };
+
+/** Con suspensión delantera o doble. Sin ella (carretera, triatlón, gravel rígida…) no se enseña el apartado */
+const hasSuspension = (b: Bike) => b.specs.suspension === "delantera" || b.specs.suspension === "doble";
 
 const mm = (v: number | null) => (v === null ? null : `${v} mm`);
 const yes = (v: boolean | null) => (v === null ? null : v ? "Sí" : "No");
@@ -49,6 +54,8 @@ export const SPEC_ROWS: SpecRow[] = [
     note: (b) => (b.weightG === null && b.weightEstimate ? `Peso estimado: ${b.brand} no publica el peso oficial de esta bici.` : null),
   },
   { group: "General", label: "Año", value: (b) => (b.modelYear ? String(b.modelYear) : null) },
+  // Bici rígida con tija telescópica (gravel, sobre todo): sin apartado Suspensión, el dato va aquí y solo si es «Sí»
+  { group: "General", label: "Tija telescópica", optional: true, value: (b) => (!hasSuspension(b) && b.specs.dropperPost ? "Sí" : null) },
   { group: "Transmisión", label: "Grupo", value: (b) => b.specs.groupset },
   { group: "Transmisión", label: "Gama", value: (b) => (b.tier ? cap(TIER_LABELS[b.tier]) : null), better: "higher", numeric: (b) => b.tier },
   { group: "Transmisión", label: "Cambio", value: (b) => shiftingText(b) },
@@ -65,13 +72,16 @@ export const SPEC_ROWS: SpecRow[] = [
   { group: "Suspensión", label: "Tija telescópica", value: (b) => yes(b.specs.dropperPost) },
   { group: "Eléctrica", label: "Motor", value: (b) => (b.electric ? [b.specs.motorBrand, b.specs.motorTorqueNm && `${b.specs.motorTorqueNm} Nm`].filter(Boolean).join(" · ") || null : null) },
   { group: "Eléctrica", label: "Batería", value: (b) => (b.electric && b.specs.batteryWh ? `${b.specs.batteryWh} Wh` : null), better: "higher", numeric: (b) => (b.electric ? b.specs.batteryWh : null) },
-  { group: "Equipamiento", label: "Luces", value: (b) => yes(b.specs.lights) },
-  { group: "Equipamiento", label: "Guardabarros", value: (b) => yes(b.specs.fenders) },
-  { group: "Equipamiento", label: "Portabultos", value: (b) => yes(b.specs.rack) },
-  { group: "Equipamiento", label: "Caballete", value: (b) => yes(b.specs.kickstand) },
+  // «Equipamiento» (luces, guardabarros, portabultos, caballete) quitado el 23 nov (Edgar): no se enseña en ninguna bici
 ];
 
 /** Filas que tienen sentido para estas bicis (sin la sección eléctrica si ninguna lo es, etc.) */
+
 export function rowsFor(bikes: Bike[]): SpecRow[] {
-  return SPEC_ROWS.filter((r) => bikes.some((b) => r.value(b) !== null) || r.group === "General");
+  const suspension = bikes.some(hasSuspension);
+  return SPEC_ROWS.filter(
+    (r) =>
+      (r.group !== "Suspensión" || suspension) &&
+      (bikes.some((b) => r.value(b) !== null) || (r.group === "General" && !r.optional)),
+  );
 }
