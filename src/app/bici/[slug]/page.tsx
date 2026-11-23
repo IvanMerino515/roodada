@@ -10,6 +10,8 @@ import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
 import { specCount, SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
+import { AFFILIATE_NOTICE } from "@/lib/legal";
+import { TrackEvent } from "@/components/TrackEvent";
 import { PriceChecked } from "@/components/PriceChecked";
 import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, NO_PRICE, priceLabel } from "@/lib/format";
 import { priceOrigin, shortStore } from "@/lib/priceOrigin";
@@ -56,6 +58,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
 
   return (
     <div className="wrap pt-2 pb-4 grid grid-cols-[minmax(0,1fr)] gap-4">
+      <TrackEvent key={bike.id} nombre="ficha_vista" datos={{ bici: bike.id, marca: bike.brand, categoria: bike.category }} />
       <nav aria-label="Estás en" className="eyebrow">
         <ol className="flex flex-wrap gap-1 list-none m-0 p-0">
           <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link> /</li>
@@ -142,12 +145,14 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
               </Suspense>
             </SpecRow>
             <div className="border-t border-border p-2 grid gap-1">
-              <a href={`/ir/${bike.slug}`} rel="nofollow noopener" target="_blank" className="btn btn-solid btn-lg w-full">
+              <a href={`/ir/${bike.slug}`} rel="sponsored nofollow noopener" target="_blank" className="btn btn-solid btn-lg w-full">
                 Comprar en la web oficial
                 <span aria-hidden="true">↗</span>
                 <span className="sr-only">(se abre en otra pestaña)</span>
               </a>
               <p className="text-small">Link a la web oficial de {store}</p>
+              {/* Solo cuando el enlace es de afiliado: la ley pide identificarlo como comunicación comercial */}
+              {detail.offer?.affiliateUrl && <p className="text-small">{AFFILIATE_NOTICE}</p>}
             </div>
           </dl>
         </div>

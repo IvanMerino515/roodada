@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Privacidad", alternates: { canonical
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacidad" updated="14 de octubre de 2026">
+    <LegalPage title="Privacidad" updated="23 de noviembre de 2026">
       <p>
         En corto: Roodada no te pide registrarte, no usa cookies y no guarda quién eres. Lo que medimos es anónimo y
         sirve para mejorar las recomendaciones.
@@ -29,6 +29,13 @@ export default function PrivacyPage() {
         <li>
           <strong>Visitas</strong>: contamos qué páginas se visitan con Vercel Web Analytics, que no usa cookies ni
           identifica a nadie. Quitamos de la dirección tus respuestas antes de medir.
+        </li>
+        <li>
+          <strong>Uso de la web</strong>: apuntamos qué páginas y fichas se ven, cómo se responde la guía (el
+          presupuesto y la altura, por tramos: «2.000–2.999 €», «170–174 cm»), qué filtros se usan y qué bicis se
+          recomiendan o se comparan. Para unir los pasos de una misma visita usamos un número aleatorio que solo
+          existe mientras la pestaña está abierta: no se guarda en tu navegador ni sirve para saber quién eres. Si tu
+          navegador pide no ser seguido (Global Privacy Control o Do Not Track), no apuntamos nada.
         </li>
         <li>
           <strong>Salidas a tiendas</strong>: cuando pulsas un enlace de compra, apuntamos qué oferta era, desde qué
@@ -55,7 +62,7 @@ export default function PrivacyPage() {
       <h2>Proveedores</h2>
       <ul>
         <li>Vercel Inc.: alojamiento y medición de visitas. Puede tratar datos técnicos en EE. UU., con cláusulas contractuales tipo de la Comisión Europea.</li>
-        <li>Supabase: base de datos del catálogo y del registro anónimo de salidas, alojada en la Unión Europea (Irlanda).</li>
+        <li>Supabase: base de datos del catálogo y del registro anónimo de uso y de salidas, alojada en la Unión Europea (Irlanda).</li>
       </ul>
 
       <h2>Tus derechos</h2>

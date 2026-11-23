@@ -25,7 +25,13 @@ export async function GET(request: Request, { params }: RouteContext<"/ir/[slug]
 
   return new Response(null, {
     status: 302,
-    headers: { Location: offer?.url ?? bike.officialUrl, "X-Robots-Tag": "noindex, nofollow", "Cache-Control": "no-store" },
+    // Con programa de afiliación, el enlace de la red (que apunta a la misma página de la tienda);
+    // sin él, la página de la tienda tal cual
+    headers: {
+      Location: offer?.affiliateUrl ?? offer?.url ?? bike.officialUrl,
+      "X-Robots-Tag": "noindex, nofollow",
+      "Cache-Control": "no-store",
+    },
   });
 }
 

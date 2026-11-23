@@ -8,3 +8,8 @@ export const LEGAL = {
 } as const;
 
 export const pending = (v: string) => v || "[pendiente]";
+
+// Aviso junto al botón de compra cuando el enlace es de afiliado (LSSI: identificar la comunicación
+// comercial). PENDIENTE: que lo revise el abogado antes de activar la afiliación.
+export const AFFILIATE_NOTICE =
+  "Si compras desde este enlace, Roodada puede cobrar una comisión. A ti te cuesta lo mismo y no cambia el orden de las recomendaciones.";

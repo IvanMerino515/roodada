@@ -143,6 +143,8 @@ export type BikeDetail = {
   offer: {
     id: number;
     url: string;
+    /** Enlace de afiliado de la red (Awin, Belboon…); null mientras la oferta no tenga programa */
+    affiliateUrl: string | null;
     /** null: la oferta no tiene precio en € (tienda en $ o £, o la web no lo mostraba) */
     priceCents: number | null;
     inStock: boolean;
@@ -165,7 +167,7 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
       db.from("media").select("source_url,kind,sort_order,alt_es").eq("variant_id", id).order("sort_order"),
       db.from("variant_sizes").select("size_label,sort_order,geometry,components").eq("variant_id", id).order("sort_order"),
       db.from("variant_components").select("role,description").eq("variant_id", id),
-      db.from("offers").select("id,url,final_price_cents,in_stock,is_active,last_checked_at,stores(name,slug)").eq("variant_id", id).eq("is_active", true),
+      db.from("offers").select("id,url,affiliate_url,final_price_cents,in_stock,is_active,last_checked_at,stores(name,slug)").eq("variant_id", id).eq("is_active", true),
       db.from("variants").select("data_notes").eq("id", id).maybeSingle(),
     ]);
   // El build pide las 1.600 fichas a la vez y Supabase a veces responde "Internal server error":
@@ -199,6 +201,7 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
       ? {
           id: best.id,
           url: best.url,
+          affiliateUrl: (best.affiliate_url as string | null) || null,
           priceCents: best.final_price_cents,
           inStock: best.in_stock,
           store: st?.name ?? "Web oficial",

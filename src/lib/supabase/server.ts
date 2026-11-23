@@ -23,10 +23,20 @@ export async function selectAll<T>(
 ): Promise<T[]> {
   const { pageSize = 1000, notNull } = options;
   const db = supabase();
-  const page = (from: number, count = false) => {
+  const query = (from: number, count: boolean) => {
     let q = db.from(table).select(columns, count ? { count: "exact" } : undefined);
     if (notNull) q = q.not(notNull, "is", null);
     return q.order(orderBy).range(from, from + pageSize - 1);
+  };
+  // Con la base cargada (compilación, cargas de Edgar) a veces Supabase corta una consulta por
+  // tiempo: se reintenta dos veces con pausa antes de dar el error, que pararía la compilación
+  const page = async (from: number, count = false) => {
+    let r = await query(from, count);
+    for (let attempt = 1; attempt <= 2 && r.error; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 800 * attempt));
+      r = await query(from, count);
+    }
+    return r;
   };
 
   const first = await page(0, true);

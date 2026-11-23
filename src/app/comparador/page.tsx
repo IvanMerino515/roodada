@@ -11,6 +11,7 @@ import { TypeableSelect } from "@/components/TypeableSelect";
 import { FilterForm, MoreFiltersToggle } from "@/components/FilterForm";
 import { AnimatedCount } from "@/components/GuideMotion";
 import { CatalogSkeleton, ContentEnter } from "@/components/Skeletons";
+import { TrackEvent } from "@/components/TrackEvent";
 import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
@@ -47,9 +48,16 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const filtered = filtersToSearch({ ...f, orden: "calidad", pagina: 1 }) !== "";
   const tiles = featureTiles(shown, page);
+  // Los filtros puestos (sin página ni orden por defecto) y el texto buscado, recortado
+  const puestos = Object.fromEntries(
+    Object.entries({ ...f, q: f.q ? f.q.slice(0, 60) : undefined, pagina: undefined }).filter(
+      (e): e is [string, string | number] => e[1] !== undefined && e[1] !== null && e[1] !== "",
+    ),
+  );
 
   return (
     <>
+      <TrackEvent key={filtersToSearch(f)} nombre="comparador_busqueda" datos={{ filtros: puestos, total: list.length, pagina: page }} />
       <div className="wrap grid-swiss gap-y-2 pt-4 pb-3 items-end">
         <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">Comparador</h1>
         <p className="col-span-4 md:col-span-3 lg:col-span-4 text-small">

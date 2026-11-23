@@ -7,6 +7,8 @@ import {
   answersToSearch, availablePriorities, BUDGET, ELECTRIC, HEIGHT, INSEAM, isDetailed, LEVELS, MAX_PRIORITIES, PRIORITIES, USES, usesFor,
   type Answers, type ElectricKey, type LevelKey, type PriorityKey, type UseKey,
 } from "@/lib/recommender/questions";
+import { track } from "@/lib/actividad/cliente";
+import { alturaTramo, presupuestoTramo } from "@/lib/actividad/eventos";
 import { AnimatedCount, CheckMark, SearchFunnel } from "./GuideMotion";
 import { startNavProgress } from "./NavProgress";
 
@@ -39,6 +41,20 @@ export function Guide() {
   }, [step]);
   // Pausa breve tras elegir, para que se vea la opción marcada antes de pasar de pregunta
   const choosing = useRef(false);
+  // Registro anónimo: la primera respuesta marca el inicio; presupuesto y altura van en tramos
+  const started = useRef(false);
+  const trackAnswer = (paso: Step, v: Partial<Answers>) => {
+    if (!started.current) {
+      started.current = true;
+      track("guia_inicio");
+    }
+    const valor =
+      paso === "presupuesto" ? presupuestoTramo(v.presupuesto)
+      : paso === "altura" ? alturaTramo(v.altura)
+      : paso === "prioridades" ? (v.prioridades ?? [])
+      : (v[paso] ?? null);
+    track("guia_respuesta", { paso, valor, ...(paso === "altura" ? { entrepierna: v.entrepierna !== undefined } : {}) });
+  };
 
   // Cada paso es una entrada del historial (?paso=uso): el "atrás" del navegador o del móvil vuelve a la
   // pregunta anterior en lugar de sacarte de la guía. Next integra pushState en su router.
@@ -98,6 +114,7 @@ export function Guide() {
   const back = () => history.back();
   const choose = (patch: Partial<Answers>, next: Step) => {
     if (choosing.current) return;
+    trackAnswer(step, { ...a, ...patch });
     setA((prev) => ({ ...prev, ...patch }));
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce) return go(next);
@@ -108,6 +125,15 @@ export function Guide() {
     }, 260);
   };
   const finish = (final: Partial<Answers>) => {
+    trackAnswer(step, final);
+    track("guia_fin", {
+      nivel: final.nivel ?? null,
+      electrica: final.electrica ?? null,
+      uso: final.uso ?? null,
+      presupuesto: presupuestoTramo(final.presupuesto),
+      altura: alturaTramo(final.altura),
+      prioridades: final.prioridades ?? [],
+    });
     startNavProgress();
     startFinding(() => router.push(`/guia/resultados?${answersToSearch(final as Answers)}`));
   };
@@ -302,7 +328,14 @@ export function Guide() {
               <span />
             )}
             {step === "presupuesto" && (
-              <button type="button" className="btn btn-solid" onClick={() => go("uso")}>
+              <button
+                type="button"
+                className="btn btn-solid"
+                onClick={() => {
+                  trackAnswer("presupuesto", a);
+                  go("uso");
+                }}
+              >
                 Siguiente <span aria-hidden="true">→</span>
               </button>
             )}
@@ -310,7 +343,15 @@ export function Guide() {
               (skipped("prioridades") ? (
                 <FinishButton pending={finding} disabled={!a.altura} onClick={() => finish(a)} />
               ) : (
-                <button type="button" className="btn btn-solid" disabled={!a.altura} onClick={() => go("prioridades")}>
+                <button
+                  type="button"
+                  className="btn btn-solid"
+                  disabled={!a.altura}
+                  onClick={() => {
+                    trackAnswer("altura", a);
+                    go("prioridades");
+                  }}
+                >
                   Siguiente <span aria-hidden="true">→</span>
                 </button>
               ))}

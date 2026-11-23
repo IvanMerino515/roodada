@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+
+import { track } from "@/lib/actividad/cliente";
 import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
 
 export const MAX_COMPARE = 4;
@@ -99,7 +101,10 @@ export function CompareToggle({ slug, name }: { slug: string; name: string }) {
         className="size-2 accent-[var(--ds-accent)] cursor-[inherit]"
         checked={checked}
         disabled={!checked && full}
-        onChange={() => ctx.toggle(slug)}
+        onChange={() => {
+          track("comparar_marcar", { slug, marcado: !checked, total: ctx.selected.length + (checked ? -1 : 1) });
+          ctx.toggle(slug);
+        }}
         aria-label={`Comparar ${name}`}
       />
       <span aria-hidden="true">Comparar</span>

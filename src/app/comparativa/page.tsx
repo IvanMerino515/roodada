@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { ComparisonSkeleton, ContentEnter } from "@/components/Skeletons";
+import { TrackEvent } from "@/components/TrackEvent";
 import { getBikes } from "@/lib/catalog/load";
 import type { Bike } from "@/lib/catalog/types";
 import { MISSING } from "@/lib/format";
@@ -42,6 +43,7 @@ async function Comparison({ slugs }: { slugs: string[] }) {
 
   return (
     <>
+      <TrackEvent key={slugs.join(",")} nombre="comparativa_abierta" datos={{ bicis: bikes.map((b) => b.id) }} />
       <div className="wrap grid-swiss gap-y-2 pt-4 pb-3 items-end">
         <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">Comparativa</h1>
         <p className="col-span-4 md:col-span-3 lg:col-span-4 text-small">
@@ -84,7 +86,7 @@ async function Comparison({ slugs }: { slugs: string[] }) {
                 <td className="border-r border-border" />
                 {bikes.map((b) => (
                   <td key={b.id} className="p-2 border-r border-border last:border-r-0">
-                    <a href={`/ir/${b.slug}`} rel="nofollow noopener" target="_blank" className="btn w-full">
+                    <a href={`/ir/${b.slug}`} rel="sponsored nofollow noopener" target="_blank" className="btn w-full">
                       Tienda <span aria-hidden="true">↗</span>
                       <span className="sr-only">: {b.brand} {b.name} (se abre en otra pestaña)</span>
                     </a>

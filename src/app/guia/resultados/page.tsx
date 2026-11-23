@@ -7,6 +7,8 @@ import { LinkPending } from "@/components/LinkPending";
 import { QualityBadge } from "@/components/QualityBadge";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
 import { ContentEnter, ResultsSkeleton } from "@/components/Skeletons";
+import { TrackEvent } from "@/components/TrackEvent";
+import { alturaTramo, presupuestoTramo } from "@/lib/actividad/eventos";
 import { getCatalog } from "@/lib/catalog/load";
 import { eur, priceLabel } from "@/lib/format";
 import { recommend, type Recommendation } from "@/lib/recommender";
@@ -49,6 +51,21 @@ async function Results({ params }: { params: Record<string, string | string[] | 
 
   return (
     <>
+      {/* Presupuesto y altura en tramos, nunca la cifra exacta */}
+      <TrackEvent
+        key={query}
+        nombre="resultados_mostrados"
+        datos={{
+          bicis: results.map((r) => r.bike.id),
+          encajan: matched,
+          nivel: answers.nivel,
+          electrica: answers.electrica,
+          uso: answers.uso,
+          presupuesto: presupuestoTramo(answers.presupuesto),
+          altura: alturaTramo(answers.altura),
+          prioridades: answers.prioridades,
+        }}
+      />
       <div className="wrap grid-swiss gap-y-2 pt-4 pb-3 items-end">
         <h1 className="col-span-4 md:col-span-5 lg:col-span-8 text-display uppercase">
           {shown ? <>Tus {shown === 1 ? "bici" : <><span className="num">{shown}</span> bicis</>}</> : "Sin resultados"}
@@ -116,7 +133,7 @@ function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string;
             Por qué es para ti <span aria-hidden="true">→</span>
             <LinkPending />
           </Link>
-          <a href={`/ir/${r.bike.slug}`} rel="nofollow noopener" target="_blank" className="btn w-full">
+          <a href={`/ir/${r.bike.slug}`} rel="sponsored nofollow noopener" target="_blank" className="btn w-full">
             Web oficial de {r.bike.brand} <span aria-hidden="true">↗</span>
             <span className="sr-only">(se abre en otra pestaña)</span>
           </a>

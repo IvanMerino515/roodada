@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { ActivityTracker } from "@/components/ActivityTracker";
 import { NavProgress } from "@/components/NavProgress";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { ResetBoundary, ResetScope } from "@/components/ResetScope";
@@ -43,6 +44,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Lee la dirección (useSearchParams): con Cache Components necesita su propio Suspense */}
         <Suspense fallback={null}>
           <NavProgress />
+          {/* Registro anónimo de uso: páginas vistas y salidas a tienda */}
+          <ActivityTracker />
         </Suspense>
         {/* El logo «empieza de cero»: vuelve a montar el contenido con todo por defecto (ResetScope) */}
         <ResetScope>
