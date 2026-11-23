@@ -12,6 +12,7 @@ export type SortKey = keyof typeof SORTS;
 export type CatalogFilters = {
   categoria?: Category;
   electrica?: "si" | "no";
+  precioMin?: number;
   precioMax?: number;
   marca?: string;
   material?: string;
@@ -26,14 +27,22 @@ export const PAGE_SIZE = 24;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
 
 export function parseFilters(sp: Record<string, string | string[] | undefined>): CatalogFilters {
-  const precio = Number(one(sp.precioMax));
+  // «3.500», «3500 €» o «3500»: se quedan solo las cifras (el punto es el separador de miles)
+  const euros = (v: string | string[] | undefined) => {
+    const n = Number((one(v) ?? "").replace(/\D/g, ""));
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  };
+  // «Entre» con las cifras al revés: se ordenan
+  let [precioMin, precioMax] = [euros(sp.precioMin), euros(sp.precioMax)];
+  if (precioMin !== undefined && precioMax !== undefined && precioMin > precioMax) [precioMin, precioMax] = [precioMax, precioMin];
   const pagina = Number(one(sp.pagina));
   const orden = one(sp.orden);
   const electrica = one(sp.electrica);
   return {
     categoria: one(sp.categoria) as Category | undefined,
     electrica: electrica === "si" || electrica === "no" ? electrica : undefined,
-    precioMax: Number.isFinite(precio) && precio > 0 ? precio : undefined,
+    precioMin,
+    precioMax,
     marca: one(sp.marca),
     material: one(sp.material),
     suspension: one(sp.suspension),
@@ -51,8 +60,10 @@ export function applyFilters(bikes: Bike[], f: CatalogFilters): Bike[] {
     (b) =>
       (!f.categoria || b.category === f.categoria) &&
       (!f.electrica || b.electric === (f.electrica === "si")) &&
+      (!f.precioMin || b.priceCents >= f.precioMin * 100) &&
       (!f.precioMax || b.priceCents <= f.precioMax * 100) &&
-      (!f.marca || b.brandSlug === f.marca) &&
+      // Marca elegida (slug) o escrita a mano: vale el nombre, sin tildes ni mayúsculas
+      (!f.marca || b.brandSlug === f.marca || normalize(b.brand) === normalize(f.marca.trim())) &&
       (!f.material || b.frameMaterial === f.material) &&
       (!f.suspension || b.specs.suspension === f.suspension) &&
       words.every((w) => normalize(`${b.brand} ${b.name} ${b.specs.groupset ?? ""}`).includes(w)),

@@ -40,7 +40,7 @@ function shiftingText(b: Bike): string | null {
 
 export const SPEC_ROWS: SpecRow[] = [
   { group: "General", label: "Precio", value: (b) => priceLabel(b), better: "lower", numeric: (b) => (b.priceState === "ok" || b.priceState === "desde" ? b.priceCents : null) },
-  { group: "General", label: "Calidad-precio", value: (b) => (b.category === "bici-infantil" ? null : `${b.quality.total.toLocaleString("es-ES")}/10`), better: "higher", numeric: (b) => (b.category === "bici-infantil" ? null : b.quality.total) },
+  { group: "General", label: "Calidad-precio", value: (b) => (b.category === "bici-infantil" ? null : `${b.quality.total.toLocaleString("es-ES", { useGrouping: "always" })}/10`), better: "higher", numeric: (b) => (b.category === "bici-infantil" ? null : b.quality.total) },
   { group: "General", label: "Tipo", value: (b) => `${CATEGORY_LABEL[b.category]} · ${DISCIPLINE_LABEL[b.specs.discipline]}` },
   { group: "General", label: "Eléctrica", value: (b) => yes(b.electric) },
   { group: "General", label: "Cuadro", value: (b) => label(b.frameMaterial) },

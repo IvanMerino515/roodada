@@ -391,7 +391,7 @@ function Option({
       <span className="eyebrow num text-right">
         {/* La marca de elegida no depende solo del color: el check se dibuja al elegir */}
         <CheckMark />{" "}
-        {count === undefined ? "" : empty ? "Sin bicis" : `${count.toLocaleString("es-ES")} bicis`}
+        {count === undefined ? "" : empty ? "Sin bicis" : `${count.toLocaleString("es-ES", { useGrouping: "always" })} bicis`}
       </span>
       {hint && <span className="col-start-2 col-span-2 text-small">{hint}</span>}
     </button>

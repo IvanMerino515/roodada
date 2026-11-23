@@ -6,7 +6,7 @@ import { getCatalog } from "@/lib/catalog/load";
 import type { Bike, Category } from "@/lib/catalog/types";
 import { CATEGORY_LABEL } from "@/lib/format";
 
-const n = (v: number) => v.toLocaleString("es-ES");
+const n = (v: number) => v.toLocaleString("es-ES", { useGrouping: "always" });
 
 export default async function HomePage() {
   const bikes = await getCatalog();

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ELECTRIC, USES, type Answers } from "@/lib/recommender/questions";
 
 const reduced = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const fmt = (n: number) => n.toLocaleString("es-ES");
+const fmt = (n: number) => n.toLocaleString("es-ES", { useGrouping: "always" });
 
 /**
  * Número que cuenta hasta su valor nuevo en 320 ms (frena al llegar). El lector de pantalla solo oye

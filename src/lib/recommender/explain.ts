@@ -22,10 +22,10 @@ const MAX_CONS = 4;
 
 const eur = (cents: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0, useGrouping: "always" }).format(cents / 100);
-const metres = (cm: number) => (cm / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 }) + " m";
-const kg = (g: number) => (g / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + " kg";
+const metres = (cm: number) => (cm / 100).toLocaleString("es-ES", { useGrouping: "always", minimumFractionDigits: 2 }) + " m";
+const kg = (g: number) => (g / 1000).toLocaleString("es-ES", { useGrouping: "always", maximumFractionDigits: 1 }) + " kg";
 const pct = (v: number) => `${Math.round(v * 100)} %`;
-const dec = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
+const dec = (n: number) => n.toLocaleString("es-ES", { useGrouping: "always", maximumFractionDigits: 1 });
 const capitalize = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 const listJoin = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} y ${xs.at(-1)}` : (xs[0] ?? ""));
 

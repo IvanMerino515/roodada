@@ -14,14 +14,17 @@ export function priceLabel(b: { priceCents: number; priceState?: "ok" | "desde" 
   return b.priceState === "desde" ? `Desde ${eur(b.priceCents)}` : eur(b.priceCents);
 }
 
+/** Número entero con separador de miles siempre: «4.142» (en español, por defecto, 4 cifras van sin punto) */
+export const int = (n: number) => n.toLocaleString("es-ES", { useGrouping: "always" });
+
 export const kg = (g: number | null) =>
-  g === null ? null : `${(g / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 })} kg`;
+  g === null ? null : `${(g / 1000).toLocaleString("es-ES", { useGrouping: "always", maximumFractionDigits: 1 })} kg`;
 
 /** "14 de octubre": la fecha en que se comprobó un precio (en hora de Madrid, que es donde se lee). */
 export const day = (iso: string) =>
   new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" }).format(new Date(iso));
 
-export const decimal = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
+export const decimal = (n: number) => n.toLocaleString("es-ES", { useGrouping: "always", maximumFractionDigits: 1 });
 
 export const CATEGORY_LABEL: Record<Category, string> = {
   "bici-carretera": "Carretera",

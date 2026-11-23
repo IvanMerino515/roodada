@@ -5,6 +5,8 @@ import { Fragment, Suspense, ViewTransition, type ReactNode } from "react";
 import { BikeCard, FeatureTile } from "@/components/BikeCard";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
 import { EXTRA, FilterRow, FilterSelect } from "@/components/FilterBar";
+import { PriceFilter } from "@/components/PriceFilter";
+import { TypeableSelect } from "@/components/TypeableSelect";
 import { FilterForm, MoreFiltersToggle } from "@/components/FilterForm";
 import { AnimatedCount } from "@/components/GuideMotion";
 import { CatalogSkeleton, ContentEnter } from "@/components/Skeletons";
@@ -12,7 +14,7 @@ import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
 } from "@/lib/catalogFilters";
-import { CATEGORY_LABEL, decimal, eur, label, priceLabel } from "@/lib/format";
+import { CATEGORY_LABEL, decimal, int, label, priceLabel } from "@/lib/format";
 import type { Bike, Category } from "@/lib/catalog/types";
 
 export const metadata: Metadata = {
@@ -42,7 +44,6 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
   const pages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
   const page = Math.min(f.pagina, pages);
   const shown = list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const prices = f.precioMax && !PRICE_STEPS.includes(f.precioMax) ? [...PRICE_STEPS, f.precioMax].sort((a, b) => a - b) : PRICE_STEPS;
   const filtered = filtersToSearch({ ...f, orden: "calidad", pagina: 1 }) !== "";
   const tiles = featureTiles(shown, page);
 
@@ -63,7 +64,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
           <FilterSelect id="categoria" name="categoria" label="Tipo" defaultValue={f.categoria ?? ""}>
             <option value="">Todos</option>
             {facets.categoria.map(([k, n]) => (
-              <option key={k} value={k}>{CATEGORY_LABEL[k as Category]} ({n})</option>
+              <option key={k} value={k}>{CATEGORY_LABEL[k as Category]} ({int(n)})</option>
             ))}
           </FilterSelect>
           <FilterSelect id="electrica" name="electrica" label="Eléctrica" defaultValue={f.electrica ?? ""} extra>
@@ -71,18 +72,32 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
             <option value="si">Sí</option>
             <option value="no">No</option>
           </FilterSelect>
-          <FilterSelect id="precioMax" name="precioMax" label="Hasta" defaultValue={f.precioMax ? String(f.precioMax) : ""}>
-            <option value="">Cualquier precio</option>
-            {prices.map((p) => (
-              <option key={p} value={p}>{eur(p * 100)}</option>
-            ))}
-          </FilterSelect>
-          <FilterSelect id="marca" name="marca" label="Marca" defaultValue={f.marca ?? ""} extra>
-            <option value="">Todas</option>
-            {facets.marca.map(([k, n]) => (
-              <option key={k} value={k}>{facets.marcaNombre[k]} ({n})</option>
-            ))}
-          </FilterSelect>
+          {/* Presupuesto: cifras fijas («hasta X €») y ✎ Hasta / Desde / Entre para escribir el importe */}
+          {/* key: al aplicar, se vuelve a montar y enseña el filtro puesto en el desplegable («Entre 1.000 € y 3.000 €») */}
+          <PriceFilter key={`${f.precioMin}-${f.precioMax}`} steps={PRICE_STEPS} min={f.precioMin} max={f.precioMax} />
+          {/* Marcas por orden alfabético; «✎ Escribe una marca…» (arriba) busca y autocompleta en el mismo campo */}
+          <TypeableSelect
+            key={f.marca ?? ""}
+            id="marca"
+            name="marca"
+            label="Marca"
+            // Si se escribió el nombre («santa cruz»), el desplegable marca la opción de esa marca
+            defaultValue={
+              f.marca
+                ? (Object.keys(facets.marcaNombre).find(
+                    (k) => k === f.marca || facets.marcaNombre[k].localeCompare(f.marca!.trim(), "es", { sensitivity: "base" }) === 0,
+                  ) ?? f.marca)
+                : ""
+            }
+            allLabel="Todas"
+            typeLabel="Escribe una marca…"
+            placeholder="Escribe la marca"
+            autocomplete
+            extra
+            options={facets.marca
+              .map(([k, n]) => ({ value: k, text: facets.marcaNombre[k], label: `${facets.marcaNombre[k]} (${int(n)})` }))
+              .sort((a, b) => a.text.localeCompare(b.text, "es"))}
+          />
           <FilterSelect id="orden" name="orden" label="Orden" defaultValue={f.orden}>
             {Object.entries(SORTS).map(([k, l]) => (
               <option key={k} value={k}>{l}</option>
@@ -105,13 +120,13 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
           <FilterSelect id="material" name="material" label="Cuadro" defaultValue={f.material ?? ""} className="lg:border-b-0" extra>
             <option value="">Todos</option>
             {facets.material.map(([k, n]) => (
-              <option key={k} value={k}>{label(k)} ({n})</option>
+              <option key={k} value={k}>{label(k)} ({int(n)})</option>
             ))}
           </FilterSelect>
           <FilterSelect id="suspension" name="suspension" label="Suspensión" defaultValue={f.suspension ?? ""} className="lg:border-b-0" extra>
             <option value="">Todas</option>
             {facets.suspension.map(([k, n]) => (
-              <option key={k} value={k}>{label(k)} ({n})</option>
+              <option key={k} value={k}>{label(k)} ({int(n)})</option>
             ))}
           </FilterSelect>
           {/* Sin filtros puestos, "Aplicar" ocupa toda la celda: una mitad vacía parecía un campo */}
