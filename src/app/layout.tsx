@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import { NavProgress } from "@/components/NavProgress";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
+import { ResetBoundary, ResetScope } from "@/components/ResetScope";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MODO_PRUEBA } from "@/lib/site";
 import "./globals.css";
@@ -43,10 +44,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <NavProgress />
         </Suspense>
-        <SiteHeader />
-        <main id="contenido" className="flex-1">
-          {children}
-        </main>
+        {/* El logo «empieza de cero»: vuelve a montar el contenido con todo por defecto (ResetScope) */}
+        <ResetScope>
+          <SiteHeader />
+          <main id="contenido" className="flex-1">
+            <ResetBoundary>{children}</ResetBoundary>
+          </main>
+        </ResetScope>
         <footer className="border-t border-border mt-12">
           <div className="wrap grid-swiss gap-y-3 py-4">
             <p className="col-span-4 md:col-span-4 lg:col-span-6 font-display text-h3">

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { NavLinks } from "./NavLinks";
+import { useReset } from "./ResetScope";
 
 /**
  * Cabecera. En la portada flota transparente sobre el vídeo de la intro (el logo ya está en el centro)
@@ -14,6 +15,7 @@ import { NavLinks } from "./NavLinks";
 export function SiteHeader() {
   const home = usePathname() === "/";
   const [overIntro, setOverIntro] = useState(true);
+  const reset = useReset();
 
   useEffect(() => {
     const intro = home ? document.getElementById("intro") : null;
@@ -32,7 +34,7 @@ export function SiteHeader() {
     <header className={`${position} z-30 ${look}`}>
       <nav aria-label="Principal" className={`flex items-stretch h-8 ${floating ? "justify-end" : "justify-between"}`}>
         {!floating && (
-          <Link href="/" aria-label="Roodada, inicio" className="flex items-center px-2 md:px-4">
+          <Link href="/" onClick={reset} aria-label="Roodada, inicio" className="flex items-center px-2 md:px-4">
             <Image src="/logo.png" alt="" width={128} height={32} preload className="h-4 w-auto" />
           </Link>
         )}

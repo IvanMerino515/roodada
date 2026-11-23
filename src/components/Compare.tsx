@@ -28,6 +28,8 @@ const save = (slugs: string[]) => {
   } catch {}
   listeners.forEach((l) => l());
 };
+/** Vacía la selección para comparar (al pulsar el logo: ResetScope) */
+export const clearCompare = () => save([]);
 const subscribe = (l: () => void) => {
   listeners.add(l);
   return () => listeners.delete(l);

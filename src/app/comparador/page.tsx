@@ -6,6 +6,7 @@ import { BikeCard, FeatureTile } from "@/components/BikeCard";
 import { CompareProvider, CompareToggle } from "@/components/Compare";
 import { EXTRA, FilterRow, FilterSelect } from "@/components/FilterBar";
 import { PriceFilter } from "@/components/PriceFilter";
+import { TypeFilter } from "@/components/TypeFilter";
 import { TypeableSelect } from "@/components/TypeableSelect";
 import { FilterForm, MoreFiltersToggle } from "@/components/FilterForm";
 import { AnimatedCount } from "@/components/GuideMotion";
@@ -14,8 +15,8 @@ import { getCatalog } from "@/lib/catalog/load";
 import {
   applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
 } from "@/lib/catalogFilters";
-import { CATEGORY_LABEL, decimal, int, label, priceLabel } from "@/lib/format";
-import type { Bike, Category } from "@/lib/catalog/types";
+import { decimal, int, label, priceLabel } from "@/lib/format";
+import type { Bike } from "@/lib/catalog/types";
 
 export const metadata: Metadata = {
   title: "Comparador de bicicletas",
@@ -59,14 +60,11 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
         </p>
       </div>
 
-      <FilterForm action="/comparador">
+      {/* key: los desplegables muestran siempre lo que dice la dirección (Next guarda el estado al volver a la página) */}
+      <FilterForm key={filtersToSearch(f)} action="/comparador">
         <FilterRow label="Filtros principales">
-          <FilterSelect id="categoria" name="categoria" label="Tipo" defaultValue={f.categoria ?? ""}>
-            <option value="">Todos</option>
-            {facets.categoria.map(([k, n]) => (
-              <option key={k} value={k}>{CATEGORY_LABEL[k as Category]} ({int(n)})</option>
-            ))}
-          </FilterSelect>
+          {/* Tipo y, si hay tipo elegido, Subtipo (Trail, XC, Descenso, Aero, Endurance…) */}
+          <TypeFilter categories={facets.categoria} subtypes={facets.subtipo} categoria={f.categoria} subtipo={f.subtipo} />
           <FilterSelect id="electrica" name="electrica" label="Eléctrica" defaultValue={f.electrica ?? ""} extra>
             <option value="">Igual</option>
             <option value="si">Sí</option>

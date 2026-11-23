@@ -11,6 +11,8 @@ export type SortKey = keyof typeof SORTS;
 
 export type CatalogFilters = {
   categoria?: Category;
+  /** Disciplina dentro del tipo (specs.discipline): trail, descenso, aero… */
+  subtipo?: string;
   electrica?: "si" | "no";
   precioMin?: number;
   precioMax?: number;
@@ -40,6 +42,8 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
   const electrica = one(sp.electrica);
   return {
     categoria: one(sp.categoria) as Category | undefined,
+    // Sin tipo, el subtipo no vale (el desplegable ni aparece)
+    subtipo: one(sp.categoria) ? one(sp.subtipo) : undefined,
     electrica: electrica === "si" || electrica === "no" ? electrica : undefined,
     precioMin,
     precioMax,
@@ -59,6 +63,7 @@ export function applyFilters(bikes: Bike[], f: CatalogFilters): Bike[] {
   const list = bikes.filter(
     (b) =>
       (!f.categoria || b.category === f.categoria) &&
+      (!f.subtipo || b.specs.discipline === f.subtipo) &&
       (!f.electrica || b.electric === (f.electrica === "si")) &&
       (!f.precioMin || b.priceCents >= f.precioMin * 100) &&
       (!f.precioMax || b.priceCents <= f.precioMax * 100) &&
@@ -90,6 +95,9 @@ export function facetOptions(bikes: Bike[]) {
   };
   return {
     categoria: count((b) => b.category),
+    subtipo: Object.fromEntries(
+      [...new Set(bikes.map((b) => b.category))].map((c) => [c, count((b) => (b.category === c ? b.specs.discipline : null))]),
+    ),
     marca: count((b) => b.brandSlug),
     marcaNombre: Object.fromEntries(bikes.map((b) => [b.brandSlug, b.brand])),
     material: count((b) => b.frameMaterial),
