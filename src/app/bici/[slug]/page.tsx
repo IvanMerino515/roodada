@@ -11,9 +11,11 @@ import { WhyForYou } from "@/components/WhyForYou";
 import { specCount, SpecRow, SpecTable } from "@/components/SpecTable";
 import { getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
 import { AFFILIATE_NOTICE } from "@/lib/legal";
+import { JsonLd } from "@/components/JsonLd";
 import { TrackEvent } from "@/components/TrackEvent";
+import { bikeDescription, bikeTitle, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 import { PriceChecked } from "@/components/PriceChecked";
-import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, NO_PRICE, priceLabel } from "@/lib/format";
+import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, NO_PRICE } from "@/lib/format";
 import { priceOrigin, shortStore } from "@/lib/priceOrigin";
 
 // En el build solo se generan unas pocas fichas: las 2.100+ de golpe agotan la memoria del build de
@@ -28,12 +30,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/bici/[slug]">): Promise<Metadata> {
   const bike = await getBike((await params).slug);
   if (!bike) return {};
-  const title = `${bike.brand} ${bike.name}`;
   return {
-    title,
-    description: `${title}: ${priceLabel(bike)}, ${DISCIPLINE_LABEL[bike.specs.discipline].toLowerCase()}${bike.specs.groupset ? `, ${bike.specs.groupset}` : ""}. Talla según tu altura, geometría y especificaciones comparadas.`,
+    title: bikeTitle(bike),
+    description: bikeDescription(bike),
     alternates: { canonical: `/bici/${bike.slug}` },
-    openGraph: { images: [bike.imageUrl] },
+    openGraph: { images: [bike.imageUrl], type: "website" },
   };
 }
 
@@ -59,6 +60,17 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
   return (
     <div className="wrap pt-2 pb-4 grid grid-cols-[minmax(0,1fr)] gap-4">
       <TrackEvent key={bike.id} nombre="ficha_vista" datos={{ bici: bike.id, marca: bike.brand, categoria: bike.category }} />
+      {/* Para Google y los buscadores de IA: qué producto es, su precio y dónde está en la web */}
+      <JsonLd
+        data={[
+          productJsonLd(bike, photos, offer ? { priceCents: offer.priceCents, inStock: offer.inStock, store: offer.store } : null),
+          breadcrumbJsonLd([
+            { name: "Comparador", path: "/comparador" },
+            { name: CATEGORY_LABEL[bike.category], path: `/comparador?categoria=${bike.category}` },
+            { name, path: `/bici/${bike.slug}` },
+          ]),
+        ]}
+      />
       <nav aria-label="Estás en" className="eyebrow">
         <ol className="flex flex-wrap gap-1 list-none m-0 p-0">
           <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link> /</li>
@@ -88,7 +100,8 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
 
           <dl className="lg:col-span-5 m-0 border-t border-border lg:border-t-0 [&>div:first-child]:border-t-0">
             <SpecRow label="Modelo">
-              <h1 id="nombre" className="font-display text-h2 leading-tight">{bike.name}</h1>
+              {/* La marca ya se ve en la cabecera de la ficha; en el título va para lectores de pantalla y buscadores */}
+              <h1 id="nombre" className="font-display text-h2 leading-tight"><span className="sr-only">{bike.brand} </span>{bike.name}</h1>
             </SpecRow>
             <SpecRow label="Precio">
               {/* El ⓘ va arriba a la derecha; al abrirlo, la explicación sale bajo el precio */}

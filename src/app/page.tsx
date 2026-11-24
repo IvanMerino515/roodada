@@ -1,10 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BikeCard } from "@/components/BikeCard";
 import { Intro } from "@/components/Intro";
+import { JsonLd } from "@/components/JsonLd";
 import { getCatalog } from "@/lib/catalog/load";
 import type { Bike, Category } from "@/lib/catalog/types";
 import { CATEGORY_LABEL } from "@/lib/format";
+import { siteJsonLd } from "@/lib/seo";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const n = (v: number) => v.toLocaleString("es-ES", { useGrouping: "always" });
 
@@ -16,6 +21,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={siteJsonLd()} />
       <Intro bikes={n(bikes.length)} />
 
       {/* Justo después de la intro, los dos caminos, uno al lado del otro */}
