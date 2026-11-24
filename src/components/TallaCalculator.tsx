@@ -5,12 +5,13 @@ import { useEffect, useId, useState } from "react";
 
 import type { ResultadoTalla } from "@/lib/talla";
 
+// [ruta, botón, cómo se dice tras «bicis»]
 const TIPOS = [
-  ["carretera", "Carretera"],
-  ["gravel", "Gravel"],
-  ["montana", "Montaña"],
-  ["urbanas", "Urbana"],
-  ["infantiles", "Infantil"],
+  ["carretera", "Carretera", "de carretera"],
+  ["gravel", "Gravel", "de gravel"],
+  ["montana", "Montaña", "de montaña"],
+  ["urbanas", "Urbana", "urbanas y de paseo"],
+  ["infantiles", "Infantil", "infantiles"],
 ] as const;
 type Tipo = (typeof TIPOS)[number][0];
 
@@ -52,7 +53,7 @@ export function TallaCalculator() {
   }, [h, tipo, entrepierna, valida, infantil]);
 
   const principal = r ? (infantil ? r.pulgadas[0] : (r.letras[0] ?? r.cm[0])) : null;
-  const nombreTipo = TIPOS.find(([k]) => k === tipo)![1].toLowerCase();
+  const bicisDe = `bicis ${TIPOS.find(([k]) => k === tipo)![2]}`;
 
   return (
     <div className="grid lg:grid-cols-12 border border-border bg-white">
@@ -81,20 +82,26 @@ export function TallaCalculator() {
         )}
       </form>
 
-      <div className="lg:col-span-7 p-2 md:p-3 grid gap-3 content-start" aria-live="polite" aria-busy={cargando}>
+      {/* Mientras calcula, lo anterior se atenúa; al llegar, lo nuevo entra con un fundido (key) */}
+      <div
+        className={`lg:col-span-7 p-2 md:p-3 grid gap-3 content-start transition-opacity duration-200 ease-ds motion-reduce:transition-none ${cargando ? "opacity-40" : "opacity-100"}`}
+        aria-live="polite"
+        aria-busy={cargando}
+      >
         {!r || !valida ? (
           <p className="text-small">{cargando ? "Calculando…" : "Escribe tu altura y elige el tipo de bici."}</p>
         ) : r.total === 0 ? (
-          <p>No hay bicis de {nombreTipo} con talla para {m(h)} en el catálogo.</p>
+          <p>No hay {bicisDe} con talla para {m(h)} en el catálogo.</p>
         ) : (
-          <>
+          <div key={`${tipo}-${h}-${entrepierna}-${r.total}`} className="llegar grid gap-3">
             <div className="grid gap-1">
-              <p className="eyebrow">Con {m(h)}, en {nombreTipo}</p>
+              <p className="eyebrow">Con {m(h)}, {bicisDe}</p>
               <p className="font-display text-display leading-none">{principal?.label ?? "—"}</p>
               <p>
-                Es tu talla en el <strong>{principal?.pct} %</strong> de las {r.total.toLocaleString("es-ES", { useGrouping: "always" })} bicis
-                {infantil ? " (tamaño de rueda)" : ""}. En {r.entreDos.toLocaleString("es-ES", { useGrouping: "always" })} estás entre dos
-                tallas{!infantil && !entrepierna ? ": con la entrepierna lo afinamos" : ""}.
+                En las <strong className="num">{r.total.toLocaleString("es-ES", { useGrouping: "always" })}</strong> {bicisDe} con talla
+                para ti, es tu talla en el <strong>{principal?.pct} %</strong>{infantil ? " (tamaño de rueda)" : ""}. En{" "}
+                {r.entreDos.toLocaleString("es-ES", { useGrouping: "always" })} estás entre dos tallas
+                {!infantil && !entrepierna ? ": con la entrepierna lo afinamos" : ""}.
               </p>
             </div>
             {!infantil && <Reparto titulo="Marcas que usan letras" datos={r.letras} />}
@@ -113,9 +120,9 @@ export function TallaCalculator() {
             </div>
             <div className="flex flex-wrap gap-1">
               <Link href="/guia" className="btn btn-solid">Ver qué bicis me encajan <span aria-hidden="true">→</span></Link>
-              <Link href={`/bicis/${tipo}`} className="btn">Bicis de {nombreTipo}</Link>
+              <Link href={`/bicis/${tipo}`} className="btn">B{bicisDe.slice(1)}</Link>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
