@@ -48,4 +48,5 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - Cortafuegos de Vercel (panel): límite por IP en las páginas y Bot Protection en modo desafío. La regla «AI Bots» NO se pone en bloquear.
 - La base solo se consulta desde el servidor: variables `SUPABASE_URL` y `SUPABASE_ANON_KEY`, sin `NEXT_PUBLIC_` (el código acepta aún los nombres antiguos mientras se cambian en Vercel).
 - Aviso legal: uso de contenidos y derecho sui generis sobre la base de datos (LPI arts. 133–137), pendiente de revisión del abogado.
+- Calculadora de talla `/talla-bicicleta` (24-11-2026): `src/lib/talla.ts` agrupa los ~260 nombres de talla en letras, centímetros, pulgadas u otra, y calcula con `fitSize` la talla en cada bici; `/api/talla` devuelve solo cifras agregadas (sin catálogo) y se guarda un día en la red de Vercel. La página lleva tablas por altura y preguntas calculadas con los datos.
 

@@ -64,6 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link></li>
               <li><Link href="/bicis" className="link inline-flex items-center min-h-3">Tipos de bici</Link></li>
               <li><Link href="/marcas" className="link inline-flex items-center min-h-3">Marcas</Link></li>
+              <li><Link href="/talla-bicicleta" className="link inline-flex items-center min-h-3">Calcula tu talla</Link></li>
               <li><Link href="/aviso-legal" className="link inline-flex items-center min-h-3">Aviso legal</Link></li>
               <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
             </ul>

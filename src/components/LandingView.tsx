@@ -122,9 +122,12 @@ export function LandingView({
       <section className="wrap py-4">
         <div className="bg-surface border border-border p-2 md:p-4 grid gap-2 md:grid-cols-[1fr_auto] items-center">
           <p className="font-display text-h3">¿No sabes cuál? Responde unas preguntas y te decimos cuáles te encajan, en qué talla y por qué.</p>
-          <Link href="/guia" className="btn btn-solid btn-lg">
-            Empezar la guía <span aria-hidden="true">→</span>
-          </Link>
+          <div className="flex flex-wrap gap-1">
+            <Link href="/guia" className="btn btn-solid btn-lg">
+              Empezar la guía <span aria-hidden="true">→</span>
+            </Link>
+            <Link href="/talla-bicicleta" className="btn btn-lg">Calcula tu talla</Link>
+          </div>
         </div>
       </section>
     </>
