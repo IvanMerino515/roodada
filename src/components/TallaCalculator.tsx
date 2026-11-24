@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 
+import { track } from "@/lib/actividad/cliente";
+import { alturaTramo } from "@/lib/actividad/eventos";
 import type { ResultadoTalla } from "@/lib/talla";
 
 // [ruta, botón, cómo se dice tras «bicis»]
@@ -42,7 +44,14 @@ export function TallaCalculator() {
       if (entrepierna && !infantil) p.set("entrepierna", entrepierna);
       fetch(`/api/talla?${p}`, { signal: ctrl.signal })
         .then((res) => (res.ok ? res.json() : null))
-        .then((d: ResultadoTalla | null) => setR(d))
+        .then((d: ResultadoTalla | null) => {
+          setR(d);
+          // Registro anónimo: tipo, altura por tramos y la talla que sale (nunca la altura exacta)
+          if (d) {
+            const top = tipo === "infantiles" ? d.pulgadas[0] : (d.letras[0] ?? d.cm[0]);
+            track("talla_calculada", { tipo, altura: alturaTramo(h), entrepierna: Boolean(entrepierna), talla: top?.label ?? null });
+          }
+        })
         .catch(() => {})
         .finally(() => setCargando(false));
     }, 250);

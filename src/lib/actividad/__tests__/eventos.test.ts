@@ -32,3 +32,16 @@ describe("validación de lo que llega", () => {
     expect(eventoSchema.safeParse({ n: "ficha_vista", d: { x: "a".repeat(5000) } }).success).toBe(false);
   });
 });
+
+describe("utmDe", () => {
+  it("guarda solo los parámetros UTM, limpios", async () => {
+    const { utmDe } = await import("../eventos");
+    expect(utmDe("?utm_source=Instagram&utm_medium=social&utm_campaign=talla-marcas-175&altura=175")).toEqual({
+      utm_source: "instagram",
+      utm_medium: "social",
+      utm_campaign: "talla-marcas-175",
+    });
+    expect(utmDe("?utm_source=<script>alert(1)</script>")).toEqual({ utm_source: "scriptalert1script" });
+    expect(utmDe("")).toEqual({});
+  });
+});

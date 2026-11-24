@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 import { setRutaActual, track } from "@/lib/actividad/cliente";
+import { utmDe } from "@/lib/actividad/eventos";
 
 /**
  * Apunta cada página vista (sin parámetros) y cada salida a tienda (/ir/). En la primera página de
@@ -22,7 +23,10 @@ export function ActivityTracker() {
         if (host !== location.host) origen = host.replace(/^www\./, "");
       } catch {}
     }
-    track("pagina_vista", { ruta: path, desde: prev.current, ...(origen ? { origen } : {}) });
+    // En la primera página de la visita, de dónde viene: dominio de origen y parámetros UTM (el navegador
+    // de Instagram a menudo no dice de dónde viene, así que las UTM son la forma fiable)
+    const utm = first ? utmDe(location.search) : {};
+    track("pagina_vista", { ruta: path, desde: prev.current, ...(origen ? { origen } : {}), ...utm });
     setRutaActual(path);
     prev.current = path;
   }, [path]);

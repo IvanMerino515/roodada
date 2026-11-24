@@ -14,6 +14,7 @@ export const EVENTOS = [
   "comparativa_abierta",
   "ficha_vista",
   "salida_tienda",
+  "talla_calculada",
 ] as const;
 export type Evento = (typeof EVENTOS)[number];
 
@@ -53,3 +54,18 @@ export const rutaLimpia = (url: string) => url.split(/[?#]/)[0];
 
 /** Rastreadores y herramientas: no son personas */
 export const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|curl|wget|python|headless|lighthouse/i;
+
+/**
+ * Parámetros UTM de la dirección (de dónde viene la visita: instagram, facebook, una campaña…), limpios:
+ * minúsculas, solo letras, números, guion y guion bajo, 40 caracteres como mucho. El resto de la
+ * dirección no se guarda nunca (puede llevar respuestas de la guía).
+ */
+export function utmDe(search: string): Record<string, string> {
+  const p = new URLSearchParams(search);
+  const out: Record<string, string> = {};
+  for (const k of ["utm_source", "utm_medium", "utm_campaign", "utm_content"]) {
+    const v = (p.get(k) ?? "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 40);
+    if (v) out[k] = v;
+  }
+  return out;
+}
