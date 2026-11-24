@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: { default: "Roodada · Encuentra tu bici", template: "%s · Roodada" },
   description:
-    "Te ayudamos a elegir bicicleta con datos reales: talla, componentes y precio de más de 1.600 bicis comparadas.",
+    "Te ayudamos a elegir bicicleta con datos reales: talla, componentes y precio de miles de bicis comparadas.",
   openGraph: {
     locale: "es_ES",
     siteName: "Roodada",

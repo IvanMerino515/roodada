@@ -17,6 +17,8 @@
 @theme inline {
   --color-choice: var(--ds-roodada-principal);
   --color-on-choice: var(--ds-roodada-textos);
+  /* Bajada de precio: verde de la gama secundaria, oscuro para que se lea sobre blanco (7:1) */
+  --color-rebaja: var(--ds-roodada-secundario-700);
 }
 
 /* Correcciones a los tokens exportados de Office (14-10-2026). Van fuera de capas y después de los

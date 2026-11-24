@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { BikeCard } from "@/components/BikeCard";
 import { Intro } from "@/components/Intro";
-import { getCatalog } from "@/lib/catalog/load";
+import { getCatalog, getPreviousPrices } from "@/lib/catalog/load";
 import type { Bike, Category } from "@/lib/catalog/types";
 import { CATEGORY_LABEL } from "@/lib/format";
 
@@ -13,10 +13,12 @@ export default async function HomePage() {
   const brands = new Set(bikes.map((b) => b.brand)).size;
   const sizes = bikes.reduce((sum, b) => sum + b.sizes.length, 0);
   const picks = bestPerCategory(bikes);
+  const deals = bestDeals(bikes, await getPreviousPrices());
 
   return (
     <>
-      <Intro bikes={n(bikes.length)} />
+      {/* Mismo número que el comparador y la guía: bicis a la venta (en stock y con precio) */}
+      <Intro bikes={n(bikes.filter((b) => b.inStock).length)} />
 
       {/* Justo después de la intro, los dos caminos, uno al lado del otro */}
       <section id="descubre" className="grid md:grid-cols-2 border-b border-border" aria-label="Por dónde empezar">
@@ -86,6 +88,24 @@ export default async function HomePage() {
           </ul>
         </section>
       )}
+
+      {/* Las 4 bicis con más descuento sobre el precio anterior que tacha la propia web oficial */}
+      {deals.length > 0 && (
+        <section className="wrap pb-6 grid gap-2" aria-labelledby="rebajadas">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="rebajadas" className="text-h2 uppercase">Mejores rebajadas</h2>
+          </div>
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-1 md:gap-2 list-none m-0 p-0">
+            {deals.map(({ bike: b, previousCents }) => (
+              <li key={b.id}>
+                <BikeCard bike={b} previousCents={previousCents}>
+                  <p className="eyebrow border-t border-border pt-1">{CATEGORY_LABEL[b.category]}</p>
+                </BikeCard>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }
@@ -106,4 +126,22 @@ function bestPerCategory(bikes: Bike[]): Bike[] {
         .sort((a, b) => b.quality.total - a.quality.total)[0],
     )
     .filter((b): b is Bike => !!b);
+}
+
+/**
+ * Las 4 con más descuento (en %) sobre el precio anterior de la web oficial: bicis de adulto e infantiles, en stock,
+ * con precio en €, una por marca (si no, salen cuatro montajes del mismo modelo, p. ej. cuatro YT Decoy).
+ * A igualdad de %, la que más euros ahorra.
+ */
+function bestDeals(bikes: Bike[], previous: Record<number, [number, number]>) {
+  const seen = new Set<string>();
+  return bikes
+    .flatMap((bike) => {
+      const p = previous[bike.id];
+      if (!bike.inStock || bike.priceState !== "ok" || !bike.category.startsWith("bici-") || !p || p[0] !== bike.priceCents) return [];
+      return [{ bike, previousCents: p[1], pct: Math.round((1 - p[0] / p[1]) * 100) }];
+    })
+    .sort((a, b) => b.pct - a.pct || b.previousCents - b.bike.priceCents - (a.previousCents - a.bike.priceCents))
+    .filter((d) => (seen.has(d.bike.brandSlug) ? false : (seen.add(d.bike.brandSlug), true)))
+    .slice(0, 4);
 }

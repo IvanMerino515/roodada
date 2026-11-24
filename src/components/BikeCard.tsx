@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ViewTransition, type ReactNode } from "react";
 
 import type { Bike } from "@/lib/catalog/types";
-import { priceLabel } from "@/lib/format";
+import { eur, priceLabel } from "@/lib/format";
 import { LinkPending } from "./LinkPending";
 import { QualityBadge } from "./QualityBadge";
 import { sinOptimizar } from "@/lib/imagen";
@@ -17,10 +17,12 @@ type Props = {
   /** Arriba a la derecha, fuera del enlace: la casilla de comparar */
   corner?: ReactNode;
   preload?: boolean;
+  /** Precio anterior (tachado de la web oficial), en céntimos: se enseña tachado junto al precio */
+  previousCents?: number;
 };
 
 /** Casilla del catálogo: la bici protagonista sobre un fondo liso, y solo lo esencial debajo. */
-export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, preload }: Props) {
+export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, preload, previousCents }: Props) {
   return (
     <article className="casilla relative flex flex-col h-full bg-white">
       <Link href={href} className="group relative flex flex-col flex-1 p-2 no-underline focus-inset">
@@ -48,7 +50,19 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
           {/* Hasta 3 líneas: hay nombres de 12 palabras. El texto entero sigue ahí para lectores y en la ficha */}
           <h3 className="text-body font-display leading-tight line-clamp-3 group-hover:underline" title={bike.name}>{bike.name}</h3>
           {/* El precio es el dato con el que se decide: pesa más que la marca */}
-          <p className="font-display font-semibold num mt-0.5">{priceLabel(bike)}</p>
+          {previousCents && previousCents > bike.priceCents ? (
+            <p className="font-display font-semibold num mt-0.5 flex flex-wrap items-baseline gap-x-1">
+              <span>{priceLabel(bike)}</span>
+              <s className="font-normal text-small text-text-muted">
+                <span className="sr-only">Antes </span>{eur(previousCents)}
+              </s>
+              <span className="font-normal text-small text-rebaja whitespace-nowrap">
+                −{Math.round((1 - bike.priceCents / previousCents) * 100)} %<span aria-hidden="true"> ↓</span>
+              </span>
+            </p>
+          ) : (
+            <p className="font-display font-semibold num mt-0.5">{priceLabel(bike)}</p>
+          )}
           <QualityBadge bike={bike} />
         </div>
         <LinkPending />

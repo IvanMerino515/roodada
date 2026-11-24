@@ -63,6 +63,38 @@ export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Pr
   return buildCatalog(raw.map(toListingRow), sizeRows, formula, estimates);
 }
 
+/**
+ * Precio anterior (el tachado que enseña la web oficial) de las ofertas activas y en stock que lo tienen, por variante.
+ * Solo cuenta si esa oferta es la más barata de la bici (su precio final = el precio de la bici) y no lleva gastos
+ * añadidos: así el descuento se calcula sobre el mismo precio que se enseña. Devuelve { variantId: [precio, anterior] }.
+ */
+export async function getPreviousPrices(): Promise<Record<number, [number, number]>> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo");
+  const out: Record<number, [number, number]> = {};
+  for (let from = 0; ; from += 1000) {
+    const { data } = await retry(() =>
+      supabase()
+        .from("offers")
+        .select("variant_id,price_cents,final_price_cents,regular_price_cents")
+        .eq("is_active", true)
+        .eq("in_stock", true)
+        .not("regular_price_cents", "is", null)
+        .order("id")
+        .range(from, from + 999),
+    );
+    for (const o of data ?? []) {
+      if (o.final_price_cents === o.price_cents && o.regular_price_cents > o.final_price_cents) {
+        const prev = out[o.variant_id];
+        if (!prev || o.final_price_cents < prev[0]) out[o.variant_id] = [o.final_price_cents, o.regular_price_cents];
+      }
+    }
+    if (!data || data.length < 1000) break;
+  }
+  return out;
+}
+
 /** Fórmula de la nota calidad-precio, en caché aparte para que la ficha no cargue el catálogo */
 export async function getFormula(): Promise<QualityFormula> {
   "use cache";
