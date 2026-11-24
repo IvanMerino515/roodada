@@ -150,6 +150,45 @@ export async function getBike(slug: string): Promise<Bike | undefined> {
   return (await loadBikes([slug]))[0];
 }
 
+/**
+ * Alternativas a una bici para su ficha: mismo tipo, misma condición de eléctrica, a la venta y con
+ * un precio parecido (±25 %). Una por modelo, las mejores por calidad-precio. Sin descargar el catálogo.
+ */
+export async function getAlternatives(bike: Pick<Bike, "id" | "modelId" | "category" | "electric" | "priceCents" | "specs">, cuantas = 4): Promise<Bike[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("catalogo", `bici-${bike.id}`);
+  if (!bike.priceCents) return [];
+  const db = supabase();
+  const [listing, dist, formula] = await Promise.all([
+    retry(() =>
+      db
+        .from("variant_listing")
+        .select(LISTING_COLUMNS)
+        .eq("category_slug", bike.category)
+        .eq("is_electric", bike.electric)
+        .gt("in_stock_offers", 0)
+        .gte("best_final_price_cents", Math.round(bike.priceCents * 0.75))
+        .lte("best_final_price_cents", Math.round(bike.priceCents * 1.25))
+        .neq("model_id", bike.modelId)
+        .limit(80),
+    ),
+    getCohortStats(),
+    getFormula(),
+  ]);
+  const rows = ((listing.data ?? []) as unknown as Record<string, unknown>[]).map(toListingRow);
+  const ids = rows.map((r) => r.variant_id);
+  const estimates = ids.length ? ((await retry(() => db.from("variants").select(ESTIMATE_COLUMNS).in("id", ids))).data ?? []) : [];
+  const built = rows.map((r) => buildBike(r, [], formula, dist, estimates as WeightEstimateRow[])).filter((b) => b.inStock);
+  // Primero las del mismo subtipo (trail con trail); si no llegan, del mismo tipo
+  const same = (b: Bike) => (b.specs.discipline === bike.specs.discipline ? 0 : 1);
+  const seen = new Set<number>();
+  return built
+    .sort((a, b) => same(a) - same(b) || b.quality.total - a.quality.total)
+    .filter((b) => (seen.has(b.modelId) ? false : (seen.add(b.modelId), true)))
+    .slice(0, cuantas);
+}
+
 /** Varias bicis por slug, en ese orden (comparativa) */
 export async function getBikes(slugs: string[]): Promise<Bike[]> {
   "use cache";

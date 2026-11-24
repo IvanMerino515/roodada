@@ -10,6 +10,7 @@ Guía de compra de bicicletas: una guía de preguntas (`/guia`) que recomienda b
 - Análisis: `npm run analysis` (rol de solo lectura, `ANALYSIS_DATABASE_URL`) genera `docs/data/ANALISIS-bruto.md`.
 - Modo prueba: con `ROODADA_MODO_PRUEBA=1` (variable de Vercel) la web no se indexa (cabecera `X-Robots-Tag`, meta robots y `robots.txt`). Quitarla el día del lanzamiento.
 - Verificación: `npm run typecheck`, `npm test`, `npm run build`. No abrir el navegador para verificar: Iván revisa lo visual en las previews de Vercel.
+- Dominio (24-11-2026): **https://roodada.com** en Vercel (DNS en IONOS: A @ → 216.198.79.1, CNAME www → Vercel). `www.roodada.com` redirige con 308 a `roodada.com`. `NEXT_PUBLIC_SITE_URL=https://roodada.com`. El modo prueba sigue activo hasta el lanzamiento.
 - Gestor de paquetes: npm.
 - Next.js 16 con Cache Components: los datos se cargan con `'use cache'` + `cacheLife` (`src/lib/catalog/load.ts`); `params`/`searchParams` son promesas y lo que depende de ellos va dentro de `<Suspense>`.
 - Carga de datos (21-11-2026), cada página pide solo lo que usa: `getBike`/`getBikes` (ficha, `/ir`, comparativa) traen sus bicis sueltas y calculan la nota con `getCohortStats` (6 columnas de todas las bicis); `getCatalog({ sizes: false })` para el comparador; `getCatalog()` con tallas solo para recomendar (guía, contador, resultados, "Por qué es para ti") y la portada; `getSlugs` para sitemap y fichas del build. `buildBike` y `buildCatalog` dan la misma bici (prueba `buildBike.test.ts`). De `specs` se piden solo `SPEC_KEYS` (junto a `mapSpecs`): si lees un campo nuevo, añádelo ahí.
@@ -34,4 +35,18 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 
 - Eventos de uso anónimos (23-11-2026): `src/lib/actividad/` (lista `EVENTOS`, validación, tramos de presupuesto y altura) → `POST /api/evento` → función `registrar_evento` de `supabase/sql/002_eventos.sql`. **Si añades un evento, añádelo en `EVENTOS` y en la lista de la función SQL.** Sin cookies ni almacenamiento: la visita es un número en memoria. `ActivityTracker` (layout) apunta páginas vistas y salidas a tienda; `TrackEvent` apunta un evento desde una página de servidor (con `key` para que se repita al cambiar de bici o de búsqueda). En desarrollo no se envía nada. Vistas para el panel: `v_eventos_dia`, `v_embudo_guia`, `v_bicis_actividad` (lectura con `roodada_lectura`).
 - Afiliación: `/ir/[slug]` redirige a `offers.affiliate_url` si existe; si no, a la página de la tienda. Los botones de compra llevan `rel="sponsored nofollow noopener"` y la ficha muestra `AFFILIATE_NOTICE` (`src/lib/legal.ts`) solo cuando la oferta tiene enlace de afiliado. Textos legales pendientes de revisión por un abogado.
+
+## Páginas de entrada (SEO)
+
+- `/bicis` y `/bicis/<tipo>[/<subtipo>]` (también `/bicis/electricas[/<tipo>]`), `/marcas` y `/marcas/<marca>` (24-11-2026). Qué páginas existen y sus textos: `src/lib/landings.ts`; mínimo `MIN_BICIS` (5) bicis a la venta por página. Las marcas con menos de 5 tienen página pero `noindex`. Vista común: `LandingView` (resumen con cifras, mejores por calidad-precio, enlaces, preguntas con FAQPage, ItemList y migas en JSON-LD).
+- Ficha: migas Bicis → tipo → marca, alternativas (`getAlternatives`: mismo tipo y eléctrica, ±25 % de precio, una por modelo) y preguntas (`src/lib/fichaPreguntas.ts`). Títulos, descripciones y JSON-LD en `src/lib/seo.ts`.
+- Con Cache Components no se puede usar `dynamicParams`: una dirección inexistente devuelve 200 con la página de no encontrada (`noindex`).
+
+## Protección frente al scraping (24-11-2026)
+
+- Decisión de Iván: que buscadores e IA nos lean, citen y conozcan (también los bots de entrenamiento de OpenAI, Anthropic, Google, Apple), y frenar a quien quiera copiar el catálogo. `robots.txt` (`src/app/robots.ts`): todo abierto salvo extractores de datos (Bytespider, Diffbot…).
+- Cortafuegos de Vercel (panel): límite por IP en las páginas y Bot Protection en modo desafío. La regla «AI Bots» NO se pone en bloquear.
+- La base solo se consulta desde el servidor: variables `SUPABASE_URL` y `SUPABASE_ANON_KEY`, sin `NEXT_PUBLIC_` (el código acepta aún los nombres antiguos mientras se cambian en Vercel).
+- Aviso legal: uso de contenidos y derecho sui generis sobre la base de datos (LPI arts. 133–137), pendiente de revisión del abogado.
+- Calculadora de talla `/talla-bicicleta` (24-11-2026): `src/lib/talla.ts` agrupa los ~260 nombres de talla en letras, centímetros, pulgadas u otra, y calcula con `fitSize` la talla en cada bici; `/api/talla` devuelve solo cifras agregadas (sin catálogo) y se guarda un día en la red de Vercel. La página lleva tablas por altura y preguntas calculadas con los datos.
 

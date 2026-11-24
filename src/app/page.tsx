@@ -1,10 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BikeCard } from "@/components/BikeCard";
 import { Intro } from "@/components/Intro";
+import { JsonLd } from "@/components/JsonLd";
 import { getCatalog, getPreviousPrices } from "@/lib/catalog/load";
 import type { Bike, Category } from "@/lib/catalog/types";
 import { CATEGORY_LABEL } from "@/lib/format";
+import { siteJsonLd } from "@/lib/seo";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const n = (v: number) => v.toLocaleString("es-ES", { useGrouping: "always" });
 
@@ -17,6 +22,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={siteJsonLd()} />
       {/* Mismo número que el comparador y la guía: bicis a la venta (en stock y con precio) */}
       <Intro bikes={n(bikes.filter((b) => b.inStock).length)} />
 

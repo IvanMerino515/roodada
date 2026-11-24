@@ -62,6 +62,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <ul className="col-span-2 md:col-span-2 lg:col-span-2 list-none m-0 p-0 grid gap-1 content-start eyebrow">
               <li><Link href="/guia" className="link inline-flex items-center min-h-3">Guía</Link></li>
               <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link></li>
+              <li><Link href="/bicis" className="link inline-flex items-center min-h-3">Tipos de bici</Link></li>
+              <li><Link href="/marcas" className="link inline-flex items-center min-h-3">Marcas</Link></li>
+              <li><Link href="/talla-bicicleta" className="link inline-flex items-center min-h-3">Calcula tu talla</Link></li>
               <li><Link href="/aviso-legal" className="link inline-flex items-center min-h-3">Aviso legal</Link></li>
               <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
             </ul>
