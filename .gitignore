@@ -43,3 +43,7 @@ next-env.d.ts
 
 # caché de Python (scripts de skills)
 __pycache__/
+
+# Copias que crea iCloud al sincronizar el Escritorio («archivo 2.ts»): nunca al repositorio
+* 2
+* 2.*
