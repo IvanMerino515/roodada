@@ -36,3 +36,9 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - Eventos de uso anónimos (23-11-2026): `src/lib/actividad/` (lista `EVENTOS`, validación, tramos de presupuesto y altura) → `POST /api/evento` → función `registrar_evento` de `supabase/sql/002_eventos.sql`. **Si añades un evento, añádelo en `EVENTOS` y en la lista de la función SQL.** Sin cookies ni almacenamiento: la visita es un número en memoria. `ActivityTracker` (layout) apunta páginas vistas y salidas a tienda; `TrackEvent` apunta un evento desde una página de servidor (con `key` para que se repita al cambiar de bici o de búsqueda). En desarrollo no se envía nada. Vistas para el panel: `v_eventos_dia`, `v_embudo_guia`, `v_bicis_actividad` (lectura con `roodada_lectura`).
 - Afiliación: `/ir/[slug]` redirige a `offers.affiliate_url` si existe; si no, a la página de la tienda. Los botones de compra llevan `rel="sponsored nofollow noopener"` y la ficha muestra `AFFILIATE_NOTICE` (`src/lib/legal.ts`) solo cuando la oferta tiene enlace de afiliado. Textos legales pendientes de revisión por un abogado.
 
+## Páginas de entrada (SEO)
+
+- `/bicis` y `/bicis/<tipo>[/<subtipo>]` (también `/bicis/electricas[/<tipo>]`), `/marcas` y `/marcas/<marca>` (24-11-2026). Qué páginas existen y sus textos: `src/lib/landings.ts`; mínimo `MIN_BICIS` (5) bicis a la venta por página. Las marcas con menos de 5 tienen página pero `noindex`. Vista común: `LandingView` (resumen con cifras, mejores por calidad-precio, enlaces, preguntas con FAQPage, ItemList y migas en JSON-LD).
+- Ficha: migas Bicis → tipo → marca, alternativas (`getAlternatives`: mismo tipo y eléctrica, ±25 % de precio, una por modelo) y preguntas (`src/lib/fichaPreguntas.ts`). Títulos, descripciones y JSON-LD en `src/lib/seo.ts`.
+- Con Cache Components no se puede usar `dynamicParams`: una dirección inexistente devuelve 200 con la página de no encontrada (`noindex`).
+

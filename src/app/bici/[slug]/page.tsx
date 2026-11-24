@@ -9,7 +9,10 @@ import { QualityBadge } from "@/components/QualityBadge";
 import { SizeFinder } from "@/components/SizeFinder";
 import { WhyForYou } from "@/components/WhyForYou";
 import { specCount, SpecRow, SpecTable } from "@/components/SpecTable";
-import { getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
+import { BikeCard } from "@/components/BikeCard";
+import { getAlternatives, getBike, getBikeDetail, getSlugs } from "@/lib/catalog/load";
+import { preguntasFicha } from "@/lib/fichaPreguntas";
+import { categoryPath } from "@/lib/landings";
 import { AFFILIATE_NOTICE } from "@/lib/legal";
 import { JsonLd } from "@/components/JsonLd";
 import { TrackEvent } from "@/components/TrackEvent";
@@ -56,6 +59,8 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
   const from = bike.priceState === "desde";
   const origin = priceOrigin(offer?.storeSlug ?? null, bike.brand, { from, hasEuros: priceCents !== null });
   const store = shortStore(offer?.store ?? null, bike.brand);
+  const alternativas = await getAlternatives(bike);
+  const preguntas = preguntasFicha(bike, alternativas);
 
   return (
     <div className="wrap pt-2 pb-4 grid grid-cols-[minmax(0,1fr)] gap-4">
@@ -65,17 +70,25 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
         data={[
           productJsonLd(bike, photos, offer ? { priceCents: offer.priceCents, inStock: offer.inStock, store: offer.store } : null),
           breadcrumbJsonLd([
-            { name: "Comparador", path: "/comparador" },
-            { name: CATEGORY_LABEL[bike.category], path: `/comparador?categoria=${bike.category}` },
+            { name: "Bicis", path: "/bicis" },
+            { name: CATEGORY_LABEL[bike.category], path: categoryPath(bike.category) },
+            { name: bike.brand, path: `/marcas/${bike.brandSlug}` },
             { name, path: `/bici/${bike.slug}` },
           ]),
+          ...(preguntas.length
+            ? [{
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: preguntas.map((p) => ({ "@type": "Question", name: p.q, acceptedAnswer: { "@type": "Answer", text: p.a } })),
+              }]
+            : []),
         ]}
       />
       <nav aria-label="Estás en" className="eyebrow">
         <ol className="flex flex-wrap gap-1 list-none m-0 p-0">
-          <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link> /</li>
-          <li><Link href={`/comparador?categoria=${bike.category}`} className="link inline-flex items-center min-h-3">{CATEGORY_LABEL[bike.category]}</Link> /</li>
-          <li aria-current="page" className="inline-flex items-center min-h-3">{bike.brand}</li>
+          <li><Link href="/bicis" className="link inline-flex items-center min-h-3">Bicis</Link> /</li>
+          <li><Link href={categoryPath(bike.category)} className="link inline-flex items-center min-h-3">{CATEGORY_LABEL[bike.category]}</Link> /</li>
+          <li><Link href={`/marcas/${bike.brandSlug}`} className="link inline-flex items-center min-h-3">{bike.brand}</Link></li>
         </ol>
       </nav>
 
@@ -209,6 +222,33 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
         </summary>
         <GeometryTable geometry={geometry} />
       </details>
+
+      {alternativas.length > 0 && (
+        <section aria-labelledby="alternativas" className="grid gap-2">
+          <h2 id="alternativas" className="font-display text-h3 uppercase border-t border-border pt-2">Alternativas por un precio parecido</h2>
+          <ul className="grid grid-cols-2 lg:grid-cols-4 gap-1 md:gap-2 list-none m-0 p-0">
+            {alternativas.map((b) => (
+              <li key={b.id}>
+                <BikeCard bike={b} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {preguntas.length > 0 && (
+        <section aria-labelledby="preguntas" className="grid gap-2">
+          <h2 id="preguntas" className="font-display text-h3 uppercase border-t border-border pt-2">Preguntas frecuentes</h2>
+          <dl className="m-0 grid gap-2 max-w-[70ch]">
+            {preguntas.map((p) => (
+              <div key={p.q} className="grid gap-0.5">
+                <dt className="font-display font-semibold">{p.q}</dt>
+                <dd className="m-0">{p.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
     </div>
   );
 }
