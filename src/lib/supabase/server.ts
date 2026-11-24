@@ -3,9 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 
 // Solo lectura con la publishable key: las políticas RLS de Supabase dan lectura pública al catálogo.
 export function supabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  // Sin el prefijo NEXT_PUBLIC_, Next nunca mete estos valores en el código que va al navegador:
+  // la base solo se consulta desde el servidor. Los nombres antiguos se aceptan mientras se cambian en Vercel.
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) throw new Error("Faltan SUPABASE_URL o SUPABASE_ANON_KEY");
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 

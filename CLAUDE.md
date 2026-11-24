@@ -42,3 +42,10 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - Ficha: migas Bicis → tipo → marca, alternativas (`getAlternatives`: mismo tipo y eléctrica, ±25 % de precio, una por modelo) y preguntas (`src/lib/fichaPreguntas.ts`). Títulos, descripciones y JSON-LD en `src/lib/seo.ts`.
 - Con Cache Components no se puede usar `dynamicParams`: una dirección inexistente devuelve 200 con la página de no encontrada (`noindex`).
 
+## Protección frente al scraping (24-11-2026)
+
+- Decisión de Iván: que buscadores e IA nos lean, citen y conozcan (también los bots de entrenamiento de OpenAI, Anthropic, Google, Apple), y frenar a quien quiera copiar el catálogo. `robots.txt` (`src/app/robots.ts`): todo abierto salvo extractores de datos (Bytespider, Diffbot…).
+- Cortafuegos de Vercel (panel): límite por IP en las páginas y Bot Protection en modo desafío. La regla «AI Bots» NO se pone en bloquear.
+- La base solo se consulta desde el servidor: variables `SUPABASE_URL` y `SUPABASE_ANON_KEY`, sin `NEXT_PUBLIC_` (el código acepta aún los nombres antiguos mientras se cambian en Vercel).
+- Aviso legal: uso de contenidos y derecho sui generis sobre la base de datos (LPI arts. 133–137), pendiente de revisión del abogado.
+

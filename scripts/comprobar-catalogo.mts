@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { buildCatalog, type ListingRow, type SizeRow } from "../src/lib/catalog/build";
 import { DEFAULT_FORMULA } from "../src/lib/recommender/quality";
 
-const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
+const db = createClient((process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL)!, (process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!, { auth: { persistSession: false } });
 async function all<T>(table: string, cols: string, order: string) {
   const out: T[] = [];
   for (let from = 0; ; from += 1000) {
