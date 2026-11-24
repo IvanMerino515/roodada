@@ -38,6 +38,11 @@ const POR_TIENDA: Record<string, Origen> = {
     label: "Precio de Alemania",
     help: "Precio de la web de la marca (radon-bikes.de), con IVA alemán. Radon vende en su tienda bike-discount.de: allí y al enviarla a España el precio puede ser distinto.",
   }),
+  "ventum-oficial-eu": () => ({
+    stockUnknown: true,
+    label: "Precio de la web europea",
+    help: "Precio de la web europea de Ventum (eu.ventumracing.com), que no dice si lleva IVA. En Europa se compra en Woest Sport (Países Bajos), donde el precio puede ser distinto.",
+  }),
   "gazelle-oficial-fr": () => ({
     stockUnknown: true,
     label: "PVP de Francia",
