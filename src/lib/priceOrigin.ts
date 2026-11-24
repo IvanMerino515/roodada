@@ -36,7 +36,7 @@ const POR_TIENDA: Record<string, Origen> = {
   }),
   "radon-oficial": () => ({
     label: "Precio de Alemania",
-    help: "Radon vende en su tienda bike-discount.de, que cobra el precio con IVA alemán. Puede variar al enviarla a España.",
+    help: "Precio de la web de la marca (radon-bikes.de), con IVA alemán. Radon vende en su tienda bike-discount.de: allí y al enviarla a España el precio puede ser distinto.",
   }),
   "gazelle-oficial-fr": () => ({
     stockUnknown: true,
