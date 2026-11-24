@@ -8,6 +8,8 @@ import { NavProgress } from "@/components/NavProgress";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { ResetBoundary, ResetScope } from "@/components/ResetScope";
 import { SiteHeader } from "@/components/SiteHeader";
+import { getCatalog } from "@/lib/catalog/load";
+import { buildMenu } from "@/lib/landings";
 import { MODO_PRUEBA } from "@/lib/site";
 import "./globals.css";
 
@@ -49,7 +51,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Suspense>
         {/* El logo «empieza de cero»: vuelve a montar el contenido con todo por defecto (ResetScope) */}
         <ResetScope>
-          <SiteHeader />
+          {/* El menú (tipos y marcas) sale del catálogo en caché; mientras llega, la barra sin desplegables */}
+          <Suspense fallback={<SiteHeader menu={null} />}>
+            <HeaderWithMenu />
+          </Suspense>
           <main id="contenido" className="flex-1">
             <ResetBoundary>{children}</ResetBoundary>
           </main>
@@ -78,4 +83,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </body>
     </html>
   );
+}
+
+async function HeaderWithMenu() {
+  return <SiteHeader menu={buildMenu(await getCatalog({ sizes: false }))} />;
 }

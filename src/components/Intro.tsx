@@ -30,7 +30,7 @@ export function Intro({ bikes }: { bikes: string }) {
   };
 
   return (
-    <section id="intro" aria-labelledby="claim" className="on-dark relative min-h-svh overflow-hidden bg-black text-white">
+    <section id="intro" aria-labelledby="claim" className="on-dark relative min-h-[calc(100svh-64px)] overflow-hidden bg-black text-white">
       <video
         ref={video}
         className="absolute inset-0 size-full object-cover"
@@ -51,7 +51,7 @@ export function Intro({ bikes }: { bikes: string }) {
       <div className="absolute inset-0 bg-radial from-black/45 via-black/20 via-45% to-transparent to-75%" aria-hidden="true" />
 
       {/* Al menos la pantalla entera; si no cabe (móvil en horizontal), crece y se baja con scroll. py-10 deja sitio a la cabecera */}
-      <div className="relative min-h-svh flex flex-col items-center justify-center gap-3 px-2 py-10 text-center">
+      <div className="relative min-h-[calc(100svh-64px)] flex flex-col items-center justify-center gap-3 px-2 py-10 text-center">
         <Image
           src="/logo-blanco.png"
           alt="Roodada"

@@ -249,3 +249,43 @@ export function preguntasMarca(marca: string, r: Resumen, porTipo: [Category, nu
     },
   ];
 }
+
+/** Datos del menú principal: tipos con sus subtipos y marcas, con cuántas bicis a la venta tiene cada uno */
+export type Menu = {
+  tipos: { titulo: string; path: string; n: number; subs: { titulo: string; path: string; n: number }[] }[];
+  marcas: { nombre: string; slug: string; n: number }[];
+};
+
+/** «Bicis de carretera de competición» → «Competición»; «Bicis de montaña eléctricas» → «Montaña» */
+const corto = (titulo: string) =>
+  titulo
+    .replace(/^Bicis (de )?/, "")
+    .replace(/^carretera de /, "")
+    .replace(/ eléctricas$/, "")
+    .replace(/^./, (c) => c.toUpperCase());
+
+export function buildMenu(bikes: Bike[]): Menu {
+  const sale = aLaVenta(bikes);
+  const landings = allLandings(bikes);
+  const n = (l: Landing) => sale.filter(l.filtro).length;
+  const tipos = landings
+    .filter((l) => l.ruta.length === 1)
+    .map((l) => ({
+      // En el menú, el nombre corto: «Gravel», «Eléctricas»
+      titulo: l.ruta[0] === "electricas" ? "Eléctricas" : CATEGORY_LABEL[categoryFromSlug(l.ruta[0])],
+      path: `/bicis/${l.ruta[0]}`,
+      n: n(l),
+      subs: landings
+        .filter((s) => s.ruta.length === 2 && s.ruta[0] === l.ruta[0])
+        .map((s) => ({ titulo: corto(s.titulo), path: `/bicis/${s.ruta.join("/")}`, n: n(s) }))
+        .sort((a, b) => b.n - a.n),
+    }));
+  const by = new Map<string, { nombre: string; slug: string; n: number }>();
+  for (const b of sale) {
+    const cur = by.get(b.brandSlug) ?? { nombre: b.brand, slug: b.brandSlug, n: 0 };
+    cur.n++;
+    by.set(b.brandSlug, cur);
+  }
+  const marcas = [...by.values()].filter((m) => m.n >= MIN_BICIS).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  return { tipos, marcas };
+}

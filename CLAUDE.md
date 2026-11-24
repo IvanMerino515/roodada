@@ -49,4 +49,5 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - La base solo se consulta desde el servidor: variables `SUPABASE_URL` y `SUPABASE_ANON_KEY`, sin `NEXT_PUBLIC_` (el código acepta aún los nombres antiguos mientras se cambian en Vercel).
 - Aviso legal: uso de contenidos y derecho sui generis sobre la base de datos (LPI arts. 133–137), pendiente de revisión del abogado.
 - Calculadora de talla `/talla-bicicleta` (24-11-2026): `src/lib/talla.ts` agrupa los ~260 nombres de talla en letras, centímetros, pulgadas u otra, y calcula con `fitSize` la talla en cada bici; `/api/talla` devuelve solo cifras agregadas (sin catálogo) y se guarda un día en la red de Vercel. La página lleva tablas por altura y preguntas calculadas con los datos.
+- Menú principal (24-11-2026): `MainNav` con «Bicis» y «Marcas» (paneles a todo el ancho en escritorio, menú a pantalla completa con desplegables en móvil), Guía, Comparador y Tu talla. Datos de `buildMenu` (`landings.ts`), cargados en el layout desde la caché del catálogo. La cabecera tiene fondo en todas las páginas, también en la portada (decisión de Iván): la intro mide `100svh - 64px`.
 
