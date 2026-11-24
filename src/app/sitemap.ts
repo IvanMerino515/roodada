@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getCatalog, getSlugs } from "@/lib/catalog/load";
-import { aLaVenta, allLandings, MIN_BICIS } from "@/lib/landings";
+import { aLaVenta, allLandings, marcaTipoLandings, MIN_BICIS } from "@/lib/landings";
 
 const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...allLandings(bikes).map((l) => ({ url: `${site}/bicis/${l.ruta.join("/")}`, changeFrequency: "weekly" as const, priority: 0.8 })),
     { url: `${site}/marcas`, changeFrequency: "weekly", priority: 0.7 },
     ...marcas.map((m) => ({ url: `${site}/marcas/${m}`, changeFrequency: "weekly" as const, priority: 0.7 })),
+    ...marcaTipoLandings(bikes).map((l) => ({ url: `${site}/marcas/${l.slug}/${l.tipo}`, changeFrequency: "weekly" as const, priority: 0.6 })),
     ...slugs.map((slug) => ({ url: `${site}/bici/${slug}`, changeFrequency: "weekly" as const, priority: 0.6 })),
   ];
 }

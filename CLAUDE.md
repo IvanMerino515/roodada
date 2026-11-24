@@ -39,6 +39,7 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 ## Páginas de entrada (SEO)
 
 - `/bicis` y `/bicis/<tipo>[/<subtipo>]` (también `/bicis/electricas[/<tipo>]`), `/marcas` y `/marcas/<marca>` (24-11-2026). Qué páginas existen y sus textos: `src/lib/landings.ts`; mínimo `MIN_BICIS` (5) bicis a la venta por página. Las marcas con menos de 5 tienen página pero `noindex`. Vista común: `LandingView` (resumen con cifras, mejores por calidad-precio, enlaces, preguntas con FAQPage, ItemList y migas en JSON-LD).
+- Más páginas (25-11-2026): por precio `/bicis/<tipo>/menos-de-<€>` (clase `precio`, topes `TOPES_PRECIO`; solo si aportan: ≥5 bicis, menos que la madre y más que el tope anterior) y por marca y tipo `/marcas/<marca>/<tipo>` (`marcaTipoLandings`: ≥5 y no todas las de la marca). Cada `Landing` tiene `clase`; el menú y el índice solo muestran tipos y subtipos.
 - Ficha: migas Bicis → tipo → marca, alternativas (`getAlternatives`: mismo tipo y eléctrica, ±25 % de precio, una por modelo) y preguntas (`src/lib/fichaPreguntas.ts`). Títulos, descripciones y JSON-LD en `src/lib/seo.ts`.
 - Con Cache Components no se puede usar `dynamicParams`: una dirección inexistente devuelve 200 con la página de no encontrada (`noindex`).
 

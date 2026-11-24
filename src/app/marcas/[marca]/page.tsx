@@ -6,7 +6,7 @@ import { getCatalog } from "@/lib/catalog/load";
 import type { Category } from "@/lib/catalog/types";
 import { filtersToSearch } from "@/lib/catalogFilters";
 import { CATEGORY_LABEL } from "@/lib/format";
-import { aLaVenta, CATEGORY_SLUG, introMarca, MIN_BICIS, preguntasMarca, resumen } from "@/lib/landings";
+import { aLaVenta, CATEGORY_SLUG, introMarca, marcaTipoLandings, MIN_BICIS, preguntasMarca, resumen } from "@/lib/landings";
 
 async function marcas() {
   const bikes = await getCatalog({ sizes: false });
@@ -30,7 +30,8 @@ async function load(slug: string) {
   const porTipo = Object.entries(
     aLaVenta(own).reduce<Record<string, number>>((acc, b) => ((acc[b.category] = (acc[b.category] ?? 0) + 1), acc), {}),
   ).sort((a, b) => b[1] - a[1]) as [Category, number][];
-  return { marca: own[0].brand, r, porTipo };
+  const conPagina = new Set(marcaTipoLandings(bikes).filter((l) => l.slug === slug).map((l) => l.categoria));
+  return { marca: own[0].brand, r, porTipo, conPagina };
 }
 
 export async function generateMetadata({ params }: PageProps<"/marcas/[marca]">): Promise<Metadata> {
@@ -49,7 +50,7 @@ export default async function MarcaPage({ params }: PageProps<"/marcas/[marca]">
   const slug = (await params).marca;
   const data = await load(slug);
   if (!data) notFound();
-  const { marca, r, porTipo } = data;
+  const { marca, r, porTipo, conPagina } = data;
   const path = `/marcas/${slug}`;
 
   return (
@@ -62,7 +63,11 @@ export default async function MarcaPage({ params }: PageProps<"/marcas/[marca]">
         relacionados={[
           {
             titulo: `${marca} por tipo`,
-            enlaces: porTipo.map(([c, n]) => ({ href: `/comparador${filtersToSearch({ marca: slug, categoria: c })}`, texto: CATEGORY_LABEL[c], n })),
+            enlaces: porTipo.map(([c, n]) => ({
+              href: conPagina.has(c) ? `/marcas/${slug}/${CATEGORY_SLUG[c]}` : `/comparador${filtersToSearch({ marca: slug, categoria: c })}`,
+              texto: CATEGORY_LABEL[c],
+              n,
+            })),
           },
           {
             titulo: "Tipos de bici",

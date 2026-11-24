@@ -18,8 +18,7 @@ export default async function BicisIndex() {
   const bikes = await getCatalog({ sizes: false });
   const sale = aLaVenta(bikes);
   const landings = allLandings(bikes);
-  const tipos = landings.filter((l) => l.ruta.length === 1 && l.ruta[0] !== "electricas");
-  const grupos = [...tipos, ...landings.filter((l) => l.ruta[0] === "electricas" && l.ruta.length === 1)];
+  const grupos = [...landings.filter((l) => l.clase === "tipo"), ...landings.filter((l) => l.clase === "electricas")];
 
   return (
     <>
@@ -33,7 +32,7 @@ export default async function BicisIndex() {
       </header>
       <div className="wrap grid gap-3 pb-4">
         {grupos.map((t) => {
-          const subs = landings.filter((l) => l.ruta.length === 2 && l.ruta[0] === t.ruta[0]);
+          const subs = landings.filter((l) => (l.clase === "subtipo" || l.clase === "electricas-tipo") && l.ruta[0] === t.ruta[0]);
           return (
             <section key={t.ruta[0]} className="grid gap-1 border-t border-border pt-2">
               <h2 className="font-display text-h3 uppercase">

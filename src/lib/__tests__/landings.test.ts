@@ -52,3 +52,28 @@ describe("preguntas de la ficha", () => {
     expect(preguntasFicha(bike, [alt]).find((p) => p.q.includes("alternativas"))?.a).toContain(alt.name);
   });
 });
+
+describe("páginas de precio y de marca y tipo", () => {
+  it("una página de precio tiene menos bicis que su madre y no sale en el menú", async () => {
+    const { buildMenu } = await import("../landings");
+    const sale = aLaVenta(bikes);
+    const all = allLandings(bikes);
+    for (const l of all.filter((x) => x.clase === "precio")) {
+      const madre = all.find((m) => m.ruta.join("/") === l.ruta.slice(0, -1).join("/"))!;
+      expect(sale.filter(l.filtro).length).toBeLessThan(sale.filter(madre.filtro).length);
+      expect(sale.filter(l.filtro).every((b) => b.priceCents <= (l.precio ?? 0) * 100)).toBe(true);
+    }
+    const menu = buildMenu(bikes);
+    const rutasMenu = menu.tipos.flatMap((t) => [t.path, ...t.subs.map((s) => s.path)]);
+    expect(rutasMenu.some((r) => r.includes("menos-de-"))).toBe(false);
+  });
+
+  it("una página de marca y tipo nunca tiene todas las bicis de la marca", async () => {
+    const { marcaTipoLandings } = await import("../landings");
+    const sale = aLaVenta(bikes);
+    for (const l of marcaTipoLandings(bikes)) {
+      expect(l.n).toBeGreaterThanOrEqual(MIN_BICIS);
+      expect(l.n).toBeLessThan(sale.filter((b) => b.brandSlug === l.slug).length);
+    }
+  });
+});
