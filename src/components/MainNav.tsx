@@ -12,7 +12,7 @@ type Panel = "bicis" | "marcas" | null;
 const n = (v: number) => v.toLocaleString("es-ES", { useGrouping: "always" });
 
 const DIRECTOS = [
-  { href: "/guia", label: "Guía" },
+  { href: "/guia", label: "Recomendador" },
   { href: "/comparador", label: "Comparador" },
   { href: "/talla-bicicleta", label: "Tu talla" },
 ] as const;
@@ -21,7 +21,7 @@ const cell =
   "eyebrow flex items-center gap-1 h-full px-2 md:px-3 no-underline cursor-pointer hover:bg-accent hover:text-on-accent aria-[current=page]:bg-accent aria-[current=page]:text-on-accent aria-expanded:bg-accent aria-expanded:text-on-accent";
 
 /**
- * Navegación principal. En escritorio, la barra de celdas con «Bicis» y «Marcas» que abren un panel a
+ * Navegación principal. En escritorio, la barra de celdas con «Catálogo» y «Marcas» que abren un panel a
  * todo el ancho; en móvil, un botón «Menú» con todo en desplegables. Se abre con clic o teclado y se
  * cierra con Esc, al pulsar fuera o al cambiar de página; el foco vuelve al botón.
  */
@@ -72,11 +72,18 @@ export function MainNav({ menu }: { menu: Menu | null }) {
     <div ref={root} className="flex items-stretch h-full">
       {/* Escritorio */}
       <ul className="hidden lg:flex items-stretch list-none m-0 p-0 h-full">
+        {DIRECTOS.map(({ href, label }) => (
+          <li key={href} className="border-l border-current">
+            <Link href={href} aria-current={en(href) ? "page" : undefined} className={cell}>
+              {label}
+            </Link>
+          </li>
+        ))}
         {menu && (
           <>
             <li className="border-l border-current">
               <button type="button" className={cell} aria-expanded={open === "bicis"} aria-controls="panel-bicis" aria-current={en("/bicis") ? "page" : undefined} onClick={(e) => toggle("bicis", e.currentTarget)}>
-                Bicis <Icon name="chevron-down" size={16} className={`transition-transform duration-200 ease-ds motion-reduce:transition-none ${open === "bicis" ? "rotate-180" : ""}`} />
+                Catálogo <Icon name="chevron-down" size={16} className={`transition-transform duration-200 ease-ds motion-reduce:transition-none ${open === "bicis" ? "rotate-180" : ""}`} />
               </button>
             </li>
             <li className="border-l border-current">
@@ -86,13 +93,6 @@ export function MainNav({ menu }: { menu: Menu | null }) {
             </li>
           </>
         )}
-        {DIRECTOS.map(({ href, label }) => (
-          <li key={href} className="border-l border-current">
-            <Link href={href} aria-current={en(href) ? "page" : undefined} className={cell}>
-              {label}
-            </Link>
-          </li>
-        ))}
       </ul>
 
       {/* Móvil */}
@@ -184,7 +184,7 @@ export function MainNav({ menu }: { menu: Menu | null }) {
             ))}
             {menu && (
               <>
-                <Desplegable titulo="Bicis">
+                <Desplegable titulo="Catálogo">
                   {menu.tipos.map((t) => (
                     <div key={t.path} className="grid gap-0.5 py-1 border-t border-border first:border-t-0">
                       <Link href={t.path} className="font-display text-h4 uppercase">

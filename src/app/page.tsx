@@ -15,8 +15,10 @@ const n = (v: number) => v.toLocaleString("es-ES", { useGrouping: "always" });
 
 export default async function HomePage() {
   const bikes = await getCatalog();
-  const brands = new Set(bikes.map((b) => b.brand)).size;
-  const sizes = bikes.reduce((sum, b) => sum + b.sizes.length, 0);
+  // Mismo número en toda la web (intro, comparador y guía): bicis a la venta (en stock y con precio)
+  const forSale = bikes.filter((b) => b.inStock);
+  const brands = new Set(forSale.map((b) => b.brand)).size;
+  const sizes = forSale.reduce((sum, b) => sum + b.sizes.length, 0);
   const picks = bestPerCategory(bikes);
   const deals = bestDeals(bikes, await getPreviousPrices());
 
@@ -24,7 +26,7 @@ export default async function HomePage() {
     <>
       <JsonLd data={siteJsonLd()} />
       {/* Mismo número que el comparador y la guía: bicis a la venta (en stock y con precio) */}
-      <Intro bikes={n(bikes.filter((b) => b.inStock).length)} />
+      <Intro bikes={n(forSale.length)} />
 
       {/* Justo después de la intro, los dos caminos, uno al lado del otro */}
       <section id="descubre" className="grid md:grid-cols-2 border-b border-border" aria-label="Por dónde empezar">
@@ -52,7 +54,7 @@ export default async function HomePage() {
 
       {/* Método: etiqueta en la columna izquierda, tres pasos y las cifras en la derecha */}
       <section className="wrap grid-swiss gap-y-6 py-6 border-b border-border" aria-labelledby="metodo">
-        <h2 id="metodo" className="col-span-4 md:col-span-2 lg:col-span-3 eyebrow">Cómo elegimos</h2>
+        <h2 id="metodo" className="col-span-4 md:col-span-2 lg:col-span-3 text-h2 uppercase">¿Cómo elegimos?</h2>
         <ol className="col-span-4 md:col-span-6 lg:col-span-9 grid md:grid-cols-3 gap-3 list-none m-0 p-0">
           {STEPS.map(([title, text], i) => (
             <li key={title} className="grid gap-1 content-start border-t border-border pt-1">
@@ -64,7 +66,7 @@ export default async function HomePage() {
         </ol>
         <dl aria-label="El catálogo en cifras" className="col-span-4 md:col-span-6 md:col-start-3 lg:col-span-9 lg:col-start-4 grid grid-cols-3 gap-3 m-0">
           {[
-            [n(bikes.length), "bicis analizadas"],
+            [n(forSale.length), "bicis a la venta"],
             [n(brands), "marcas"],
             [n(sizes), "tallas con medidas"],
           ].map(([value, text]) => (
@@ -118,8 +120,8 @@ export default async function HomePage() {
 
 const STEPS: [string, string][] = [
   ["Tu talla primero", "Te decimos si la talla sale de la tabla oficial de la marca, si es una estimación o si estás entre dos."],
-  ["Lo que te importa", "Ordenamos según el tipo de ciclista que eres y, si lo eliges, lo que más te importa: comodidad, ligereza, componentes, autonomía…"],
-  ["Sin inventar", "Si una marca no publica un dato, te lo decimos. Nunca lo rellenamos."],
+  ["Lo que te importa", "Ordenamos según el tipo de ciclista que eres y, si lo eliges, lo que más te importa: comodidad, ligereza, componentes y prestaciones."],
+  ["Toda la información", "Para que decidas con el máximo de información, te explicamos de donde sale cada dato. Si un dato es confuso o no estás familiarizado, te lo aclararemos."],
 ];
 
 /** La de mejor nota calidad-precio de cada tipo de adulto, en stock. */
