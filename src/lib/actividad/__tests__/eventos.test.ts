@@ -1,7 +1,7 @@
 // El registro de actividad nunca guarda presupuesto ni altura exactos y rechaza lo que no es suyo
 import { describe, expect, it } from "vitest";
 
-import { alturaTramo, eventoSchema, presupuestoTramo, rutaLimpia } from "../eventos";
+import { alturaTramo, esBot, eventoSchema, presupuestoTramo, rutaLimpia } from "../eventos";
 
 describe("tramos", () => {
   it("presupuesto", () => {
@@ -43,5 +43,27 @@ describe("utmDe", () => {
     });
     expect(utmDe("?utm_source=<script>alert(1)</script>")).toEqual({ utm_source: "scriptalert1script" });
     expect(utmDe("")).toEqual({});
+  });
+});
+
+describe("esBot", () => {
+  it("distingue navegadores de bots, previsualizaciones y scripts", () => {
+    const safari = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1";
+    const chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+    expect(esBot(safari)).toBe(false);
+    expect(esBot(chrome)).toBe(false);
+    for (const ua of [
+      "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      "WhatsApp/2.23.20.0",
+      "TelegramBot (like TwitterBot)",
+      "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+      "python-requests/2.31",
+      "axios/1.7.2",
+      "Go-http-client/2.0",
+      "",
+      null,
+    ]) {
+      expect(esBot(ua)).toBe(true);
+    }
   });
 });

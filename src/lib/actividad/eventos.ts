@@ -52,8 +52,12 @@ export function alturaTramo(cm: number | null | undefined): string | null {
 /** Ruta sin parámetros: en resultados y fichas la dirección lleva las respuestas de la guía */
 export const rutaLimpia = (url: string) => url.split(/[?#]/)[0];
 
-/** Rastreadores y herramientas: no son personas */
-export const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|curl|wget|python|headless|lighthouse/i;
+/** Rastreadores, previsualizaciones de enlaces (mensajería y redes) y librerías de scripts: no son personas */
+export const BOT =
+  /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegram|slack|discord|linkedin|skype|embedly|curl|wget|python|headless|lighthouse|go-http|node-fetch|axios|okhttp|java\/|scrapy|uptime/i;
+
+/** ¿Es un bot? Sin identificación de navegador, también */
+export const esBot = (userAgent: string | null | undefined) => !userAgent || BOT.test(userAgent);
 
 /**
  * Parámetros UTM de la dirección (de dónde viene la visita: instagram, facebook, una campaña…), limpios:

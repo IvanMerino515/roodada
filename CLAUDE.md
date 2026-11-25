@@ -50,6 +50,8 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - `roodada-d4fa.vercel.app` redirige con 308 a roodada.com; las previews no.
 - `/api/evento` solo acepta peticiones con Origin propio o `Sec-Fetch-Site: same-origin`.
 - `supabase/sql/004_seguridad.sql`: quita a la clave pública las funciones de disparador, vistas del panel con `security_invoker` y, por defecto, las funciones nuevas no se abren a anon (hay que dar `grant execute` a mano a las que use la web).
+- `/ir/`: los bots (`esBot` en `src/lib/actividad/eventos.ts`, también sin user-agent) van a la tienda por el enlace normal, nunca por el de afiliado, y no se apuntan. El límite por IP en `/ir/` del cortafuegos exige Vercel Pro (Iván acepta el riesgo, 25-11-2026).
+- `public/.well-known/security.txt`: contacto para avisos de seguridad. **Caduca el 25-11-2027: renovar `Expires`.**
 - GitHub Actions (`.github/workflows/comprobar.yml`): typegen + typecheck, lint, tests y npm audit en cada pull request y subida a main. Dependabot semanal.
 
 ## IndexNow (25-11-2026)

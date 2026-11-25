@@ -2,20 +2,23 @@
 // cambiar a offers.affiliate_url sin tocar las páginas.
 import { after } from "next/server";
 
+import { esBot as pareceBot } from "@/lib/actividad/eventos";
 import { getBike, getBikeDetail } from "@/lib/catalog/load";
 import { supabase } from "@/lib/supabase/server";
-
-// Rastreadores y comprobadores de enlaces: no son clics de personas
-const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|curl|wget|python|headless/i;
 
 export async function GET(request: Request, { params }: RouteContext<"/ir/[slug]">) {
   const bike = await getBike((await params).slug);
   if (!bike) return new Response("Bici no encontrada", { status: 404 });
   const { offer } = await getBikeDetail(bike.id);
 
+  // Rastreadores, comprobadores de enlaces y previsualizaciones (WhatsApp, redes…) no son personas:
+  // no se apuntan y van a la tienda por el enlace normal, nunca por el de afiliado, para no generar
+  // clics a nuestro nombre en la red de afiliación (auditoría del 25-11-2026, A1, sin Vercel Pro).
+  const esBot = pareceBot(request.headers.get("user-agent"));
+
   // El clic se apunta después de redirigir, para no retrasar la salida. Anónimo: solo la oferta,
   // la página de origen (ruta de Roodada, sin parámetros) y el precio de ese momento.
-  if (offer && !BOT.test(request.headers.get("user-agent") ?? "")) {
+  if (offer && !esBot) {
     const source = sourcePage(request);
     after(async () => {
       const { error } = await supabase().rpc("registrar_clic", { p_offer_id: offer.id, p_source_page: source });
@@ -25,10 +28,10 @@ export async function GET(request: Request, { params }: RouteContext<"/ir/[slug]
 
   return new Response(null, {
     status: 302,
-    // Con programa de afiliación, el enlace de la red (que apunta a la misma página de la tienda);
-    // sin él, la página de la tienda tal cual
+    // Con programa de afiliación, el enlace de la red (que apunta a la misma página de la tienda), solo
+    // para personas; sin él, o para bots, la página de la tienda tal cual
     headers: {
-      Location: offer?.affiliateUrl ?? offer?.url ?? bike.officialUrl,
+      Location: (esBot ? null : offer?.affiliateUrl) ?? offer?.url ?? bike.officialUrl,
       "X-Robots-Tag": "noindex, nofollow",
       "Cache-Control": "no-store",
     },
