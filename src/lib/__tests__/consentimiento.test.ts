@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { estadoConsentimiento, guardarConsentimiento, leerConsentimiento } from "../consentimiento";
+import { decisionDe, estadoConsentimiento, guardarConsentimiento, leerConsentimiento } from "../consentimiento";
 
 const DIA = 24 * 60 * 60 * 1000;
 
@@ -25,12 +25,12 @@ describe("consentimiento de cookies", () => {
 
   it("guarda y lee la decisión", () => {
     almacen();
-    guardarConsentimiento({ analitica: true });
-    expect(estadoConsentimiento()).toBe("si");
+    guardarConsentimiento({ analitica: true, afiliacion: false });
+    expect(estadoConsentimiento()).toBe("10");
   });
 
   it("caduca a los 12 meses y con otra versión", () => {
-    almacen({ roodada_consentimiento: JSON.stringify({ analitica: true, v: 1, fecha: Date.now() - 366 * DIA }) });
+    almacen({ roodada_consentimiento: JSON.stringify({ analitica: true, v: 2, fecha: Date.now() - 366 * DIA }) });
     expect(leerConsentimiento()).toBeNull();
     almacen({ roodada_consentimiento: JSON.stringify({ analitica: true, v: 99, fecha: Date.now() }) });
     expect(leerConsentimiento()).toBeNull();
@@ -49,11 +49,19 @@ describe("consentimiento de cookies", () => {
     const reload = vi.fn();
     vi.stubGlobal("location", { hostname: "roodada.com", reload });
     vi.stubGlobal("document", { cookie: "_ga=GA1.1.123; _ga_ABC=GS1" });
-    guardarConsentimiento({ analitica: true });
-    expect(estadoConsentimiento()).toBe("si");
+    guardarConsentimiento({ analitica: true, afiliacion: false });
+    expect(estadoConsentimiento()).toBe("10");
     // Retirar el permiso: recarga para descargar Google Analytics
-    guardarConsentimiento({ analitica: false });
-    expect(estadoConsentimiento()).toBe("no");
+    guardarConsentimiento({ analitica: false, afiliacion: false });
+    expect(estadoConsentimiento()).toBe("00");
     expect(reload).toHaveBeenCalledOnce();
+  });
+});
+
+describe("consentimiento por categorías", () => {
+  it("guarda analítica y afiliación por separado", () => {
+    expect(decisionDe("01")).toEqual({ analitica: false, afiliacion: true });
+    expect(decisionDe("pendiente")).toBeNull();
+    expect(decisionDe(null)).toBeNull();
   });
 });

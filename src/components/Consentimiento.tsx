@@ -7,7 +7,10 @@ import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import {
   EVENTO_ABRIR,
   GA_ID,
+  HAY_OPCIONALES,
+  SKIMLINKS_ID,
   abrirPreferencias,
+  decisionDe,
   estadoConsentimiento,
   guardarConsentimiento,
   leerConsentimiento,
@@ -19,8 +22,8 @@ import {
  * Aviso de cookies poco invasivo: una tarjeta abajo a la izquierda, sin capa que tape la página ni
  * bloquee el scroll. Primera capa con Aceptar y Rechazar iguales (la AEPD pide que rechazar cueste lo
  * mismo que aceptar) y «Configurar» para elegir por categoría. Solo aparece si hay algo que aceptar
- * (GA_ID) y no se ha decidido aún, o al pulsar «Preferencias de cookies» en el pie.
- * Google Analytics se carga aquí mismo y solo después de «Aceptar».
+ * (HAY_OPCIONALES) y no se ha decidido aún, o al pulsar «Preferencias de cookies» en el pie.
+ * Google Analytics y Skimlinks se cargan aquí mismo y solo con su permiso.
  */
 export function Consentimiento() {
   // La decisión vive en el navegador; en el servidor (y al hidratar) no se sabe y no se enseña nada
@@ -28,16 +31,22 @@ export function Consentimiento() {
   const [abierto, setAbierto] = useState(false);
   const [configurar, setConfigurar] = useState(false);
   const [analitica, setAnalitica] = useState(false);
+  const [afiliacion, setAfiliacion] = useState(false);
   const titulo = useId();
   const caja = useRef<HTMLElement>(null);
-  const decision = estado === null || estado === "pendiente" ? null : { analitica: estado === "si" };
-  const visible = Boolean(GA_ID) && (estado === "pendiente" || abierto);
+  const decision = decisionDe(estado);
+  const visible = HAY_OPCIONALES && (estado === "pendiente" || abierto);
+  const todo = (si: boolean) => ({ analitica: si, afiliacion: si });
+  const prepararConfigurar = (c: Consentimiento | null) => {
+    setAnalitica(c?.analitica ?? false);
+    setAfiliacion(c?.afiliacion ?? false);
+    setConfigurar(true);
+  };
 
   // «Preferencias de cookies» en el pie: abre el aviso en la pantalla de configurar
   useEffect(() => {
     const onAbrir = () => {
-      setAnalitica(leerConsentimiento()?.analitica ?? false);
-      setConfigurar(true);
+      prepararConfigurar(leerConsentimiento());
       setAbierto(true);
       // El foco va al aviso para que se pueda usar con teclado y lector de pantalla
       requestAnimationFrame(() => caja.current?.focus());
@@ -54,7 +63,8 @@ export function Consentimiento() {
 
   return (
     <>
-      {decision?.analitica && <GoogleAnalytics />}
+      {decision?.analitica && GA_ID && <GoogleAnalytics />}
+      {decision?.afiliacion && SKIMLINKS_ID && <Skimlinks />}
       {visible && (
         <section
           ref={caja}
@@ -68,27 +78,25 @@ export function Consentimiento() {
           {!configurar ? (
             <>
               <p className="text-small">
-                Si aceptas, usamos Google Analytics para saber qué partes de Roodada sirven y cuáles no. Sin publicidad
-                ni seguimiento en otras webs. Puedes cambiarlo cuando quieras desde el pie de página.{" "}
+                Si aceptas, usamos Google Analytics para saber qué partes de Roodada sirven y Skimlinks para que las
+                tiendas sepan que llegaste desde aquí: así nos financiamos, sin publicidad. Puedes cambiarlo cuando
+                quieras desde el pie de página.{" "}
                 <Link href="/cookies" className="link">
                   Política de cookies
                 </Link>
               </p>
               <div className="grid grid-cols-2 gap-1">
-                <button type="button" className="btn justify-center" onClick={() => decidir({ analitica: false })}>
+                <button type="button" className="btn justify-center" onClick={() => decidir(todo(false))}>
                   Rechazar
                 </button>
-                <button type="button" className="btn justify-center" onClick={() => decidir({ analitica: true })}>
+                <button type="button" className="btn justify-center" onClick={() => decidir(todo(true))}>
                   Aceptar
                 </button>
               </div>
               <button
                 type="button"
                 className="link text-small justify-self-start min-h-3"
-                onClick={() => {
-                  setAnalitica(decision?.analitica ?? false);
-                  setConfigurar(true);
-                }}
+                onClick={() => prepararConfigurar(decision)}
               >
                 Configurar
               </button>
@@ -120,12 +128,27 @@ export function Consentimiento() {
                   </span>
                   <span>Cuenta visitas y recorridos, sin tus respuestas de la guía. Las cookies duran 13 meses.</span>
                 </li>
+                <li className="grid gap-0.5 border-t border-border pt-1">
+                  <span className="flex items-center gap-1">
+                    <input
+                      type="checkbox"
+                      id={`${titulo}-afiliacion`}
+                      className="size-2"
+                      checked={afiliacion}
+                      onChange={(e) => setAfiliacion(e.target.checked)}
+                    />
+                    <label htmlFor={`${titulo}-afiliacion`} className="font-medium">
+                      Afiliación · Skimlinks
+                    </label>
+                  </span>
+                  <span>Avisa a las tiendas de que llegaste desde Roodada para que nos paguen una comisión. A ti te cuesta lo mismo.</span>
+                </li>
               </ul>
               <div className="grid grid-cols-2 gap-1">
-                <button type="button" className="btn justify-center" onClick={() => decidir({ analitica: false })}>
+                <button type="button" className="btn justify-center" onClick={() => decidir(todo(false))}>
                   Rechazar todo
                 </button>
-                <button type="button" className="btn justify-center" onClick={() => decidir({ analitica })}>
+                <button type="button" className="btn justify-center" onClick={() => decidir({ analitica, afiliacion })}>
                   Guardar
                 </button>
               </div>
@@ -142,7 +165,7 @@ export function Consentimiento() {
 
 /** Enlace del pie para volver a abrir el aviso. Solo existe si hay algo que aceptar */
 export function PreferenciasCookies({ className }: { className?: string }) {
-  if (!GA_ID) return null;
+  if (!HAY_OPCIONALES) return null;
   return (
     <button type="button" className={className} onClick={abrirPreferencias}>
       Preferencias de cookies
@@ -209,5 +232,22 @@ function GoogleAnalytics() {
     anterior.current = ubicacion;
   }, [path]);
 
+  return null;
+}
+
+/**
+ * Skimlinks, solo con permiso de afiliación. Atribuye a Roodada las compras de quien llega a una tienda
+ * desde aquí. Nuestros enlaces de compra pasan por /ir/, que el script no toca: sirve para que Skimlinks
+ * verifique la web y mida. En su panel hay que dejar desactivado Skimwords (convierte palabras en enlaces).
+ */
+function Skimlinks() {
+  useEffect(() => {
+    if (document.querySelector("script[data-skimlinks]")) return;
+    const s = document.createElement("script");
+    s.async = true;
+    s.dataset.skimlinks = "";
+    s.src = `https://s.skimresources.com/js/${SKIMLINKS_ID}.skimlinks.js`;
+    document.body.appendChild(s);
+  }, []);
   return null;
 }

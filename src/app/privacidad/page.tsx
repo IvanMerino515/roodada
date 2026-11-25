@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     <LegalPage title="Privacidad" updated="25 de noviembre de 2026">
       <p>
         En corto: Roodada no te pide registrarte ni guarda quién eres. Nuestra medición propia es anónima y no usa
-        cookies. Google Analytics solo se activa si lo aceptas en el aviso de cookies.
+        cookies. Google Analytics y Skimlinks solo se activan si los aceptas en el aviso de cookies.
       </p>
 
       <h2>Responsables</h2>
@@ -63,6 +63,11 @@ export default function PrivacyPage() {
           ciudad aproximada y no la guarda.
         </li>
         <li>
+          <strong>Skimlinks, solo si lo aceptas</strong>: red de afiliación que guarda en tu navegador un identificador
+          aleatorio y registra qué páginas de Roodada visitas y a qué tiendas sales, para atribuirnos las compras y
+          pagarnos la comisión.
+        </li>
+        <li>
           <strong>Bicis que marcas para comparar</strong>: se guardan solo en tu navegador mientras dura la visita
           (almacenamiento de sesión), para no perderlas al cambiar de página. No nos llegan y se borran al cerrar la
           pestaña.
@@ -92,8 +97,8 @@ export default function PrivacyPage() {
           funcione, sea segura y recomiende bien (art. 6.1.f del RGPD).
         </li>
         <li>
-          Google Analytics: tu consentimiento (art. 6.1.a del RGPD y art. 22.2 de la LSSI). Puedes retirarlo cuando
-          quieras desde «Preferencias de cookies», en el pie de página.
+          Google Analytics y Skimlinks: tu consentimiento (art. 6.1.a del RGPD y art. 22.2 de la LSSI). Puedes
+          retirarlo cuando quieras desde «Preferencias de cookies», en el pie de página.
         </li>
         <li>Correos: atender lo que nos pides (art. 6.1.b del RGPD).</li>
       </ul>
@@ -117,6 +122,14 @@ export default function PrivacyPage() {
         <li>
           Google Ireland Ltd.: Google Analytics, solo con tu consentimiento. Puede transferir datos a EE. UU. al amparo
           del Marco de Privacidad de Datos UE-EE. UU.
+        </li>
+        <li>
+          Skimbit Ltd. (Skimlinks): afiliación, solo con tu consentimiento. Está en Reino Unido, que tiene decisión de
+          adecuación de la Comisión Europea.
+        </li>
+        <li>
+          AvantLink: red de afiliación. Su script comprueba una sola vez que roodada.com es nuestra y no guarda nada en tu
+          navegador.
         </li>
         <li>IONOS: correo electrónico, en la Unión Europea.</li>
       </ul>

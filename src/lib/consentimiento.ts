@@ -1,5 +1,6 @@
 // Consentimiento de cookies (LSSI art. 22.2 y guía de cookies de la AEPD, 2023).
-// Solo hay una categoría que pide permiso: la analítica de Google Analytics 4. Lo demás no lo necesita:
+// Dos categorías piden permiso: analítica (Google Analytics 4) y afiliación (Skimlinks, que atribuye las
+// compras en tiendas a Roodada y guarda datos en el navegador). Lo demás no lo necesita:
 // Vercel Web Analytics y el registro propio no usan cookies ni guardan nada en el navegador, y la
 // selección del comparador y esta misma decisión son almacenamiento técnico.
 //
@@ -14,15 +15,21 @@
  */
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || (process.env.NODE_ENV === "production" ? "G-ZR7CP7S1B2" : "");
 
+/** ID de editor de Skimlinks (25-11-2026). Público, va en la dirección de su script. Solo en producción */
+export const SKIMLINKS_ID = process.env.NODE_ENV === "production" ? "313666X1802414" : "";
+
+/** ¿Hay algo que aceptar? Si no, el aviso no aparece */
+export const HAY_OPCIONALES = Boolean(GA_ID || SKIMLINKS_ID);
+
 /** Si cambian las categorías o los proveedores, subir la versión: se vuelve a preguntar a todos */
-const VERSION = 1;
+const VERSION = 2; // 2: Skimlinks (afiliación), 25-11-2026
 const CLAVE = "roodada_consentimiento";
 const CADUCIDAD_MS = 365 * 24 * 60 * 60 * 1000;
 /** Evento del navegador que avisa de un cambio (o pide abrir las preferencias) */
 export const EVENTO_CAMBIO = "roodada:consentimiento";
 export const EVENTO_ABRIR = "roodada:preferencias-cookies";
 
-export type Consentimiento = { analitica: boolean };
+export type Consentimiento = { analitica: boolean; afiliacion: boolean };
 type Guardado = Consentimiento & { v: number; fecha: number };
 
 // Copia en memoria por si el navegador bloquea el almacenamiento: la decisión vale al menos esta visita
@@ -38,7 +45,7 @@ export function leerConsentimiento(): Consentimiento | null {
     const raw = localStorage.getItem(CLAVE);
     if (raw) g = JSON.parse(raw) as Partial<Guardado>;
   } catch {}
-  return vigente(g) ? { analitica: g.analitica === true } : null;
+  return vigente(g) ? { analitica: g.analitica === true, afiliacion: g.afiliacion === true } : null;
 }
 
 export function guardarConsentimiento(c: Consentimiento) {
@@ -47,20 +54,27 @@ export function guardarConsentimiento(c: Consentimiento) {
   try {
     localStorage.setItem(CLAVE, JSON.stringify(memoria));
   } catch {}
-  // Retirar el permiso: se borran las cookies de Google Analytics y se recarga para descargar su script
-  if (anterior?.analitica && !c.analitica) {
-    borrarCookiesGA();
+  // Retirar un permiso: se borran las cookies de Google Analytics y se recarga para descargar los scripts
+  if ((anterior?.analitica && !c.analitica) || (anterior?.afiliacion && !c.afiliacion)) {
+    if (!c.analitica) borrarCookiesGA();
     location.reload();
     return;
   }
   window.dispatchEvent(new CustomEvent(EVENTO_CAMBIO, { detail: c }));
 }
 
-/** Estado como texto, para useSyncExternalStore (necesita un valor que no cambie entre lecturas) */
-export function estadoConsentimiento(): "si" | "no" | "pendiente" {
+/**
+ * Estado como texto, para useSyncExternalStore (necesita un valor que no cambie entre lecturas):
+ * «pendiente» o dos cifras, analítica y afiliación («10» = solo analítica)
+ */
+export function estadoConsentimiento(): string {
   const c = leerConsentimiento();
-  return c === null ? "pendiente" : c.analitica ? "si" : "no";
+  return c === null ? "pendiente" : `${c.analitica ? 1 : 0}${c.afiliacion ? 1 : 0}`;
 }
+
+/** Lo contrario: de texto a decisión (null si no hay) */
+export const decisionDe = (estado: string | null): Consentimiento | null =>
+  estado && estado !== "pendiente" ? { analitica: estado[0] === "1", afiliacion: estado[1] === "1" } : null;
 
 /** Avisa de cada cambio de decisión, en esta pestaña y en las demás */
 export function suscribirConsentimiento(avisar: () => void) {

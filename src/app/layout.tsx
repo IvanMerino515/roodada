@@ -10,7 +10,7 @@ import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { ResetBoundary, ResetScope } from "@/components/ResetScope";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getCatalog } from "@/lib/catalog/load";
-import { GA_ID } from "@/lib/consentimiento";
+import { HAY_OPCIONALES } from "@/lib/consentimiento";
 import { buildMenu } from "@/lib/landings";
 import { MODO_PRUEBA } from "@/lib/site";
 import "./globals.css";
@@ -76,7 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
               <li><Link href="/cookies" className="link inline-flex items-center min-h-3">Cookies</Link></li>
               <li><Link href="/transparencia" className="link inline-flex items-center min-h-3">Cómo nos financiamos</Link></li>
-              {GA_ID && <li><PreferenciasCookies className="link inline-flex items-center min-h-3 eyebrow cursor-pointer text-left" /></li>}
+              {HAY_OPCIONALES && <li><PreferenciasCookies className="link inline-flex items-center min-h-3 eyebrow cursor-pointer text-left" /></li>}
             </ul>
             <p className="col-span-4 md:col-span-2 lg:col-span-4 text-small">
               Roodada compara los datos que publica cada marca. Precio y disponibilidad de su web oficial: compruébalos

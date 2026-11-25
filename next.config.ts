@@ -13,15 +13,17 @@ const modoPrueba = MODO_PRUEBA;
 // todas las páginas. Si se añade un servicio externo (píxel, vídeo…), añadir aquí su dominio.
 const google = ["https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.analytics.google.com"];
 const vercel = ["https://vercel.live", "https://va.vercel-scripts.com"]; // barra de las previews y analítica en pruebas
+// Afiliación: Skimlinks (solo con consentimiento) y la verificación de AvantLink (temporal, en la portada)
+const afiliacion = ["https://s.skimresources.com", "https://*.skimresources.com", "https://sl-sentry.skimlinks.com", "https://classic.avantlink.com"];
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' ${[google[0], ...vercel].join(" ")}`,
+  `script-src 'self' 'unsafe-inline' ${[google[0], ...vercel, ...afiliacion].join(" ")}`,
   "style-src 'self' 'unsafe-inline'",
   // Las fotos .avif y .svg se cargan sin optimizar, directamente desde la web de la marca
-  `img-src 'self' data: blob: ${FOTOS.map((f) => `https://${f.host}`).join(" ")} ${google.join(" ")}`,
+  `img-src 'self' data: blob: ${FOTOS.map((f) => `https://${f.host}`).join(" ")} ${[...google, ...afiliacion].join(" ")}`,
   "font-src 'self'",
   "media-src 'self'",
-  `connect-src 'self' ${[...google, ...vercel].join(" ")}`,
+  `connect-src 'self' ${[...google, ...vercel, ...afiliacion].join(" ")}`,
   "frame-src https://vercel.live",
   "frame-ancestors 'none'",
   "base-uri 'self'",

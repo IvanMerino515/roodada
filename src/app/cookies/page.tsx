@@ -3,14 +3,14 @@ import Link from "next/link";
 
 import { PreferenciasCookies } from "@/components/Consentimiento";
 import { LegalPage } from "@/components/LegalPage";
-import { GA_ID } from "@/lib/consentimiento";
+import { HAY_OPCIONALES } from "@/lib/consentimiento";
 
 export const metadata: Metadata = { title: "Cookies", alternates: { canonical: "/cookies" } };
 
 // Lista de lo que se guarda en el navegador. Si se añade una cookie o un servicio nuevo (un píxel, un
 // vídeo incrustado…), añadirlo aquí y subir VERSION en src/lib/consentimiento.ts para volver a preguntar.
 const TECNICAS: [string, string, string][] = [
-  ["roodada_consentimiento", "Guarda si aceptaste o rechazaste las cookies de analítica.", "12 meses"],
+  ["roodada_consentimiento", "Guarda qué aceptaste o rechazaste (analítica y afiliación).", "12 meses"],
   ["roodada-comparar", "Las bicis que marcas para comparar, para no perderlas al cambiar de página.", "Hasta cerrar la pestaña"],
 ];
 
@@ -47,8 +47,8 @@ export default function CookiesPage() {
     <LegalPage title="Cookies" updated="25 de noviembre de 2026">
       <p>
         Las cookies y el almacenamiento del navegador son pequeños datos que una web guarda en tu dispositivo. Roodada usa
-        los mínimos: los técnicos, que hacen falta para que la web funcione, y los de analítica, solo si los aceptas.
-        No usamos cookies de publicidad.
+        los mínimos: los técnicos, que hacen falta para que la web funcione, y los de analítica y afiliación, solo si
+        los aceptas. No usamos cookies de publicidad.
       </p>
 
       <h2>Técnicas · no necesitan permiso</h2>
@@ -62,6 +62,15 @@ export default function CookiesPage() {
         personalización de anuncios desactivadas.
       </p>
       <Tabla filas={ANALITICA} />
+
+      <h2>Afiliación · solo si aceptas</h2>
+      <p>
+        Son de Skimlinks (Skimbit Ltd., Reino Unido), una red de afiliación. Sirven para que, si compras en una tienda
+        después de llegar desde Roodada, la tienda lo sepa y nos pague una comisión. A ti te cuesta lo mismo y no cambia
+        el orden de las recomendaciones. Skimlinks guarda un identificador en el almacenamiento de tu navegador y en
+        cookies de su propio dominio (skimresources.com), con la duración que indica su política de cookies. No se
+        cargan hasta que aceptas.
+      </p>
 
       <h2>Medición sin cookies</h2>
       <p>
@@ -80,10 +89,10 @@ export default function CookiesPage() {
       <h2>Cómo cambiar de opinión</h2>
       <p>
         Puedes cambiar tu elección cuando quieras desde «Preferencias de cookies», en el pie de cada página. Si retiras el
-        permiso, borramos las cookies de Google Analytics de tu navegador. También puedes borrarlas tú desde los ajustes
-        del navegador. Te volvemos a preguntar pasados 12 meses.
+        permiso, borramos las cookies de Google Analytics de tu navegador y dejamos de cargar Skimlinks. Las de Skimlinks
+        en su dominio puedes borrarlas desde los ajustes del navegador. Te volvemos a preguntar pasados 12 meses.
       </p>
-      {GA_ID && <PreferenciasCookies className="btn justify-self-start" />}
+      {HAY_OPCIONALES && <PreferenciasCookies className="btn justify-self-start" />}
     </LegalPage>
   );
 }
