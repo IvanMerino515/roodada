@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { InfoTip } from "@/components/InfoTip";
 import type { Bike } from "@/lib/catalog/types";
 import { MISSING } from "@/lib/format";
 import { rowsFor, type SpecRow as SpecRowDef } from "@/lib/specRows";
@@ -70,9 +71,10 @@ export function SpecTable({ bike }: { bike: Bike }) {
                 {bl.rows.map((r) => {
                   const v = r.value(bike);
                   const note = r.note?.(bike);
+                  const info = v !== null ? r.info?.(bike) : null;
                   return (
                     <SpecRow key={r.label} label={r.label} muted={v === null}>
-                      {v ?? MISSING}
+                      {info ? <InfoTip text={info} label={`De dónde sale: ${r.label.toLowerCase()}`}>{v}</InfoTip> : (v ?? MISSING)}
                       {note && <span className="block text-small">{note}</span>}
                     </SpecRow>
                   );

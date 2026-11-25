@@ -68,7 +68,7 @@ export type Bike = {
    * precio en € (tienda en $ o £, o la web no lo mostraba); "agotada" sin oferta en stock. Con "sin_euros" y
    * "agotada", priceCents vale 0 solo para que las cuentas no fallen: nunca se enseña.
    */
-  priceState: "ok" | "desde" | "sin_euros" | "agotada";
+  priceState: "ok" | "desde" | "estimado" | "sin_euros" | "agotada";
   inStock: boolean;
   imageUrl: string;
   officialUrl: string;

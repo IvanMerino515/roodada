@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { InfoTip } from "@/components/InfoTip";
 import { ComparisonSkeleton, ContentEnter } from "@/components/Skeletons";
 import { TrackEvent } from "@/components/TrackEvent";
 import { getBikes } from "@/lib/catalog/load";
@@ -117,10 +118,20 @@ function Row({ row, bikes }: { row: SpecRow; bikes: Bike[] }) {
       {values.map((v, i) => {
         const isBest = best !== null && nums[i] === best;
         const note = row.note?.(bikes[i]);
+        const info = v !== null ? row.info?.(bikes[i]) : null;
         return (
           <td key={bikes[i].id} className={`px-2 py-1 border-r border-border last:border-r-0 ${v === null ? "italic" : ""} ${isBest ? "font-bold" : ""}`}>
-            {v ?? MISSING}
-            {isBest && <> <span aria-hidden="true">●</span><span className="sr-only">(la mejor)</span></>}
+            {info ? (
+              <InfoTip text={info} label={`De dónde sale: ${row.label.toLowerCase()}`}>
+                {v}
+                {isBest && <> <span aria-hidden="true">●</span><span className="sr-only">(la mejor)</span></>}
+              </InfoTip>
+            ) : (
+              <>
+                {v ?? MISSING}
+                {isBest && <> <span aria-hidden="true">●</span><span className="sr-only">(la mejor)</span></>}
+              </>
+            )}
             {note && <span className="block font-normal">{note}</span>}
           </td>
         );
