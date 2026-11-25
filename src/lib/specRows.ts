@@ -12,6 +12,8 @@ export type SpecRow = {
   numeric?: (b: Bike) => number | null;
   /** Aclaración visible bajo el valor (p. ej. que el dato es una estimación) */
   note?: (b: Bike) => string | null;
+  /** Explicación tras un ⓘ junto al valor (de dónde sale el dato) */
+  info?: (b: Bike) => string | null;
   /** En General: si ninguna bici tiene el dato, la fila no sale (las demás de General salen siempre) */
   optional?: boolean;
 };
@@ -51,7 +53,13 @@ export const SPEC_ROWS: SpecRow[] = [
     better: "lower",
     // La estimación no compite por "la más ligera": solo pesos oficiales
     numeric: (b) => b.weightG,
-    note: (b) => (b.weightG === null && b.weightEstimate ? `Peso estimado: ${b.brand} no publica el peso oficial de esta bici.` : null),
+    // ⓘ en los dos casos (Edgar, 25 nov 2026): de dónde sale el peso
+    info: (b) =>
+      b.weightG !== null
+        ? `El peso de esta bicicleta es el oficial declarado por ${b.brand}.`
+        : b.weightEstimate
+          ? `El peso en este caso es estimado, ya que ${b.brand} no publica el peso oficial de esta bici.`
+          : null,
   },
   { group: "General", label: "Año", value: (b) => (b.modelYear ? String(b.modelYear) : null) },
   // Bici rígida con tija telescópica (gravel, sobre todo): sin apartado Suspensión, el dato va aquí y solo si es «Sí»
