@@ -4,6 +4,8 @@
 //
 // Protegido con CRON_SECRET (variable de Vercel): Vercel Cron manda «Authorization: Bearer <CRON_SECRET>».
 // Sin la variable no hace nada, para que nadie pueda lanzar avisos en nuestro nombre. Solo en producción.
+import { connection } from "next/server";
+
 import { getCatalog } from "@/lib/catalog/load";
 import { INDEXNOW_ENDPOINT, indexNowPayloads } from "@/lib/indexnow";
 import { supabase } from "@/lib/supabase/server";
@@ -13,6 +15,8 @@ const VENTANA_H = 26;
 const PRINCIPALES = ["/", "/bicis", "/marcas", "/comparador"];
 
 export async function GET(request: Request) {
+  // Siempre en cada petición: sin esto, Next podría generar la respuesta al compilar (sin la variable)
+  await connection();
   const secreto = process.env.CRON_SECRET;
   if (!secreto) return Response.json({ error: "Falta CRON_SECRET en Vercel" }, { status: 503 });
   if (request.headers.get("authorization") !== `Bearer ${secreto}`) return new Response(null, { status: 401 });
