@@ -52,6 +52,10 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - `supabase/sql/004_seguridad.sql`: quita a la clave pública las funciones de disparador, vistas del panel con `security_invoker` y, por defecto, las funciones nuevas no se abren a anon (hay que dar `grant execute` a mano a las que use la web).
 - GitHub Actions (`.github/workflows/comprobar.yml`): typegen + typecheck, lint, tests y npm audit en cada pull request y subida a main. Dependabot semanal.
 
+## IndexNow (25-11-2026)
+
+- Aviso diario a Bing y compañía de lo que cambia: Vercel Cron (`vercel.json`, 07:00 UTC) → `/api/indexnow` → fichas nuevas o con precio cambiado en 26 h + su marca + portada e índices. Clave pública en `src/lib/indexnow.ts` y en `public/<clave>.txt` (si cambia una, cambiar la otra). Protegido con `CRON_SECRET` (variable de Vercel); sin ella responde 503. Resultado en los logs de Vercel («indexnow:»).
+
 ## Páginas de entrada (SEO)
 
 - `/bicis` y `/bicis/<tipo>[/<subtipo>]` (también `/bicis/electricas[/<tipo>]`), `/marcas` y `/marcas/<marca>` (24-11-2026). Qué páginas existen y sus textos: `src/lib/landings.ts`; mínimo `MIN_BICIS` (5) bicis a la venta por página. Las marcas con menos de 5 tienen página pero `noindex`. Vista común: `LandingView` (resumen con cifras, mejores por calidad-precio, enlaces, preguntas con FAQPage, ItemList y migas en JSON-LD).
