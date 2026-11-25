@@ -7,8 +7,12 @@
 // nada se carga antes de decidir, se puede cambiar de opinión en cualquier momento (pie de página) y
 // la decisión caduca a los 12 meses, momento en que se vuelve a preguntar.
 
-/** ID de medición de GA4 (G-XXXXXXX). Sin él no hay nada que aceptar y el aviso no aparece. */
-export const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
+/**
+ * ID de medición de GA4 (propiedad de Roodada, 25-11-2026). Es público: va en el código de la página.
+ * Solo en compilaciones de producción y preview (en `next dev` no se mide nada). NEXT_PUBLIC_GA_ID lo
+ * sustituye si se define. Sin ID no hay nada que aceptar y el aviso no aparece.
+ */
+export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || (process.env.NODE_ENV === "production" ? "G-ZR7CP7S1B2" : "");
 
 /** Si cambian las categorías o los proveedores, subir la versión: se vuelve a preguntar a todos */
 const VERSION = 1;
