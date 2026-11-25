@@ -94,7 +94,7 @@ const GEOMETRY_INFO: Record<string, Info> = {
 
 function InfoText({ info }: { info: Info }) {
   return (
-    <div className="grid gap-1 text-justify hyphens-auto">
+    <div className="grid gap-1 text-left">
       <p className="m-0">{info.que}</p>
       <ul className="m-0 p-0 list-none grid gap-0.5">
         {[info.mas, info.menos].map(([t, d]) => (

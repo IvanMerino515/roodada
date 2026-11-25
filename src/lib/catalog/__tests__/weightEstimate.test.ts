@@ -27,7 +27,7 @@ describe("peso estimado", () => {
   it("se muestra con aviso cuando falta el oficial", () => {
     const b = bikes.find((x) => x.id === withoutWeight.variant_id)!;
     expect(peso.value(b)).toBe("≈ 9,1 kg ±0,7");
-    expect(peso.info!(b)).toBe(`El peso en este caso es estimado, ya que ${b.brand} no publica el peso oficial de esta bici.`);
+    expect(peso.info!(b)).toBe(`El peso en este caso es estimado, ya que ${b.brand} no publica el peso oficial de esta bicicleta.`);
   });
 
   it("no compite por la más ligera ni cuenta en la nota", () => {
