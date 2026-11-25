@@ -52,13 +52,14 @@ const nextConfig: NextConfig = {
       ...(modoPrueba ? [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }] : []),
     ];
   },
-  // La dirección de Vercel de producción también sirve la web: se manda a roodada.com (M3). Las previews
-  // tienen otras direcciones y siguen funcionando
+  // En producción, cualquier dirección *.vercel.app (roodada-d4fa, roodada-dhth…) se manda a roodada.com
+  // (M3): evita copias indexables. Solo en la compilación de producción: las previews siguen funcionando
   async redirects() {
+    if (process.env.VERCEL_ENV !== "production") return [];
     return [
       {
         source: "/:path*",
-        has: [{ type: "host", value: "roodada-d4fa.vercel.app" }],
+        has: [{ type: "host", value: "(?<sub>.+)\\.vercel\\.app" }],
         destination: "https://roodada.com/:path*",
         permanent: true,
       },
