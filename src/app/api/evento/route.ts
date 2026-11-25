@@ -9,9 +9,10 @@ let avisado = false;
 
 export async function POST(request: Request) {
   if (BOT.test(request.headers.get("user-agent") ?? "")) return new Response(null, { status: 204 });
-  // Solo desde nuestra propia web
-  const origin = request.headers.get("origin");
-  if (origin && new URL(origin).host !== new URL(request.url).host) return new Response(null, { status: 403 });
+  // Solo desde nuestra propia web (auditoría del 25-11-2026, A4): los navegadores mandan Origin en todo
+  // POST; sin él, se acepta solo si el navegador dice que viene de la misma web (Sec-Fetch-Site).
+  // Un script que no mande ninguna de las dos se rechaza
+  if (!esPropia(request)) return new Response(null, { status: 403 });
 
   const text = await request.text();
   if (text.length > 4000) return new Response(null, { status: 413 });
@@ -34,4 +35,16 @@ export async function POST(request: Request) {
     }
   });
   return new Response(null, { status: 204 });
+}
+
+function esPropia(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (origin) {
+    try {
+      return new URL(origin).host === new URL(request.url).host;
+    } catch {
+      return false; // «null» (iframes aislados, archivos locales…)
+    }
+  }
+  return request.headers.get("sec-fetch-site") === "same-origin";
 }

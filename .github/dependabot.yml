@@ -1,0 +1,16 @@
+# Avisos semanales de dependencias con actualizaciones (auditoría del 25-11-2026, B5). Las de seguridad
+# llegan en cuanto se publican. Cada propuesta es un pull request que pasa por «Comprobar».
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      menores:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

@@ -42,6 +42,16 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 - Aviso de cookies: `src/components/Consentimiento.tsx` + `src/lib/consentimiento.ts`. Solo aparece si existe `NEXT_PUBLIC_GA_ID` (si no, no hay nada que aceptar). Aceptar y Rechazar iguales en la primera capa, sin capa que tape la página; «Preferencias de cookies» en el pie lo reabre. La decisión se guarda 12 meses (`roodada_consentimiento`). **Si se añade un servicio con cookies (píxel de Meta, vídeo incrustado…), añadirlo a `/cookies` y subir `VERSION` para volver a preguntar.**
 - GA4 solo se carga tras aceptar, sin Google Signals ni anuncios, cookies de 13 meses y direcciones **sin parámetros** (llevan altura y presupuesto): las páginas vistas se mandan a mano en cada cambio de ruta. En GA4 hay que desactivar «Cambios de página basados en eventos del historial del navegador» y poner la retención en 2 meses.
 
+## Seguridad (auditoría del 25-11-2026)
+
+- Informe y plan: doc «Roodada · Auditoría de seguridad antes del lanzamiento» (https://claude.ai/artifact/ENptJoVJ9kCQL94GmDru8o).
+- Fotos: la lista de webs permitidas está en `src/lib/fotosPermitidas.ts` (la usan el optimizador y la CSP). En dominios compartidos (Shopify, Google Cloud, Storyblok, BigCommerce, Widen, ffycdn) solo la ruta de la marca. **Al añadir una marca: `npx tsx --env-file=.env.local scripts/comprobar-fotos.mts`** dice qué falta. Las fotos de cascos (POC, Sweet, MET, Kask, vault.widen.net) no estaban permitidas antes ni ahora.
+- Cabeceras en `next.config.ts`: CSP en modo **Report-Only** (avisos en los logs de Vercel como «csp:», vía `/api/csp`), X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, HSTS con subdominios, sin X-Powered-By. Si añades un servicio externo, añade su dominio a la CSP. Pasar a `Content-Security-Policy` tras una semana sin avisos propios.
+- `roodada-d4fa.vercel.app` redirige con 308 a roodada.com; las previews no.
+- `/api/evento` solo acepta peticiones con Origin propio o `Sec-Fetch-Site: same-origin`.
+- `supabase/sql/004_seguridad.sql`: quita a la clave pública las funciones de disparador, vistas del panel con `security_invoker` y, por defecto, las funciones nuevas no se abren a anon (hay que dar `grant execute` a mano a las que use la web).
+- GitHub Actions (`.github/workflows/comprobar.yml`): typegen + typecheck, lint, tests y npm audit en cada pull request y subida a main. Dependabot semanal.
+
 ## Páginas de entrada (SEO)
 
 - `/bicis` y `/bicis/<tipo>[/<subtipo>]` (también `/bicis/electricas[/<tipo>]`), `/marcas` y `/marcas/<marca>` (24-11-2026). Qué páginas existen y sus textos: `src/lib/landings.ts`; mínimo `MIN_BICIS` (5) bicis a la venta por página. Las marcas con menos de 5 tienen página pero `noindex`. Vista común: `LandingView` (resumen con cifras, mejores por calidad-precio, enlaces, preguntas con FAQPage, ItemList y migas en JSON-LD).
