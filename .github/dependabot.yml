@@ -1,16 +1,25 @@
-# Avisos semanales de dependencias con actualizaciones (auditoría del 25-11-2026, B5). Las de seguridad
-# llegan en cuanto se publican. Cada propuesta es un pull request que pasa por «Comprobar».
+# Propuestas de actualización de dependencias (auditoría del 25-11-2026, B5). Cada una es un pull request
+# que pasa por «Comprobar». Vercel no compila estas ramas (vercel.json): en el plan Hobby compila de una
+# en una y llenaban la cola. Los saltos de versión grande (TypeScript 7, ESLint 10…) se hacen a mano.
+# Los avisos de seguridad llegan aparte (Settings → Code security → Dependabot security updates).
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     groups:
       menores:
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 1
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
