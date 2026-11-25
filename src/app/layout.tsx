@@ -4,11 +4,13 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { ActivityTracker } from "@/components/ActivityTracker";
+import { Consentimiento, PreferenciasCookies } from "@/components/Consentimiento";
 import { NavProgress } from "@/components/NavProgress";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { ResetBoundary, ResetScope } from "@/components/ResetScope";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getCatalog } from "@/lib/catalog/load";
+import { GA_ID } from "@/lib/consentimiento";
 import { buildMenu } from "@/lib/landings";
 import { MODO_PRUEBA } from "@/lib/site";
 import "./globals.css";
@@ -72,6 +74,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <li><Link href="/talla-bicicleta" className="link inline-flex items-center min-h-3">Calcula tu talla</Link></li>
               <li><Link href="/aviso-legal" className="link inline-flex items-center min-h-3">Aviso legal</Link></li>
               <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
+              <li><Link href="/cookies" className="link inline-flex items-center min-h-3">Cookies</Link></li>
+              <li><Link href="/transparencia" className="link inline-flex items-center min-h-3">Cómo nos financiamos</Link></li>
+              {GA_ID && <li><PreferenciasCookies className="link inline-flex items-center min-h-3 eyebrow cursor-pointer text-left" /></li>}
             </ul>
             <p className="col-span-4 md:col-span-2 lg:col-span-4 text-small">
               Roodada compara los datos que publica cada marca. Precio y disponibilidad de su web oficial: compruébalos
@@ -80,6 +85,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </footer>
         <SiteAnalytics />
+        {/* Aviso de cookies y Google Analytics (solo con consentimiento). Lee la ruta: en su propio Suspense */}
+        <Suspense fallback={null}>
+          <Consentimiento />
+        </Suspense>
       </body>
     </html>
   );
