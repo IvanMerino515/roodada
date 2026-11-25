@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 import { FOTOS, remotePatterns } from "./src/lib/fotosPermitidas";
+import { MODO_PRUEBA } from "./src/lib/site";
 
-// Modo prueba (testers, antes del lanzamiento): con ROODADA_MODO_PRUEBA=1 en Vercel, ningún buscador
-// indexa nada. Se quita la variable el día del lanzamiento y se vuelve a publicar.
-const modoPrueba = process.env.ROODADA_MODO_PRUEBA === "1";
+// Sin indexar en las previews de Vercel (y en local con ROODADA_MODO_PRUEBA=1); producción, siempre. Ver src/lib/site.ts
+const modoPrueba = MODO_PRUEBA;
 
 // Seguridad (auditoría del 25-11-2026, M1). La CSP va primero en modo Report-Only: no bloquea nada,
 // solo avisa (consola del navegador y /api/csp en los logs de Vercel). Tras una semana sin avisos de
