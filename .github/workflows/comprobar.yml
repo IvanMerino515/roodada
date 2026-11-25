@@ -1,0 +1,32 @@
+# Comprobaciones automáticas en cada pull request y en cada subida a main (auditoría del 25-11-2026, B5).
+# Si fallan, el cambio no debería juntarse con main. La compilación completa la hace Vercel en la preview.
+name: Comprobar
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Los tipos de las rutas (PageProps, RouteContext…) se generan en .next, que no está en git
+      - name: Tipos
+        run: npx next typegen && npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Pruebas
+        run: npm test
+      - name: Vulnerabilidades conocidas en dependencias de producción
+        run: npm audit --omit=dev --audit-level=high
