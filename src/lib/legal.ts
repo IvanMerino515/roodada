@@ -3,8 +3,7 @@
 // Un dato vacío se muestra como «[pendiente]»: no se lanza la web mientras quede alguno.
 export const TITULARES = [
   { nombre: "Iván Merino Díaz", nif: "11859890D", domicilio: "Calle Virgen de Belén 39, 28019 Madrid" },
-  // PENDIENTE: código postal y ciudad de Edgar
-  { nombre: "Edgar Ahmed Mora", nif: "50233775G", domicilio: "Calle Antonio López 45, [código postal y ciudad pendientes]" },
+  { nombre: "Edgar Ahmed Mora", nif: "50233775G", domicilio: "Calle Antonio López 45, 28019 Madrid" },
 ] as const;
 
 /** Correo de contacto para todo lo legal: dudas, derechos de privacidad, retirada de contenidos */
