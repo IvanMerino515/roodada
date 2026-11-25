@@ -121,7 +121,7 @@ export default async function HomePage() {
 const STEPS: [string, string][] = [
   ["Tu talla primero", "Te decimos si la talla sale de la tabla oficial de la marca, si es una estimación o si estás entre dos."],
   ["Lo que te importa", "Ordenamos según el tipo de ciclista que eres y, si lo eliges, lo que más te importa: comodidad, ligereza, componentes y prestaciones."],
-  ["Toda la información", "Para que decidas con el máximo de información, te explicamos de donde sale cada dato. Si un dato es confuso o no estás familiarizado, te lo aclararemos."],
+  ["Toda la información", "Para que decidas con el máximo de información, te explicamos de dónde sale cada dato. Si un dato es confuso o no estás familiarizado, te lo aclararemos."],
 ];
 
 /** La de mejor nota calidad-precio de cada tipo de adulto, en stock. */
