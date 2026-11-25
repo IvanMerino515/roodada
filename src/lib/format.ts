@@ -7,10 +7,11 @@ export const eur = (cents: number) =>
 /** Texto cuando no hay precio en euros que enseñar (tienda en $ o £, o la web no lo mostraba) */
 export const NO_PRICE = "Precio no disponible en €";
 
-/** El precio tal como se enseña en toda la web: «2.999 €», «Desde 2.999 €», «Precio no disponible en €» o «Sin stock». */
-export function priceLabel(b: { priceCents: number; priceState?: "ok" | "desde" | "sin_euros" | "agotada" }) {
+/** El precio tal como se enseña en toda la web: «2.999 €», «Desde 2.999 €», «Precio est. 2.999 €», «Precio no disponible en €» o «Sin stock». */
+export function priceLabel(b: { priceCents: number; priceState?: "ok" | "desde" | "estimado" | "sin_euros" | "agotada" }) {
   if (b.priceState === "sin_euros") return NO_PRICE;
   if (b.priceState === "agotada") return "Sin stock";
+  if (b.priceState === "estimado") return `Precio est. ${eur(b.priceCents)}`;
   return b.priceState === "desde" ? `Desde ${eur(b.priceCents)}` : eur(b.priceCents);
 }
 

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-
-import { InfoTip } from "@/components/InfoTip";
 import { Suspense } from "react";
 
+import { InfoTip } from "@/components/InfoTip";
 import { ComparisonSkeleton, ContentEnter } from "@/components/Skeletons";
 import { TrackEvent } from "@/components/TrackEvent";
 import { getBikes } from "@/lib/catalog/load";

@@ -120,7 +120,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
               {/* El ⓘ va arriba a la derecha; al abrirlo, la explicación sale bajo el precio */}
               <div className="relative pr-4">
                 <span className={priceCents === null ? "font-display text-h4" : "font-display text-h3 num"}>
-                  {priceCents === null ? NO_PRICE : `${from ? "Desde " : ""}${eur(priceCents)}`}
+                  {priceCents === null ? NO_PRICE : `${from ? "Desde " : bike.priceState === "estimado" ? "Precio est. " : ""}${eur(priceCents)}`}
                 </span>
                 {priceCents === null && detail.foreignPrice && (
                   <span className="block text-small">En su web: {detail.foreignPrice} (sin convertir a euros)</span>

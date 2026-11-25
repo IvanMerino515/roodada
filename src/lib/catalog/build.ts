@@ -182,9 +182,13 @@ export function cohortRow(r: ListingRow): CohortRow {
 
 type BaseBike = Omit<Bike, "pct" | "quality">;
 
+/** Marcas cuya web solo da un precio estimado y la bici se pide por presupuesto (Berria: «PRECIO EST.», 25 nov 2026) */
+const PRECIO_ESTIMADO = new Set(["berria"]);
+
 /** El precio del listado es el mínimo de las ofertas EN STOCK (vista variant_listing) */
 function priceState(r: ListingRow): Bike["priceState"] {
   if (r.best_final_price_cents === null) return r.in_stock_offers > 0 ? "sin_euros" : "agotada";
+  if (PRECIO_ESTIMADO.has(r.brand_slug)) return "estimado";
   return r.specs?.price_from === true ? "desde" : "ok";
 }
 

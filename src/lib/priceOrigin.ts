@@ -56,7 +56,7 @@ const POR_TIENDA: Record<string, Origen> = {
   "berria-oficial-es": () => ({
     stockUnknown: true,
     label: "Precio estimado",
-    help: "Berria da un «precio estimado» y la bici se pide por presupuesto: el precio final lo confirma la marca.",
+    help: "Es el precio estimado que publica Berria. Berria no vende en línea: la bici se pide por presupuesto y el precio final lo confirma la marca.",
   }),
   "commencal-oficial-es": () => ({
     label: "Tienda europea, envío a España",
