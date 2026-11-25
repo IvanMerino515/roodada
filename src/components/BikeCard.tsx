@@ -26,9 +26,9 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
   return (
     <article className="casilla relative flex flex-col h-full bg-white">
       <Link href={href} className="group relative flex flex-col flex-1 p-2 no-underline focus-inset">
-        <div className="flex items-center min-h-4 pr-12">
-          {bike.electric && <span className="eyebrow">Eléctrica</span>}
-        </div>
+        {/* Hueco para la casilla de comparar (va absoluta, arriba a la derecha). «Eléctrica» va con la marca:
+            arriba se pisaba con «Comparar» en móvil, donde la casilla mide unos 165 px */}
+        {corner && <div className="min-h-4" aria-hidden="true" />}
         {/* La foto va absoluta: si no, una foto cuadrada estira la caja y rompe la proporción 4:3 de todas.
             Y "viaja" a la ficha: mismo nombre de transición que la foto grande de la galería */}
         <ViewTransition name={`foto-${bike.id}`} share="foto-bici" default="none">
@@ -46,7 +46,10 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
           </div>
         </ViewTransition>
         <div className="mt-auto grid gap-0.5">
-          <p className="eyebrow">{bike.brand}</p>
+          <p className="eyebrow">
+            {bike.brand}
+            {bike.electric && <> · Eléctrica</>}
+          </p>
           {/* Hasta 3 líneas: hay nombres de 12 palabras. El texto entero sigue ahí para lectores y en la ficha */}
           <h3 className="text-body font-display leading-tight line-clamp-3 group-hover:underline" title={bike.name}>{bike.name}</h3>
           {/* El precio es el dato con el que se decide: pesa más que la marca */}

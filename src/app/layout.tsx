@@ -61,27 +61,32 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <ResetBoundary>{children}</ResetBoundary>
           </main>
         </ResetScope>
+        {/* Pie en tres bandas horizontales: frase de marca, navegación y, tras un filete, lo legal y el aviso de precios */}
         <footer className="border-t border-border mt-12">
-          <div className="wrap grid-swiss gap-y-3 py-4">
-            <p className="col-span-4 md:col-span-4 lg:col-span-6 font-display text-h3">
-              Elegir bici con datos, no con anuncios.
-            </p>
-            <ul className="col-span-2 md:col-span-2 lg:col-span-2 list-none m-0 p-0 grid gap-1 content-start eyebrow">
-              <li><Link href="/guia" className="link inline-flex items-center min-h-3">Guía</Link></li>
-              <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link></li>
-              <li><Link href="/bicis" className="link inline-flex items-center min-h-3">Tipos de bici</Link></li>
-              <li><Link href="/marcas" className="link inline-flex items-center min-h-3">Marcas</Link></li>
-              <li><Link href="/talla-bicicleta" className="link inline-flex items-center min-h-3">Calcula tu talla</Link></li>
-              <li><Link href="/aviso-legal" className="link inline-flex items-center min-h-3">Aviso legal</Link></li>
-              <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
-              <li><Link href="/cookies" className="link inline-flex items-center min-h-3">Cookies</Link></li>
-              <li><Link href="/transparencia" className="link inline-flex items-center min-h-3">Cómo nos financiamos</Link></li>
-              {HAY_OPCIONALES && <li><PreferenciasCookies className="link inline-flex items-center min-h-3 eyebrow cursor-pointer text-left" /></li>}
-            </ul>
-            <p className="col-span-4 md:col-span-2 lg:col-span-4 text-small">
-              Roodada compara los datos que publica cada marca. Precio y disponibilidad de su web oficial: compruébalos
-              antes de comprar.
-            </p>
+          <div className="wrap grid gap-3 py-4">
+            <p className="font-display text-h3">Elegir bici con datos, no con anuncios.</p>
+            <nav aria-label="Pie de página">
+              <ul className="list-none m-0 p-0 flex flex-wrap gap-x-3 gap-y-1 eyebrow">
+                <li><Link href="/guia" className="link inline-flex items-center min-h-3">Recomendador</Link></li>
+                <li><Link href="/comparador" className="link inline-flex items-center min-h-3">Comparador</Link></li>
+                <li><Link href="/bicis" className="link inline-flex items-center min-h-3">Tipos de bici</Link></li>
+                <li><Link href="/marcas" className="link inline-flex items-center min-h-3">Marcas</Link></li>
+                <li><Link href="/talla-bicicleta" className="link inline-flex items-center min-h-3">Calcula tu talla</Link></li>
+              </ul>
+            </nav>
+            <div className="border-t border-border pt-2 grid gap-2 lg:grid-cols-[1fr_auto] lg:items-start">
+              <ul aria-label="Información legal" className="list-none m-0 p-0 flex flex-wrap gap-x-3 gap-y-1 eyebrow">
+                <li><Link href="/aviso-legal" className="link inline-flex items-center min-h-3">Aviso legal</Link></li>
+                <li><Link href="/privacidad" className="link inline-flex items-center min-h-3">Privacidad</Link></li>
+                <li><Link href="/cookies" className="link inline-flex items-center min-h-3">Cookies</Link></li>
+                <li><Link href="/transparencia" className="link inline-flex items-center min-h-3">Cómo nos financiamos</Link></li>
+                {HAY_OPCIONALES && <li><PreferenciasCookies className="link inline-flex items-center min-h-3 eyebrow cursor-pointer text-left" /></li>}
+              </ul>
+              <p className="text-small lg:max-w-[40ch]">
+                Roodada compara los datos que publica cada marca. Precio y disponibilidad de su web oficial: compruébalos
+                antes de comprar.
+              </p>
+            </div>
           </div>
         </footer>
         <SiteAnalytics />
