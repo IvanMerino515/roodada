@@ -53,16 +53,29 @@ async function loadFormula(): Promise<QualityFormula> {
  */
 async function brandPriceOverrides(variantIds?: number[]): Promise<Map<number, { best: number | null; inStock: number }>> {
   const db = supabase();
-  let q = db.from("offers").select("variant_id,stores!inner(kind)").eq("is_active", true).neq("stores.kind", "marca_directa");
-  if (variantIds) q = q.in("variant_id", variantIds);
-  const others = await retry(() => q);
-  const ids = [...new Set(((others.data ?? []) as { variant_id: number }[]).map((o) => o.variant_id))];
+  // Por páginas de 1.000 (el tope de Supabase) y con los ids en tandas de 200 (una dirección muy larga falla):
+  // hoy son pocas, pero crecerán con cada tienda nueva y un fallo aquí tumbaría el catálogo entero
+  const others: { variant_id: number }[] = [];
+  for (const ids of variantIds ? tandas(variantIds) : [undefined]) {
+    for (let from = 0; ; from += 1000) {
+      let q = db.from("offers").select("variant_id,stores!inner(kind)").eq("is_active", true).neq("stores.kind", "marca_directa");
+      if (ids) q = q.in("variant_id", ids);
+      const r = await retry(() => q.order("id").range(from, from + 999));
+      others.push(...((r.data ?? []) as { variant_id: number }[]));
+      if ((r.data ?? []).length < 1000) break;
+    }
+  }
+  const ids = [...new Set(others.map((o) => o.variant_id))];
   const out = new Map<number, { best: number | null; inStock: number }>();
   if (!ids.length) return out;
-  const brand = await retry(() =>
-    db.from("offers").select("variant_id,final_price_cents,in_stock,stores!inner(kind)").eq("is_active", true).eq("stores.kind", "marca_directa").in("variant_id", ids),
-  );
-  for (const o of (brand.data ?? []) as { variant_id: number; final_price_cents: number | null; in_stock: boolean }[]) {
+  const brandRows: { variant_id: number; final_price_cents: number | null; in_stock: boolean }[] = [];
+  for (const t of tandas(ids)) {
+    const r = await retry(() =>
+      db.from("offers").select("variant_id,final_price_cents,in_stock,stores!inner(kind)").eq("is_active", true).eq("stores.kind", "marca_directa").in("variant_id", t),
+    );
+    brandRows.push(...((r.data ?? []) as { variant_id: number; final_price_cents: number | null; in_stock: boolean }[]));
+  }
+  for (const o of brandRows) {
     const cur = out.get(o.variant_id) ?? { best: null, inStock: 0 };
     if (o.in_stock) {
       cur.inStock += 1;
@@ -72,6 +85,9 @@ async function brandPriceOverrides(variantIds?: number[]): Promise<Map<number, {
   }
   return out;
 }
+
+/** Lista en tandas de 200 (para filtros «in» que van en la dirección de la petición) */
+const tandas = <T,>(list: T[], n = 200): T[][] => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n));
 
 /** Aplica el precio de la marca a las filas de la vista (ver brandPriceOverrides) */
 function withBrandPrice(rows: Record<string, unknown>[], over: Map<number, { best: number | null; inStock: number }>) {
