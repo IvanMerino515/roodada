@@ -49,6 +49,13 @@ const nextConfig: NextConfig = {
   // guarda en memoria el catálogo y las páginas: 256 MB en vez de 50 para que quepan las fichas visitadas
   output: "standalone",
   cacheMaxMemorySize: 256 * 1024 * 1024,
+  // Compilación suave con Supabase (26-11-2026): 2 procesos en vez de uno por núcleo, menos páginas a la vez
+  // y reintento si una página falla. Cada proceso carga el catálogo: con 7 a la vez Supabase cortaba consultas
+  experimental: {
+    cpus: 2,
+    staticGenerationMaxConcurrency: 4,
+    staticGenerationRetryCount: 2,
+  },
   poweredByHeader: false,
   async headers() {
     return [

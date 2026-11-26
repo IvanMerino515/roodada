@@ -25,8 +25,9 @@ const toListingRow = (r: Record<string, unknown>) => ({ ...r, specs: foldSpecs(r
 // pasajero: se reintenta un par de veces con pausa antes de rendirse
 async function retry<T extends { error: { message: string } | null }>(load: () => PromiseLike<T>): Promise<T> {
   let r = await load();
-  for (let attempt = 1; attempt <= 2 && r.error; attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+  // Mismas pausas que selectAll: 1,5 s, 3 s, 6 s y 12 s (Supabase corta consultas cuando va cargado)
+  for (let attempt = 1; attempt <= 4 && r.error; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 1500 * 2 ** (attempt - 1)));
     r = await load();
   }
   if (r.error) throw new Error(r.error.message);
