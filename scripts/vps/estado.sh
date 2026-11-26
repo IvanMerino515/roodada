@@ -7,6 +7,7 @@ ssh -i ~/.ssh/digitaldementia_vps root@217.76.133.242 '
   echo "== Responde";   curl -s -o /dev/null -w "robots.txt → %{http_code} en %{time_total}s\n" http://127.0.0.1:3100/robots.txt
   echo "== Servidor";   free -m | sed -n 1,2p; df -h / | tail -1
   echo "== Versiones";  ls -d /srv/roodada/app /srv/roodada/app.old /srv/roodada/app.fallida 2>/dev/null || true
+  echo "== Últimas publicaciones (fecha · commit · quién)"; tail -5 /srv/roodada/publicaciones.log 2>/dev/null || echo "(aún no hay registro)"
   echo "== Errores (últimas 24 h)"; journalctl -u roodada --since "24 hours ago" -p err --no-pager | tail -15 || true
   echo "== IndexNow";   tail -3 /srv/roodada/indexnow.log 2>/dev/null || echo "(aún no ha corrido)"
 '

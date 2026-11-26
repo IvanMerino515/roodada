@@ -25,7 +25,7 @@ Los comandos se lanzan **desde la carpeta del proyecto** (`~/Proyectos/roodada`)
 | --- | --- |
 | Arrancar la web en mi ordenador | `npm run dev -- -p 3001` |
 | Comprobar antes de subir | `npm run typecheck && npm run lint && npm test` |
-| **Publicar** lo que hay en `main` | `sh scripts/vps/deploy.sh` |
+| **Publicar** `main` (a las 19:00) | `git checkout main && git pull && sh scripts/vps/deploy.sh` |
 | Ver si la web está bien | `sh scripts/vps/estado.sh` |
 | Ver los registros | `sh scripts/vps/logs.sh` (o `logs.sh csp`, `logs.sh error`…) |
 | Volver a la versión anterior | `sh scripts/vps/volver.sh` |
@@ -59,26 +59,50 @@ npm run dev -- -p 3001        # http://localhost:3001
 
 ## 3. Ramas y revisión
 
-- `main` es lo que se publica. **Subir a GitHub no publica**: publicar es lanzar `deploy.sh`.
-- Edgar trabaja en ramas propias (por ejemplo `cambios_edgar_front_…`). Iván (o Claude) las revisa en local y las junta con `main`.
-- Cada subida a GitHub pasa las comprobaciones automáticas (tipos, lint, pruebas, dependencias). Si salen en rojo, no se publica hasta arreglarlo.
+Flujo acordado el 27-11-2026 para no pisarnos:
+
+1. **Cada uno trabaja en su rama** (`edgar/menu-movil`, `ivan/textos-legales`…) y **la sube a GitHub el mismo día** (`git push`). Nada se queda solo en un ordenador.
+2. Ramas **pequeñas y cortas** (1–2 días). Antes de seguir trabajando en una rama vieja: `git pull origin main` dentro de ella para traer lo último.
+3. **Iván (o Claude) revisa y junta en `main`** las ramas listas: conflictos, pruebas, compilación.
+4. **Se publica una vez al día, a las 19:00**, lo que esté en `main` a esa hora. Publica una sola persona (Iván).
+
+- **Subir a GitHub no publica**: publicar es lanzar `deploy.sh`.
+- Cada subida a GitHub pasa las comprobaciones automáticas (tipos, lint, pruebas, dependencias). Si salen en rojo, no se junta.
 - Las propuestas de Dependabot de versión grande (TypeScript, ESLint, Node…) se cierran: esas actualizaciones se hacen a mano.
+
+**Subir una rama nueva** (por ejemplo, lo que Edgar tiene en local):
+
+```bash
+git checkout -b edgar/cambios-front
+git add -A
+git commit -m "Qué cambia"
+git push -u origin edgar/cambios-front
+```
 
 ## 4. Publicar
 
 ```bash
-git checkout main && git pull       # asegúrate de tener lo último
+git checkout main && git pull
 sh scripts/vps/deploy.sh
 ```
 
+`deploy.sh` **se niega a publicar** si:
+
+- no estás en `main`;
+- hay cambios sin commit;
+- tu `main` no es exactamente igual al de GitHub (te falta algo de otro o tienes algo sin subir).
+
+Así nadie puede publicar sin querer una versión que deje fuera el trabajo de otro. En una emergencia se puede saltar con `FORZAR=1 sh scripts/vps/deploy.sh`, con mucho cuidado.
+
 Qué hace, en 5–6 minutos:
 
-1. Sube el código de tu carpeta al servidor (**lo que tengas en tu carpeta, aunque no esté en commit**: haz commit antes).
+1. Sube al servidor **el commit exacto** (no la carpeta: nada sin commit ni ficheros sueltos).
 2. Instala y compila en el servidor (2 procesos para no saturar Supabase).
 3. Prepara la versión nueva, guarda la actual como `app.old` y cambia.
 4. Comprueba que responde. **Si no responde, vuelve sola a la anterior** y muestra el error.
+5. Apunta en el servidor fecha, commit y quién publicó (se ve con `estado.sh`).
 
-Tiene que terminar con «✓ Roodada publicada y respondiendo». El aviso `curl: (7) Failed to connect…` que sale justo antes es normal (el primer intento llega antes de que arranque).
+Tiene que terminar con «✓ Roodada publicada y respondiendo (commit)». El aviso `curl: (7) Failed to connect…` que sale justo antes es normal (el primer intento llega antes de que arranque).
 
 **Cuándo hace falta publicar**: cambios de código, textos, estilos, configuración de Next. **Cuándo no**: datos de Supabase (bicis, precios, fotos nuevas de marcas ya permitidas). Esos se ven solos en menos de un día, o al momento con `refrescar.sh`.
 

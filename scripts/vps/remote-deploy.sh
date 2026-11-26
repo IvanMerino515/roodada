@@ -28,7 +28,8 @@ systemctl restart roodada
 
 for i in $(seq 1 30); do
   if curl -fsS -o /dev/null -m 5 http://127.0.0.1:3100/robots.txt; then
-    echo "✓ Roodada publicada y respondiendo"
+    echo "$(date '+%Y-%m-%d %H:%M') · ${ROODADA_COMMIT:-?} · ${ROODADA_QUIEN:-?}" >> "$R/publicaciones.log"
+    echo "✓ Roodada publicada y respondiendo (${ROODADA_COMMIT:-?})"
     exit 0
   fi
   sleep 2
