@@ -25,8 +25,9 @@ const toListingRow = (r: Record<string, unknown>) => ({ ...r, specs: foldSpecs(r
 // pasajero: se reintenta un par de veces con pausa antes de rendirse
 async function retry<T extends { error: { message: string } | null }>(load: () => PromiseLike<T>): Promise<T> {
   let r = await load();
-  for (let attempt = 1; attempt <= 2 && r.error; attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+  // Mismas pausas que selectAll: 1,5 s, 3 s, 6 s y 12 s (Supabase corta consultas cuando va cargado)
+  for (let attempt = 1; attempt <= 4 && r.error; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 1500 * 2 ** (attempt - 1)));
     r = await load();
   }
   if (r.error) throw new Error(r.error.message);
@@ -88,7 +89,7 @@ function withBrandPrice(rows: Record<string, unknown>[], over: Map<number, { bes
  */
 export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Promise<Bike[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const [raw, sizeRows, formula, estimates, over] = await Promise.all([
     selectAll<Record<string, unknown>>("variant_listing", LISTING_COLUMNS, "variant_id"),
@@ -108,7 +109,7 @@ export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Pr
  */
 export async function getPreviousPrices(): Promise<Record<number, [number, number]>> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const out: Record<number, [number, number]> = {};
   for (let from = 0; ; from += 1000) {
@@ -136,7 +137,7 @@ export async function getPreviousPrices(): Promise<Record<number, [number, numbe
 /** Fórmula de la nota calidad-precio, en caché aparte para que la ficha no cargue el catálogo */
 export async function getFormula(): Promise<QualityFormula> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   return loadFormula();
 }
@@ -148,7 +149,7 @@ export async function getFormula(): Promise<QualityFormula> {
  */
 export async function getCohortStats(): Promise<Distributions> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const rows = await selectAll<Record<string, unknown>>(
     "variant_listing",
@@ -185,7 +186,7 @@ async function loadBikes(slugs: string[]): Promise<Bike[]> {
 /** Una bici por su slug (ficha, salida a la tienda). Ya no carga el catálogo entero. */
 export async function getBike(slug: string): Promise<Bike | undefined> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   return (await loadBikes([slug]))[0];
 }
@@ -196,7 +197,7 @@ export async function getBike(slug: string): Promise<Bike | undefined> {
  */
 export async function getAlternatives(bike: Pick<Bike, "id" | "modelId" | "category" | "electric" | "priceCents" | "specs">, cuantas = 4): Promise<Bike[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo", `bici-${bike.id}`);
   if (!bike.priceCents) return [];
   const db = supabase();
@@ -232,7 +233,7 @@ export async function getAlternatives(bike: Pick<Bike, "id" | "modelId" | "categ
 /** Varias bicis por slug, en ese orden (comparativa) */
 export async function getBikes(slugs: string[]): Promise<Bike[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   return slugs.length ? loadBikes(slugs) : [];
 }
@@ -240,7 +241,7 @@ export async function getBikes(slugs: string[]): Promise<Bike[]> {
 /** Solo los slugs (sitemap y fichas que se generan al compilar) */
 export async function getSlugs(): Promise<string[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const rows = await selectAll<{ slug: string }>("variant_listing", "slug,variant_id", "variant_id");
   return rows.map((r) => r.slug);
@@ -289,7 +290,7 @@ export type OtherOffer = {
 /** Geometría, componentes, fotos y oferta de una bici (solo para la ficha y la comparativa). */
 export async function getBikeDetail(id: number): Promise<BikeDetail> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo", `bici-${id}`);
   const db = supabase();
   const load = () =>

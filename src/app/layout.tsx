@@ -89,7 +89,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </div>
           </div>
         </footer>
-        <SiteAnalytics />
+        {/* Vercel Web Analytics solo funciona en Vercel; en el VPS no existe su script */}
+        {process.env.VERCEL && <SiteAnalytics />}
         {/* Aviso de cookies y Google Analytics (solo con consentimiento). Lee la ruta: en su propio Suspense */}
         <Suspense fallback={null}>
           <Consentimiento />

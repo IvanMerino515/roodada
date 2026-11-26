@@ -45,6 +45,17 @@ const seguridad = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // VPS (26-11-2026): servidor autónomo en .next/standalone (scripts/vps/deploy.sh). Un solo proceso que
+  // guarda en memoria el catálogo y las páginas: 256 MB en vez de 50 para que quepan las fichas visitadas
+  output: "standalone",
+  cacheMaxMemorySize: 256 * 1024 * 1024,
+  // Compilación suave con Supabase (26-11-2026): 2 procesos en vez de uno por núcleo, menos páginas a la vez
+  // y reintento si una página falla. Cada proceso carga el catálogo: con 7 a la vez Supabase cortaba consultas
+  experimental: {
+    cpus: 2,
+    staticGenerationMaxConcurrency: 4,
+    staticGenerationRetryCount: 2,
+  },
   poweredByHeader: false,
   async headers() {
     return [
@@ -70,7 +81,9 @@ const nextConfig: NextConfig = {
     // Solo las webs de las marcas y, en dominios compartidos, solo su ruta (src/lib/fotosPermitidas.ts)
     remotePatterns,
     qualities: [75],
-    formats: ["image/avif", "image/webp"],
+    // Solo WebP (26-11-2026): Cloudflare gratis guarda una versión por dirección y no distingue por el
+    // navegador (Vary: Accept), así que con AVIF un navegador antiguo podría recibir un formato que no lee
+    formats: ["image/webp"],
     // Las fotos de catálogo cambian poco: 31 días reduce las transformaciones en Vercel
     minimumCacheTTL: 2678400,
   },

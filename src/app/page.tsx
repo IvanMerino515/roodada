@@ -25,13 +25,16 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={siteJsonLd()} />
-      {/* Verificación de AvantLink (25-11-2026): comprueba una sola vez que la web es nuestra. No guarda nada
-          en el navegador. QUITAR cuando AvantLink confirme el alta (y su mención en /privacidad) */}
-      {/* Etiqueta <script> normal (no next/script): tiene que salir en el HTML del servidor, que es lo que lee AvantLink */}
-      <script
-        type="text/javascript"
-        async
-        src="http://classic.avantlink.com/affiliate_app_confirm.php?mode=js&authResponse=1798a28a290ce0785162f739082f2fea37892c71"
+      {/* Verificación de AvantLink (25-11-2026): su comprobador lee el HTML sin ejecutar JavaScript y busca la
+          etiqueta tal cual, así que va en crudo (con next/script no la encontraba). Comprueba una sola vez que
+          la web es nuestra y no guarda nada en el navegador. QUITAR cuando AvantLink confirme el alta (y su
+          mención en /privacidad) */}
+      <div
+        hidden
+        dangerouslySetInnerHTML={{
+          __html:
+            '<script type="text/javascript" src="https://classic.avantlink.com/affiliate_app_confirm.php?mode=js&authResponse=1798a28a290ce0785162f739082f2fea37892c71"></script>',
+        }}
       />
       {/* Mismo número que el comparador y la guía: bicis a la venta (en stock y con precio) */}
       <Intro bikes={n(forSale.length)} />

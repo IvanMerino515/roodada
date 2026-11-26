@@ -15,7 +15,7 @@ export function supabase() {
 // filas hay y el resto se piden a la vez, de PARALLEL en PARALLEL (en fila, las 19 páginas de tallas
 // tardaban 6,5 s; a la vez, 0,4 s). El tope evita lanzar cientos de peticiones durante la compilación,
 // donde varios procesos cargan el catálogo al mismo tiempo.
-const PARALLEL = 6;
+const PARALLEL = 3;
 
 export async function selectAll<T>(
   table: string,
@@ -30,12 +30,13 @@ export async function selectAll<T>(
     if (notNull) q = q.not(notNull, "is", null);
     return q.order(orderBy).range(from, from + pageSize - 1);
   };
-  // Con la base cargada (compilación, cargas de Edgar) a veces Supabase corta una consulta por
-  // tiempo: se reintenta dos veces con pausa antes de dar el error, que pararía la compilación
+  // Con la base cargada (compilación, cargas de Edgar, presupuesto de disco de Supabase agotado) a veces
+  // Supabase corta una consulta por tiempo: se reintenta 4 veces con pausas crecientes (1,5 s, 3 s, 6 s,
+  // 12 s) antes de dar el error, que pararía la compilación (26-11-2026, primera compilación en el VPS)
   const page = async (from: number, count = false) => {
     let r = await query(from, count);
-    for (let attempt = 1; attempt <= 2 && r.error; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 800 * attempt));
+    for (let attempt = 1; attempt <= 4 && r.error; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1500 * 2 ** (attempt - 1)));
       r = await query(from, count);
     }
     return r;

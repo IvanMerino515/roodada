@@ -1,0 +1,25 @@
+# Servicio de Roodada en el VPS (scripts/vps/remote-setup.sh lo instala en /etc/systemd/system/).
+# Corre con su propio usuario, sin permisos sobre las otras webs, con memoria limitada y reinicio automático.
+[Unit]
+Description=Roodada (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=roodada
+Group=roodada
+WorkingDirectory=/srv/roodada/app
+EnvironmentFile=/srv/roodada/.env
+ExecStart=__NODE__ server.js
+Restart=always
+RestartSec=3
+MemoryMax=1500M
+# Aislamiento: no puede escribir fuera de /srv/roodada
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/roodada
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

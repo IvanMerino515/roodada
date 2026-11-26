@@ -7,24 +7,30 @@ const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export default function robots(): MetadataRoute.Robots {
   if (MODO_PRUEBA) return { rules: { userAgent: "*", disallow: "/" } };
   const disallow = ["/ir/", "/api/", "/guia/resultados", "/comparativa"];
-  // Buscadores e IA con nombre propio (decisión de Iván, 24-11-2026: queremos que nos citen y nos
-  // conozcan): los que buscan y enlazan y también los de entrenamiento de las empresas conocidas.
-  // Ya entrarían con «*», pero así queda escrito
-  const ia = [
-    "OAI-SearchBot", "ChatGPT-User", "GPTBot", // OpenAI
-    "Claude-SearchBot", "Claude-User", "ClaudeBot", // Anthropic
+  // Buscadores e IA que buscan y CITAN con enlace (traen visitas). Decisión de Iván, 26-11-2026: los
+  // bots de ENTRENAMIENTO se bloquean (abajo): rastrean miles de fichas, cuestan CPU y base de datos y no
+  // traen visitas. Ya entrarían con «*», pero así queda escrito
+  const buscadores = [
+    "OAI-SearchBot", "ChatGPT-User", // ChatGPT (búsqueda y lo que pide el usuario)
+    "Claude-SearchBot", "Claude-User", // Claude
     "PerplexityBot", "Perplexity-User", // Perplexity
-    "Google-Extended", // Gemini (las respuestas con IA del buscador dependen de Googlebot)
     "Bingbot", // Bing y Copilot; ChatGPT también busca en Bing
-    "Applebot", "Applebot-Extended", // Siri y Apple Intelligence
+    "Applebot", // Siri y Spotlight
   ];
-  // Servicios que extraen datos para revenderlos o que no respetan las normas: no traen visitas
-  const extractores = ["Bytespider", "Diffbot", "omgili", "omgilibot", "ImagesiftBot", "img2dataset", "DataForSeoBot"];
+  // Entrenamiento de modelos (26-11-2026) y servicios que extraen datos para revenderlos: no traen visitas.
+  // Google-Extended y Applebot-Extended no rastrean: solo deciden si lo leído se usa para entrenar
+  const bloqueados = [
+    "GPTBot", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "Applebot-Extended",
+    "meta-externalagent", "Meta-ExternalAgent", "FacebookBot", "Amazonbot", "cohere-ai", "cohere-training-data-crawler",
+    "Bytespider", "Diffbot", "omgili", "omgilibot", "ImagesiftBot", "img2dataset", "DataForSeoBot",
+  ];
+  // Pausa entre páginas para quien la respeta (Bing, Yandex…; Google no): son 4.500 fichas
+  const crawlDelay = 2;
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow },
-      ...ia.map((userAgent) => ({ userAgent, allow: "/", disallow })),
-      ...extractores.map((userAgent) => ({ userAgent, disallow: "/" })),
+      { userAgent: "*", allow: "/", disallow, crawlDelay },
+      ...buscadores.map((userAgent) => ({ userAgent, allow: "/", disallow, crawlDelay })),
+      ...bloqueados.map((userAgent) => ({ userAgent, disallow: "/" })),
     ],
     sitemap: `${site}/sitemap.xml`,
     host: site,
