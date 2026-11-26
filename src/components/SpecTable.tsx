@@ -6,9 +6,9 @@ import { MISSING } from "@/lib/format";
 import { rowsFor, type SpecRow as SpecRowDef } from "@/lib/specRows";
 
 /** Fila de ficha técnica: etiqueta en mayúsculas a la izquierda, valor a la derecha, filete encima. */
-export function SpecRow({ label, children, muted = false }: { label: ReactNode; children: ReactNode; muted?: boolean }) {
+export function SpecRow({ label, children, muted = false, className = "" }: { label: ReactNode; children: ReactNode; muted?: boolean; className?: string }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2 border-t border-border px-2 py-1.5">
+    <div className={`grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-2 border-t border-border px-2 py-1.5 ${className}`}>
       <dt className="eyebrow pt-0.5">{label}</dt>
       <dd className={`m-0 ${muted ? "italic" : ""}`}>{children}</dd>
     </div>

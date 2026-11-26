@@ -1,5 +1,5 @@
-// Salida a la tienda. Todas las salidas pasan por aquí para poder medir clics y, en la fase 2,
-// cambiar a offers.affiliate_url sin tocar las páginas.
+// Salida a la tienda. Todas las salidas pasan por aquí para poder medir clics y usar offers.affiliate_url
+// sin tocar las páginas. Sin parámetros: la web oficial; con ?o=<id>: esa oferta de otra tienda.
 import { after } from "next/server";
 
 import { esBot as pareceBot } from "@/lib/actividad/eventos";
@@ -9,7 +9,12 @@ import { supabase } from "@/lib/supabase/server";
 export async function GET(request: Request, { params }: RouteContext<"/ir/[slug]">) {
   const bike = await getBike((await params).slug);
   if (!bike) return new Response("Bici no encontrada", { status: 404 });
-  const { offer } = await getBikeDetail(bike.id);
+  const detail = await getBikeDetail(bike.id);
+  // ?o=<id>: el botón de otra tienda de la ficha («Ver en Hibike»). Solo vale una oferta activa de esta bici;
+  // si no, la de la web oficial, como siempre
+  const pedida = Number(new URL(request.url).searchParams.get("o"));
+  const otra = pedida ? detail.otherOffers.find((o) => o.offerId === pedida) : undefined;
+  const offer = otra ? { id: otra.offerId, url: otra.url, affiliateUrl: otra.affiliateUrl } : detail.offer;
 
   // Rastreadores, comprobadores de enlaces y previsualizaciones (WhatsApp, redes…) no son personas:
   // no se apuntan y van a la tienda por el enlace normal, nunca por el de afiliado, para no generar

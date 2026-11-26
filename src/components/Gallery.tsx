@@ -1,14 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { useState, ViewTransition } from "react";
-import { sinOptimizar } from "@/lib/imagen";
+import { FotoBici } from "./FotoBici";
 
 type Photo = { url: string; alt: string | null };
 
 /** Foto grande y miniaturas debajo: cada miniatura cambia la foto grande, sin salir de la página. */
 /** `transitionName`: la foto de la casilla del catálogo "viaja" hasta la primera foto de aquí. */
-export function Gallery({ photos, name, transitionName }: { photos: Photo[]; name: string; transitionName?: string }) {
+export function Gallery({ photos, name, transitionName, bici }: { photos: Photo[]; name: string; transitionName?: string; bici?: number }) {
   const [current, setCurrent] = useState(0);
   const shown = photos.slice(0, 8);
   const main = shown[current] ?? shown[0];
@@ -16,10 +15,11 @@ export function Gallery({ photos, name, transitionName }: { photos: Photo[]; nam
     <div className="flex flex-col h-full">
       <div className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-40">
         <ViewTransition name={current === 0 ? transitionName : undefined} share="foto-bici" default="none">
-          <Image
+          <FotoBici
             key={main.url}
             src={main.url}
-            unoptimized={sinOptimizar(main.url)}
+            fallbacks={shown.filter((p) => p.url !== main.url).map((p) => p.url)}
+            bici={bici}
             alt={main.alt ?? name}
             width={1200}
             height={800}
@@ -40,7 +40,7 @@ export function Gallery({ photos, name, transitionName }: { photos: Photo[]; nam
                 aria-label={`Ver foto ${i + 1} de ${shown.length}`}
                 className="block w-full p-1 cursor-pointer aria-pressed:shadow-[inset_0_-4px_0_var(--ds-accent)] hover:opacity-80 focus-inset"
               >
-                <Image src={p.url} unoptimized={sinOptimizar(p.url)} alt="" width={200} height={133} sizes="12vw" className="product w-full h-auto aspect-[3/2] object-contain" />
+                <FotoBici src={p.url} bici={bici} alt="" width={200} height={133} sizes="12vw" className="product w-full h-auto aspect-[3/2] object-contain" />
               </button>
             </li>
           ))}

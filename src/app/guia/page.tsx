@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { BienvenidaGuia } from "@/components/BienvenidaGuia";
 import { Guide } from "@/components/Guide";
 
 export const metadata: Metadata = {
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 export default function GuidePage() {
   return (
     <div className="wrap pt-4 pb-8">
+      <BienvenidaGuia />
       <Guide />
     </div>
   );

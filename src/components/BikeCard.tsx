@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ViewTransition, type ReactNode } from "react";
 
@@ -6,7 +5,7 @@ import type { Bike } from "@/lib/catalog/types";
 import { eur, priceLabel } from "@/lib/format";
 import { LinkPending } from "./LinkPending";
 import { QualityBadge } from "./QualityBadge";
-import { sinOptimizar } from "@/lib/imagen";
+import { FotoBici } from "./FotoBici";
 
 type Props = {
   bike: Bike;
@@ -33,9 +32,9 @@ export function BikeCard({ bike, href = `/bici/${bike.slug}`, children, corner, 
             Y "viaja" a la ficha: mismo nombre de transición que la foto grande de la galería */}
         <ViewTransition name={`foto-${bike.id}`} share="foto-bici" default="none">
           <div className="relative aspect-[4/3] my-1">
-            <Image
+            <FotoBici
               src={bike.imageUrl}
-              unoptimized={sinOptimizar(bike.imageUrl)}
+              bici={bike.id}
               alt=""
               width={600}
               height={400}

@@ -112,3 +112,39 @@ export function foreignPrice(notes: string | null): string | null {
   const m = notes.match(/(\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)? ?([$£])/);
   return m ? `${m[1]} ${m[2]}` : null;
 }
+
+// ── Otras tiendas (no la web de la marca): fila «Precio de otro proveedor» y desplegable de la ficha ──
+// ⚠️ Al añadir una tienda que no es de marca (kind ≠ marca_directa), ponerla aquí: nombre corto, qué es y el IVA.
+
+type OtraTienda = {
+  /** Nombre corto para la ficha («Hibike») */
+  name: string;
+  /** Qué es, para «Este precio corresponde a Hibike, …» */
+  what: string;
+  /** Una frase sobre el IVA o lo que puede cambiar, o null */
+  tax: string | null;
+  /** País desde el que vende, para la línea del desplegable («tienda en Alemania») */
+  country: string;
+};
+
+const OTRAS_TIENDAS: Record<string, OtraTienda> = {
+  "hibike-es": {
+    name: "Hibike",
+    what: "una tienda online de Alemania",
+    tax: "Es el precio de su web, con IVA alemán: al pedirla desde España el importe final puede variar.",
+    country: "Alemania",
+  },
+};
+
+export function otraTienda(slug: string, fallbackName: string): OtraTienda {
+  return OTRAS_TIENDAS[slug] ?? { name: fallbackName, what: "una tienda online", tax: null, country: "" };
+}
+
+/** «talla M», «tallas S, XL y XXL», «todas las tallas»; null si la tienda no lo indica */
+export function tallasTexto(sizes: string[] | null, all: string[]): string | null {
+  if (!sizes) return null;
+  if (!sizes.length) return "sin tallas en stock";
+  if (all.length > 1 && all.every((t) => sizes.includes(t))) return "todas las tallas";
+  if (sizes.length === 1) return `talla ${sizes[0]}`;
+  return `tallas ${sizes.slice(0, -1).join(", ")} y ${sizes.at(-1)}`;
+}

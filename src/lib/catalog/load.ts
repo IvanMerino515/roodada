@@ -45,6 +45,43 @@ async function loadFormula(): Promise<QualityFormula> {
 }
 
 /**
+ * Precio principal = el de la web oficial de la marca (decisión del 26-11-2026: «al menos de momento»).
+ * La vista variant_listing coge la oferta más barata de cualquier tienda; para las pocas bicis que además
+ * tienen oferta de otra tienda (Hibike…), se recalcula con solo las de la marca. Si una bici no tiene
+ * oferta de la marca, se queda con lo de la vista. Son dos consultas pequeñas.
+ */
+async function brandPriceOverrides(variantIds?: number[]): Promise<Map<number, { best: number | null; inStock: number }>> {
+  const db = supabase();
+  let q = db.from("offers").select("variant_id,stores!inner(kind)").eq("is_active", true).neq("stores.kind", "marca_directa");
+  if (variantIds) q = q.in("variant_id", variantIds);
+  const others = await retry(() => q);
+  const ids = [...new Set(((others.data ?? []) as { variant_id: number }[]).map((o) => o.variant_id))];
+  const out = new Map<number, { best: number | null; inStock: number }>();
+  if (!ids.length) return out;
+  const brand = await retry(() =>
+    db.from("offers").select("variant_id,final_price_cents,in_stock,stores!inner(kind)").eq("is_active", true).eq("stores.kind", "marca_directa").in("variant_id", ids),
+  );
+  for (const o of (brand.data ?? []) as { variant_id: number; final_price_cents: number | null; in_stock: boolean }[]) {
+    const cur = out.get(o.variant_id) ?? { best: null, inStock: 0 };
+    if (o.in_stock) {
+      cur.inStock += 1;
+      if (o.final_price_cents !== null && (cur.best === null || o.final_price_cents < cur.best)) cur.best = o.final_price_cents;
+    }
+    out.set(o.variant_id, cur);
+  }
+  return out;
+}
+
+/** Aplica el precio de la marca a las filas de la vista (ver brandPriceOverrides) */
+function withBrandPrice(rows: Record<string, unknown>[], over: Map<number, { best: number | null; inStock: number }>) {
+  if (!over.size) return rows;
+  return rows.map((r) => {
+    const o = over.get(r.variant_id as number);
+    return o ? { ...r, best_final_price_cents: o.best, in_stock_offers: o.inStock } : r;
+  });
+}
+
+/**
  * Catálogo completo (≈4.200 bicis) en caché: el recomendador y el comparador trabajan sobre él.
  * Sin tallas (`sizes: false`) pesa la mitad: el comparador no las usa. Las tallas solo hacen falta
  * para recomendar (guía, contador, "Por qué es para ti").
@@ -53,14 +90,15 @@ export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Pr
   "use cache";
   cacheLife("hours");
   cacheTag("catalogo");
-  const [raw, sizeRows, formula, estimates] = await Promise.all([
+  const [raw, sizeRows, formula, estimates, over] = await Promise.all([
     selectAll<Record<string, unknown>>("variant_listing", LISTING_COLUMNS, "variant_id"),
     sizes ? selectAll<SizeRow>("variant_sizes", SIZE_COLUMNS, "id") : Promise.resolve([]),
     getFormula(),
     // Solo las bicis con estimación (unas 1.000 de 4.700 filas)
     selectAll<WeightEstimateRow>("variants", ESTIMATE_COLUMNS, "id", { notNull: "weight_estimated_g" }),
+    brandPriceOverrides(),
   ]);
-  return buildCatalog(raw.map(toListingRow), sizeRows, formula, estimates);
+  return buildCatalog(withBrandPrice(raw, over).map(toListingRow), sizeRows, formula, estimates);
 }
 
 /**
@@ -128,8 +166,10 @@ async function loadBikes(slugs: string[]): Promise<Bike[]> {
     getCohortStats(),
     getFormula(),
   ]);
-  const rows = ((listing.data ?? []) as unknown as Record<string, unknown>[]).map(toListingRow);
-  if (!rows.length) return [];
+  const raw = (listing.data ?? []) as unknown as Record<string, unknown>[];
+  if (!raw.length) return [];
+  const over = await brandPriceOverrides(raw.map((r) => r.variant_id as number));
+  const rows = withBrandPrice(raw, over).map(toListingRow);
   const ids = rows.map((r) => r.variant_id);
   const [sizes, estimates] = await Promise.all([
     retry(() => db.from("variant_sizes").select(SIZE_COLUMNS).in("variant_id", ids)),
@@ -225,6 +265,25 @@ export type BikeDetail = {
   } | null;
   /** Precio en otra moneda tal cual lo da la tienda («3.449 $»), si no hay precio en € */
   foreignPrice: string | null;
+  /** Otras tiendas que no son la web de la marca (Hibike…), una entrada por tienda */
+  otherOffers: OtherOffer[];
+};
+
+/** Una tienda que no es la web oficial: su mejor precio, las tallas que tiene y la oferta a la que lleva el botón */
+export type OtherOffer = {
+  /** Oferta a la que lleva «Ver en …» (/ir/[slug]?o=id): la más barata en stock */
+  offerId: number;
+  storeSlug: string;
+  storeName: string;
+  /** Precio final (con envío) más barato, en stock si hay alguna en stock */
+  priceCents: number | null;
+  shippingCents: number;
+  inStock: boolean;
+  /** Tallas en stock en el orden de la base; null si la tienda no dice qué tallas tiene */
+  sizes: string[] | null;
+  checkedAt: string;
+  url: string;
+  affiliateUrl: string | null;
 };
 
 /** Geometría, componentes, fotos y oferta de una bici (solo para la ficha y la comparativa). */
@@ -238,7 +297,11 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
       db.from("media").select("source_url,kind,sort_order,alt_es").eq("variant_id", id).order("sort_order"),
       db.from("variant_sizes").select("size_label,sort_order,geometry,components").eq("variant_id", id).order("sort_order"),
       db.from("variant_components").select("role,description").eq("variant_id", id),
-      db.from("offers").select("id,url,affiliate_url,final_price_cents,in_stock,is_active,last_checked_at,stores(name,slug)").eq("variant_id", id).eq("is_active", true),
+      db
+        .from("offers")
+        .select("id,url,affiliate_url,final_price_cents,shipping_cents,in_stock,is_active,last_checked_at,stores(name,slug,kind),variant_sizes(size_label,sort_order)")
+        .eq("variant_id", id)
+        .eq("is_active", true),
       db.from("variants").select("data_notes").eq("id", id).maybeSingle(),
     ]);
   // El build pide las 1.600 fichas a la vez y Supabase a veces responde "Internal server error":
@@ -253,13 +316,12 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
 
   const photos = (media.data ?? []).filter((m) => m.kind === "foto").map((m) => ({ url: m.source_url as string, alt: m.alt_es as string | null }));
   // La mejor oferta: primero en stock, luego con precio en €, luego la más barata
-  const rank = (o: { in_stock: boolean; final_price_cents: number | null }) => [o.in_stock ? 0 : 1, o.final_price_cents === null ? 1 : 0, o.final_price_cents ?? 0];
-  const best = [...(offers.data ?? [])].sort((a, b) => {
-    const [x, y] = [rank(a), rank(b)];
-    return x[0] - y[0] || x[1] - y[1] || x[2] - y[2];
-  })[0];
-  const store = best?.stores as { name: string; slug: string } | { name: string; slug: string }[] | null | undefined;
-  const st = Array.isArray(store) ? store[0] : store;
+  const all = (offers.data ?? []) as unknown as OfferRow[];
+  // Precio principal: la web oficial de la marca. Si no hay oferta de la marca, la mejor de cualquier tienda
+  const brandOffers = all.filter((o) => one(o.stores)?.kind === "marca_directa");
+  const best = byRank(brandOffers.length ? brandOffers : all)[0];
+  const st = one(best?.stores);
+  const otherOffers = groupOtherOffers(all.filter((o) => o !== best && one(o.stores) && one(o.stores)?.kind !== "marca_directa"));
   return {
     photos,
     geometryImage: (media.data ?? []).find((m) => m.kind === "geometria")?.source_url ?? null,
@@ -281,5 +343,65 @@ export async function getBikeDetail(id: number): Promise<BikeDetail> {
         }
       : null,
     foreignPrice: foreignPrice((variant.data as { data_notes: string | null } | null)?.data_notes ?? null),
+    otherOffers,
   };
+}
+
+type StoreRef = { name: string; slug: string; kind: string };
+type SizeRef = { size_label: string; sort_order: number };
+
+/** PostgREST devuelve la relación como objeto o como lista según el esquema: se toma el primero */
+const one = <T,>(v: T | T[] | null | undefined): T | undefined => (Array.isArray(v) ? v[0] : (v ?? undefined));
+
+// La mejor oferta: primero en stock, luego con precio en €, luego la más barata
+const rank = (o: { in_stock: boolean; final_price_cents: number | null }) => [o.in_stock ? 0 : 1, o.final_price_cents === null ? 1 : 0, o.final_price_cents ?? 0];
+const byRank = <T extends { in_stock: boolean; final_price_cents: number | null }>(list: T[]) =>
+  [...list].sort((a, b) => {
+    const [x, y] = [rank(a), rank(b)];
+    return x[0] - y[0] || x[1] - y[1] || x[2] - y[2];
+  });
+
+type OfferRow = {
+  stores: StoreRef | StoreRef[] | null;
+  id: number;
+  url: string;
+  affiliate_url: string | null;
+  final_price_cents: number | null;
+  shipping_cents: number;
+  in_stock: boolean;
+  last_checked_at: string;
+  variant_sizes: SizeRef | SizeRef[] | null;
+};
+
+/** Agrupa por tienda las ofertas que no son de la marca: una oferta por talla (o una sin talla) → una fila por tienda */
+function groupOtherOffers(list: OfferRow[]): OtherOffer[] {
+  const groups = new Map<string, OfferRow[]>();
+  for (const o of list) {
+    const slug = one(o.stores)?.slug;
+    if (!slug) continue;
+    groups.set(slug, [...(groups.get(slug) ?? []), o]);
+  }
+  return [...groups.values()]
+    .map((g) => {
+      const top = byRank(g)[0];
+      const store = one(top.stores)!;
+      const sized = g.map((o) => ({ o, size: one(o.variant_sizes) }));
+      // Si alguna oferta no dice talla, la tienda no indica qué tallas tiene
+      const sizes = sized.every((x) => x.size)
+        ? [...new Set(sized.filter((x) => x.o.in_stock).sort((a, b) => a.size!.sort_order - b.size!.sort_order).map((x) => x.size!.size_label))]
+        : null;
+      return {
+        offerId: top.id,
+        storeSlug: store.slug,
+        storeName: store.name,
+        priceCents: top.final_price_cents,
+        shippingCents: top.shipping_cents,
+        inStock: g.some((o) => o.in_stock),
+        sizes,
+        checkedAt: g.map((o) => o.last_checked_at).sort().at(-1)!,
+        url: top.url,
+        affiliateUrl: top.affiliate_url || null,
+      };
+    })
+    .sort((a, b) => (a.priceCents ?? Infinity) - (b.priceCents ?? Infinity));
 }

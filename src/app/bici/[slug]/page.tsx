@@ -18,8 +18,24 @@ import { JsonLd } from "@/components/JsonLd";
 import { TrackEvent } from "@/components/TrackEvent";
 import { bikeDescription, bikeTitle, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 import { PriceChecked } from "@/components/PriceChecked";
-import { CATEGORY_LABEL, DISCIPLINE_LABEL, eur, NO_PRICE } from "@/lib/format";
-import { priceOrigin, shortStore } from "@/lib/priceOrigin";
+import { CATEGORY_LABEL, day, DISCIPLINE_LABEL, eur, NO_PRICE } from "@/lib/format";
+import { otraTienda, priceOrigin, shortStore, tallasTexto } from "@/lib/priceOrigin";
+import { InfoTip } from "@/components/InfoTip";
+
+/** Importe con céntimos («89,90 €»), para el envío */
+const eurCents = (cents: number) =>
+  new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", minimumFractionDigits: 2, useGrouping: "always" }).format(cents / 100);
+/** Diferencias: sin céntimos si son euros redondos («3.519 €»), con céntimos si no («89,90 €») */
+const money = (cents: number) => (cents % 100 ? eurCents(cents) : eur(cents));
+
+/** Etiqueta del precio más barato (verde de rebaja, como las bajadas de precio de la web) */
+function Cheapest() {
+  return (
+    <span className="inline-block align-middle ml-1 bg-rebaja text-white eyebrow px-0.5 py-px leading-tight">
+      <span aria-hidden="true">✓ </span>Más barato
+    </span>
+  );
+}
 
 // En el build solo se generan unas pocas fichas: las 2.100+ de golpe agotan la memoria del build de
 // Vercel. El resto se genera en la primera visita y queda en caché igual que si fuera del build
@@ -59,6 +75,63 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
   const from = bike.priceState === "desde";
   const origin = priceOrigin(offer?.storeSlug ?? null, bike.brand, { from, hasEuros: priceCents !== null });
   const store = shortStore(offer?.store ?? null, bike.brand);
+  // Otras tiendas (no la web de la marca): textos de la fila «Precio de otro proveedor» y del desplegable
+  const tallasBici = bike.sizes.map((s) => s.label);
+  const otras = detail.otherOffers.map((o) => {
+    const tienda = otraTienda(o.storeSlug, o.storeName);
+    const tallas = tallasTexto(o.sizes, tallasBici);
+    const envio = o.shippingCents > 0 ? `${eurCents(o.shippingCents)} de envío a España` : null;
+    const explicacion = [
+      `Este precio corresponde a ${tienda.name}, ${tienda.what} que vende bicis de ${bike.brand}.`,
+      envio && `Incluye ${envio}.`,
+      tienda.tax,
+      !o.inStock
+        ? "Ahora mismo no la tiene en stock."
+        : tallas
+          ? `Tiene esta bici en ${tallas}.`
+          : `${tienda.name} no indica qué tallas tiene disponibles: mejor confírmalo en su web antes de comprar.`,
+      `Comprobado el ${day(o.checkedAt)}.`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const resumen = [tienda.name, !o.inStock ? "sin stock" : (tallas ?? "tallas por confirmar"), envio && "envío incluido"].filter(Boolean).join(" · ");
+    const detalle = [
+      !o.inStock ? "Sin stock" : tallas ? tallas.charAt(0).toUpperCase() + tallas.slice(1) : "Tallas por confirmar",
+      o.inStock && "en stock",
+      envio && "envío a España incluido",
+      tienda.country && `tienda en ${tienda.country}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return { ...o, tienda, explicacion, resumen, detalle };
+  });
+  // El más barato: solo entre ofertas en stock y con precio en € (con el envío ya incluido). Se marca si gana
+  // por 1 € o más; si empatan, ninguna etiqueta y «mismo precio».
+  const BRAND = "marca";
+  const cands = [
+    ...(offer?.inStock && priceCents !== null ? [{ key: BRAND, name: "la web oficial", cents: priceCents, shipping: 0 }] : []),
+    ...otras.filter((o) => o.inStock && o.priceCents !== null).map((o) => ({ key: String(o.offerId), name: o.tienda.name, cents: o.priceCents!, shipping: o.shippingCents })),
+  ].sort((a, b) => a.cents - b.cents);
+  const winner = cands.length > 1 && cands[1].cents - cands[0].cents >= 100 ? cands[0] : null;
+  const tie = cands.length > 1 && !winner;
+  const brandCand = cands.find((c) => c.key === BRAND);
+  /** Línea gris de una fila que no es la más barata: cuánto más cuesta y frente a quién */
+  const diffText = (key: string): string | null => {
+    const me = cands.find((c) => c.key === key);
+    if (!me) return null;
+    if (tie && cands.some((c) => c.key !== key && Math.abs(c.cents - me.cents) < 100)) return "Mismo precio";
+    if (!winner || winner.key === key) return null;
+    const d = me.cents - winner.cents;
+    if (winner.key === BRAND) return d === me.shipping ? `${money(d)} más (el envío)` : `${money(d)} más que en la web oficial`;
+    return `${money(d)} más que en ${winner.name}`;
+  };
+  /** Línea del desplegable: «ahorras X» si gana, «X más que la web oficial» si no */
+  const saveText = (key: string): string | null => {
+    if (winner?.key === key && brandCand && brandCand.key !== key) return `ahorras ${money(brandCand.cents - winner.cents)}`;
+    const d = diffText(key);
+    return d ? d.charAt(0).toLowerCase() + d.slice(1) : null;
+  };
+  const isBest = (key: string) => winner?.key === key;
   const alternativas = await getAlternatives(bike);
   const preguntas = preguntasFicha(bike, alternativas);
 
@@ -108,7 +181,7 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
 
         <div className="lg:grid lg:grid-cols-12">
           <div className="lg:col-span-7 lg:border-r border-border">
-            <Gallery photos={photos} name={name} transitionName={`foto-${bike.id}`} />
+            <Gallery photos={photos} name={name} transitionName={`foto-${bike.id}`} bici={bike.id} />
           </div>
 
           <dl className="lg:col-span-5 m-0 border-t border-border lg:border-t-0 [&>div:first-child]:border-t-0">
@@ -116,30 +189,40 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
               {/* La marca ya se ve en la cabecera de la ficha; en el título va para lectores de pantalla y buscadores */}
               <h1 id="nombre" className="font-display text-h2 leading-tight"><span className="sr-only">{bike.brand} </span>{bike.name}</h1>
             </SpecRow>
-            <SpecRow label="Precio">
-              {/* El ⓘ va arriba a la derecha; al abrirlo, la explicación sale bajo el precio */}
-              <div className="relative pr-4">
+            <SpecRow label="Precio" className={isBest(BRAND) ? "bg-rebaja/10" : ""}>
+              {/* El ⓘ va pegado al precio; al abrirlo, la explicación sale debajo */}
+              <InfoTip
+                label="Cómo leemos este precio"
+                text={
+                  <>
+                    Precio de la web oficial de {store}.{origin.help && ` ${origin.help}`}
+                    {origin.costsExtra !== false && " No incluye gastos de envío ni otros costes asociados."}
+                  </>
+                }
+              >
                 <span className={priceCents === null ? "font-display text-h4" : "font-display text-h3 num"}>
                   {priceCents === null ? NO_PRICE : `${from ? "Desde " : bike.priceState === "estimado" ? "Precio est. " : ""}${eur(priceCents)}`}
                 </span>
-                {priceCents === null && detail.foreignPrice && (
-                  <span className="block text-small">En su web: {detail.foreignPrice} (sin convertir a euros)</span>
-                )}
-                <details>
-                  <summary
-                    aria-label="Cómo leemos este precio"
-                    title="Cómo leemos este precio"
-                    className="absolute top-0 right-0 list-none [&::-webkit-details-marker]:hidden cursor-pointer inline-flex items-center justify-center size-3 rounded-full border border-border text-small font-semibold leading-none select-none hover:bg-surface"
-                  >
-                    i
-                  </summary>
-                  <p className="text-small mt-0.5 border-l-2 border-border pl-1">
-                    Precio de la web oficial de {store}.{origin.help && ` ${origin.help}`}
-                    {origin.costsExtra !== false && " No incluye gastos de envío ni otros costes asociados."}
-                  </p>
-                </details>
-              </div>
+              </InfoTip>
+              {isBest(BRAND) && <Cheapest />}
+              {diffText(BRAND) && <span className="block text-small text-text-muted mt-0.5">{diffText(BRAND)}</span>}
+              {priceCents === null && detail.foreignPrice && (
+                <span className="block text-small">En su web: {detail.foreignPrice} (sin convertir a euros)</span>
+              )}
             </SpecRow>
+            {/* Otras tiendas que venden esta bici (Hibike…): una fila por tienda, debajo del precio de la marca */}
+            {otras.map((o) => (
+              <SpecRow key={o.offerId} label="Precio de otro proveedor" className={isBest(String(o.offerId)) ? "bg-rebaja/10" : ""}>
+                <InfoTip label={`Sobre el precio de ${o.tienda.name}`} text={o.explicacion}>
+                  <span className={o.priceCents === null ? "font-display text-h4" : "font-display text-h4 num"}>
+                    {o.priceCents === null ? NO_PRICE : money(o.priceCents)}
+                  </span>
+                </InfoTip>
+                {isBest(String(o.offerId)) && <Cheapest />}
+                <span className="block text-small mt-0.5">{o.resumen}</span>
+                {diffText(String(o.offerId)) && <span className="block text-small text-text-muted">{diffText(String(o.offerId))}</span>}
+              </SpecRow>
+            ))}
             <SpecRow label="Origen">{origin.label}</SpecRow>
             <SpecRow label="Disponible">
               {offer ? (
@@ -179,6 +262,40 @@ export default async function BikePage({ params, searchParams }: PageProps<"/bic
               <p className="text-small">Link a la web oficial de {store}</p>
               {/* Solo cuando el enlace es de afiliado: la ley pide identificarlo como comunicación comercial */}
               {detail.offer?.affiliateUrl && <p className="text-small">{AFFILIATE_NOTICE}</p>}
+              {otras.length > 0 && (
+                <details className="border border-border group mt-1">
+                  <summary className="flex items-center justify-between gap-2 px-2 py-1.5 cursor-pointer list-none [&::-webkit-details-marker]:hidden eyebrow">
+                    Opciones de otros proveedores ({otras.length})
+                    <span aria-hidden="true" className="inline-block group-open:rotate-45 transition-transform motion-reduce:transition-none">+</span>
+                  </summary>
+                  <ul className="list-none m-0 p-0 border-t border-border">
+                    {otras.map((o) => (
+                      <li
+                        key={o.offerId}
+                        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1 p-2 border-t border-border first:border-t-0 ${isBest(String(o.offerId)) ? "bg-rebaja/10" : ""}`}
+                      >
+                        <span className="font-semibold">
+                          {o.tienda.name}
+                          {isBest(String(o.offerId)) && <Cheapest />}
+                        </span>
+                        <span className="font-display num">{o.priceCents === null ? NO_PRICE : money(o.priceCents)}</span>
+                        <span className="col-span-2 text-small">{[o.detalle, saveText(String(o.offerId))].filter(Boolean).join(" · ")}</span>
+                        <a
+                          href={`/ir/${bike.slug}?o=${o.offerId}`}
+                          rel="sponsored nofollow noopener"
+                          target="_blank"
+                          className="btn col-span-2 justify-self-start"
+                        >
+                          Ver en {o.tienda.name}
+                          <span aria-hidden="true">↗</span>
+                          <span className="sr-only">(se abre en otra pestaña)</span>
+                        </a>
+                        {o.affiliateUrl && <p className="col-span-2 text-small">{AFFILIATE_NOTICE}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           </dl>
         </div>

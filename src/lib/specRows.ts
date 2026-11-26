@@ -1,4 +1,5 @@
 // Filas de especificaciones: una sola definición para la ficha y la comparativa.
+import { autonomiaTexto } from "./catalog/autonomia";
 import type { Bike } from "./catalog/types";
 import { CATEGORY_LABEL, DISCIPLINE_LABEL, kg, label, priceLabel } from "./format";
 import { TIER_LABELS } from "./recommender/tiers";
@@ -79,7 +80,16 @@ export const SPEC_ROWS: SpecRow[] = [
   { group: "Suspensión", label: "Recorrido trasero", value: (b) => (b.specs.travelRearMm ? mm(b.specs.travelRearMm) : null) },
   { group: "Suspensión", label: "Tija telescópica", value: (b) => yes(b.specs.dropperPost) },
   { group: "Eléctrica", label: "Motor", value: (b) => (b.electric ? [b.specs.motorBrand, b.specs.motorTorqueNm && `${b.specs.motorTorqueNm} Nm`].filter(Boolean).join(" · ") || null : null) },
-  { group: "Eléctrica", label: "Batería", value: (b) => (b.electric && b.specs.batteryWh ? `${b.specs.batteryWh} Wh` : null), better: "higher", numeric: (b) => (b.electric ? b.specs.batteryWh : null) },
+  {
+    group: "Eléctrica",
+    label: "Batería",
+    // Eléctrica sin el dato: la fila sale igual («No publicada») para que el ⓘ lo explique
+    value: (b) => (b.electric ? (b.specs.batteryWh ? `${b.specs.batteryWh} Wh` : "No publicada") : null),
+    better: "higher",
+    numeric: (b) => (b.electric ? b.specs.batteryWh : null),
+    // El ⓘ de la batería: la autonomía (de la marca o estimada, ver catalog/autonomia.ts)
+    info: (b) => (b.electric ? autonomiaTexto(b) : null),
+  },
   // «Equipamiento» (luces, guardabarros, portabultos, caballete) quitado el 23 nov (Edgar): no se enseña en ninguna bici
 ];
 

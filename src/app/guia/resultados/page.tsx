@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { FotoBici } from "@/components/FotoBici";
 import Link from "next/link";
 import { Suspense, ViewTransition } from "react";
 
@@ -13,7 +13,6 @@ import { getCatalog } from "@/lib/catalog/load";
 import { eur, priceLabel } from "@/lib/format";
 import { recommend, type Recommendation } from "@/lib/recommender";
 import { answersToSearch, ELECTRIC, LEVELS, PRIORITIES, USES, parseAnswers, type Answers } from "@/lib/recommender/questions";
-import { sinOptimizar } from "@/lib/imagen";
 
 export const metadata: Metadata = {
   title: "Tus bicis recomendadas",
@@ -113,7 +112,7 @@ function Pick({ r, n, href, top }: { r: Recommendation; n: number; href: string;
         <p className="font-display text-h1 num leading-none p-2 border-r border-border" aria-hidden="true">{String(n).padStart(2, "0")}</p>
         <Link href={href} tabIndex={-1} aria-hidden="true" className="bg-white flex items-center justify-center p-2">
           <ViewTransition name={`foto-${r.bike.id}`} share="foto-bici" default="none">
-            <Image src={r.bike.imageUrl} unoptimized={sinOptimizar(r.bike.imageUrl)} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
+            <FotoBici src={r.bike.imageUrl} bici={r.bike.id} alt="" width={600} height={400} sizes="(min-width: 1024px) 25vw, 80vw" className="product w-full h-auto object-contain" preload={n <= 2} />
           </ViewTransition>
         </Link>
       </div>

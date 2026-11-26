@@ -26,6 +26,9 @@ export type Specs = {
   tubeless: boolean | null; // en origen solo se marca cuando es true
   dropperPost: boolean;
   batteryWh: number | null;
+  /** Autonomía que publica la marca («hasta X km»), si la da; y el texto tal cual (specs.range_km / range_text) */
+  rangeKm: number | null;
+  rangeText: string | null;
   motorBrand: string | null;
   motorTorqueNm: number | null;
   lights: boolean;

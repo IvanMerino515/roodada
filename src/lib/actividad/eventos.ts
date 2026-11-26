@@ -15,6 +15,8 @@ export const EVENTOS = [
   "ficha_vista",
   "salida_tienda",
   "talla_calculada",
+  // Una foto de bici que no carga ni optimizada ni original (la marca la ha movido): ver FotoBici.tsx
+  "foto_rota",
 ] as const;
 export type Evento = (typeof EVENTOS)[number];
 

@@ -66,7 +66,7 @@ function mapShifting(s: Record<string, unknown>): Pick<Specs, "shifting" | "shif
 export const SPEC_KEYS = [
   "discipline", "groupset", "groupset_brand", "shifting", "shifting_type", "speeds", "drivetrain", "brakes",
   "suspension", "suspension_front_mm", "suspension_rear_mm", "wheel_size", "tyre_width_mm", "max_tyre_width_mm",
-  "tubeless_ready", "dropper_post", "battery_wh", "lights", "fenders", "rack", "kickstand", "price_from",
+  "tubeless_ready", "dropper_post", "battery_wh", "range_km", "range_text", "lights", "fenders", "rack", "kickstand", "price_from",
 ] as const;
 /** Del motor solo se usan marca y par */
 export const MOTOR_KEYS = ["brand", "torque_nm"] as const;
@@ -107,6 +107,8 @@ export function mapSpecs(raw: Record<string, unknown> | null): Specs {
     tubeless: s.tubeless_ready === true ? true : null,
     dropperPost: s.dropper_post === true,
     batteryWh: num(s.battery_wh),
+    rangeKm: num(s.range_km),
+    rangeText: str(s.range_text),
     motorBrand: str(motor.brand),
     motorTorqueNm: num(motor.torque_nm),
     lights: s.lights === true,
