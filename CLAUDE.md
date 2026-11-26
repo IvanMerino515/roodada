@@ -22,7 +22,7 @@ Guía de compra de bicicletas: una guía de preguntas (`/guia`) que recomienda b
 - Scripts en `scripts/vps/` (los lanza Iván con `! sh …`; a Claude no le deja el modo auto): `setup.sh` (una vez), `deploy.sh` (cada publicación: sube, compila en el VPS, cambia de versión y vuelve atrás si no responde), `https.sh` (certificado, una vez tras apuntar el DNS).
 - Nginx limita `/ir/` (20/min por IP) y `/api/evento` (60/min). IndexNow: cron `/etc/cron.d/roodada-indexnow` (07:00 UTC) con el `CRON_SECRET` de `/srv/roodada/.env`. Vercel Analytics solo se carga en Vercel (`process.env.VERCEL`).
 - `next.config.ts`: `output: "standalone"` y `cacheMaxMemorySize` 256 MB. Cachés de datos con `cacheLife("days")` (antes `hours`: los rastreadores regeneraban 4.500 fichas cada hora).
-- Pendiente: Cloudflare delante (DNS de IONOS a Cloudflare, conservando MX/SPF/DKIM/DMARC; luego `real_ip` en Nginx) y compilar en GitHub Actions.
+- Cloudflare delante (26-11-2026): nameservers bella/elmo.ns.cloudflare.com, `roodada.com` y `www` con proxy (naranja), registros del correo en gris (MX, SPF, DKIM s1/s2, `_dmarc`, `autodiscover`). SSL Full (strict) con el certificado de Let's Encrypt del VPS. Nginx lee la IP real (`/etc/nginx/conf.d/cloudflare-realip.conf`, `scripts/vps/cloudflare.sh`), así que los límites por IP siguen valiendo. Pendiente: regla de caché para `/_next/image` y compilar en GitHub Actions.
 
 ## Sistema de diseño
 
