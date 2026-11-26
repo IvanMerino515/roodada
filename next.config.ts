@@ -81,7 +81,9 @@ const nextConfig: NextConfig = {
     // Solo las webs de las marcas y, en dominios compartidos, solo su ruta (src/lib/fotosPermitidas.ts)
     remotePatterns,
     qualities: [75],
-    formats: ["image/avif", "image/webp"],
+    // Solo WebP (26-11-2026): Cloudflare gratis guarda una versión por dirección y no distingue por el
+    // navegador (Vary: Accept), así que con AVIF un navegador antiguo podría recibir un formato que no lee
+    formats: ["image/webp"],
     // Las fotos de catálogo cambian poco: 31 días reduce las transformaciones en Vercel
     minimumCacheTTL: 2678400,
   },
