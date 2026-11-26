@@ -45,6 +45,10 @@ const seguridad = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // VPS (26-11-2026): servidor autónomo en .next/standalone (scripts/vps/deploy.sh). Un solo proceso que
+  // guarda en memoria el catálogo y las páginas: 256 MB en vez de 50 para que quepan las fichas visitadas
+  output: "standalone",
+  cacheMaxMemorySize: 256 * 1024 * 1024,
   poweredByHeader: false,
   async headers() {
     return [

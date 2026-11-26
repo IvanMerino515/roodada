@@ -16,6 +16,14 @@ Guía de compra de bicicletas: una guía de preguntas (`/guia`) que recomienda b
 - Carga de datos (21-11-2026), cada página pide solo lo que usa: `getBike`/`getBikes` (ficha, `/ir`, comparativa) traen sus bicis sueltas y calculan la nota con `getCohortStats` (6 columnas de todas las bicis); `getCatalog({ sizes: false })` para el comparador; `getCatalog()` con tallas solo para recomendar (guía, contador, resultados, "Por qué es para ti") y la portada; `getSlugs` para sitemap y fichas del build. `buildBike` y `buildCatalog` dan la misma bici (prueba `buildBike.test.ts`). De `specs` se piden solo `SPEC_KEYS` (junto a `mapSpecs`): si lees un campo nuevo, añádelo ahí.
 - Tailwind usa la escala del sistema de diseño: `--spacing` es 8 px, así que `p-1` = 8 px y `w-20` = 160 px.
 
+## VPS (desde el 26-11-2026, plan B: Vercel pausaba la cuenta por exceso de CPU)
+
+- Producción en el VPS de digitaldementia.es (217.76.133.242, compartido con digitaldementia.es y Office). Roodada corre con su usuario `roodada` en `/srv/roodada` (`src/` código, `app/` versión publicada, `cache/` caché de imágenes y páginas, `.env` variables), como servicio `roodada` de systemd en 127.0.0.1:3100, detrás de Nginx (`/etc/nginx/sites-available/roodada`).
+- Scripts en `scripts/vps/` (los lanza Iván con `! sh …`; a Claude no le deja el modo auto): `setup.sh` (una vez), `deploy.sh` (cada publicación: sube, compila en el VPS, cambia de versión y vuelve atrás si no responde), `https.sh` (certificado, una vez tras apuntar el DNS).
+- Nginx limita `/ir/` (20/min por IP) y `/api/evento` (60/min). IndexNow: cron `/etc/cron.d/roodada-indexnow` (07:00 UTC) con el `CRON_SECRET` de `/srv/roodada/.env`. Vercel Analytics solo se carga en Vercel (`process.env.VERCEL`).
+- `next.config.ts`: `output: "standalone"` y `cacheMaxMemorySize` 256 MB. Cachés de datos con `cacheLife("days")` (antes `hours`: los rastreadores regeneraban 4.500 fichas cada hora).
+- Pendiente: Cloudflare delante (DNS de IONOS a Cloudflare, conservando MX/SPF/DKIM/DMARC; luego `real_ip` en Nginx) y compilar en GitHub Actions.
+
 ## Sistema de diseño
 
 Este proyecto usa el sistema de diseño de Roodada (carpeta `design-system/`, generada desde Office).
@@ -68,7 +76,7 @@ Movimiento suave, no a saltos (decisión de Iván, 21-11-2026): `--ds-ease` se s
 
 ## Protección frente al scraping (24-11-2026)
 
-- Decisión de Iván: que buscadores e IA nos lean, citen y conozcan (también los bots de entrenamiento de OpenAI, Anthropic, Google, Apple), y frenar a quien quiera copiar el catálogo. `robots.txt` (`src/app/robots.ts`): todo abierto salvo extractores de datos (Bytespider, Diffbot…).
+- Decisión de Iván: que buscadores e IA nos lean y citen, y frenar a quien quiera copiar el catálogo. Desde el 26-11-2026 los bots de ENTRENAMIENTO (GPTBot, ClaudeBot, CCBot, Meta, Amazon…) están bloqueados por coste; los de búsqueda con IA siguen abiertos. `Crawl-delay: 2`. `robots.txt` (`src/app/robots.ts`): todo abierto salvo extractores de datos (Bytespider, Diffbot…).
 - Cortafuegos de Vercel (panel): límite por IP en las páginas y Bot Protection en modo desafío. La regla «AI Bots» NO se pone en bloquear.
 - La base solo se consulta desde el servidor: variables `SUPABASE_URL` y `SUPABASE_ANON_KEY`, sin `NEXT_PUBLIC_` (el código acepta aún los nombres antiguos mientras se cambian en Vercel).
 - Aviso legal: uso de contenidos y derecho sui generis sobre la base de datos (LPI arts. 133–137), pendiente de revisión del abogado.

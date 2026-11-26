@@ -1,0 +1,53 @@
+# Nginx de roodada.com (scripts/vps/remote-setup.sh lo instala en /etc/nginx/sites-available/roodada).
+# certbot añade después los bloques de HTTPS (scripts/vps/https.sh). No toca las otras webs del VPS.
+
+# Límites por IP (auditoría de seguridad A1 y A4, gratis aquí): salidas a tienda y registro de eventos
+limit_req_zone $binary_remote_addr zone=roodada_ir:10m rate=20r/m;
+limit_req_zone $binary_remote_addr zone=roodada_evento:10m rate=60r/m;
+
+upstream roodada_app {
+    server 127.0.0.1:3100;
+    keepalive 16;
+}
+
+# www → sin www
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.roodada.com;
+    return 301 https://roodada.com$request_uri;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name roodada.com;
+
+    client_max_body_size 1m;
+    proxy_buffer_size 32k;
+    proxy_buffers 8 32k;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header Connection "";
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    # Fraude de clics: nadie pulsa más de 20 enlaces de compra por minuto
+    location /ir/ {
+        limit_req zone=roodada_ir burst=10 nodelay;
+        limit_req_status 429;
+        proxy_pass http://roodada_app;
+    }
+
+    location = /api/evento {
+        limit_req zone=roodada_evento burst=20 nodelay;
+        limit_req_status 429;
+        proxy_pass http://roodada_app;
+    }
+
+    location / {
+        proxy_pass http://roodada_app;
+    }
+}

@@ -51,7 +51,7 @@ async function loadFormula(): Promise<QualityFormula> {
  */
 export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Promise<Bike[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const [raw, sizeRows, formula, estimates] = await Promise.all([
     selectAll<Record<string, unknown>>("variant_listing", LISTING_COLUMNS, "variant_id"),
@@ -70,7 +70,7 @@ export async function getCatalog({ sizes = true }: { sizes?: boolean } = {}): Pr
  */
 export async function getPreviousPrices(): Promise<Record<number, [number, number]>> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const out: Record<number, [number, number]> = {};
   for (let from = 0; ; from += 1000) {
@@ -98,7 +98,7 @@ export async function getPreviousPrices(): Promise<Record<number, [number, numbe
 /** Fórmula de la nota calidad-precio, en caché aparte para que la ficha no cargue el catálogo */
 export async function getFormula(): Promise<QualityFormula> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   return loadFormula();
 }
@@ -110,7 +110,7 @@ export async function getFormula(): Promise<QualityFormula> {
  */
 export async function getCohortStats(): Promise<Distributions> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const rows = await selectAll<Record<string, unknown>>(
     "variant_listing",
@@ -145,7 +145,7 @@ async function loadBikes(slugs: string[]): Promise<Bike[]> {
 /** Una bici por su slug (ficha, salida a la tienda). Ya no carga el catálogo entero. */
 export async function getBike(slug: string): Promise<Bike | undefined> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   return (await loadBikes([slug]))[0];
 }
@@ -156,7 +156,7 @@ export async function getBike(slug: string): Promise<Bike | undefined> {
  */
 export async function getAlternatives(bike: Pick<Bike, "id" | "modelId" | "category" | "electric" | "priceCents" | "specs">, cuantas = 4): Promise<Bike[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo", `bici-${bike.id}`);
   if (!bike.priceCents) return [];
   const db = supabase();
@@ -192,7 +192,7 @@ export async function getAlternatives(bike: Pick<Bike, "id" | "modelId" | "categ
 /** Varias bicis por slug, en ese orden (comparativa) */
 export async function getBikes(slugs: string[]): Promise<Bike[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   return slugs.length ? loadBikes(slugs) : [];
 }
@@ -200,7 +200,7 @@ export async function getBikes(slugs: string[]): Promise<Bike[]> {
 /** Solo los slugs (sitemap y fichas que se generan al compilar) */
 export async function getSlugs(): Promise<string[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo");
   const rows = await selectAll<{ slug: string }>("variant_listing", "slug,variant_id", "variant_id");
   return rows.map((r) => r.slug);
@@ -230,7 +230,7 @@ export type BikeDetail = {
 /** Geometría, componentes, fotos y oferta de una bici (solo para la ficha y la comparativa). */
 export async function getBikeDetail(id: number): Promise<BikeDetail> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("days");
   cacheTag("catalogo", `bici-${id}`);
   const db = supabase();
   const load = () =>
