@@ -44,6 +44,11 @@ systemctl daemon-reload
 systemctl enable roodada >/dev/null 2>&1
 
 echo "→ Nginx"
+# Si certbot ya añadió el HTTPS, no se sobrescribe (se perdería el certificado en la configuración).
+# Los cambios de Nginx a partir de entonces se hacen a mano en el servidor (ver docs/OPERACIONES.md)
+if grep -q "ssl_certificate" /etc/nginx/sites-available/roodada 2>/dev/null; then
+  echo "  Ya configurado con HTTPS: no se toca"
+else
 cp /tmp/roodada.nginx /etc/nginx/sites-available/roodada
 ln -sf /etc/nginx/sites-available/roodada /etc/nginx/sites-enabled/roodada
 # Si la configuración no es válida, se retira el sitio para no dejar Nginx roto para las otras webs
@@ -53,6 +58,7 @@ if ! nginx -t 2>&1; then
   exit 1
 fi
 systemctl reload nginx
+fi
 
 echo "→ Aviso diario a IndexNow (07:00 UTC)"
 cat > /etc/cron.d/roodada-indexnow <<'CRON'
