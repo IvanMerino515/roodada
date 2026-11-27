@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -169,7 +170,10 @@ export function MainNav({ menu }: { menu: Menu | null }) {
       {movil && (
         <div id="menu-movil" role="dialog" aria-modal="true" aria-label="Menú" className="lg:hidden fixed inset-0 z-50 bg-bg text-text overflow-y-auto llegar">
           <div className="flex items-stretch justify-between h-8 border-b border-border">
-            <Link href="/" className="eyebrow flex items-center px-2">Roodada</Link>
+            {/* Mismo logo, tamaño y márgenes que la cabecera (SiteHeader): al abrir el menú no debe cambiar */}
+            <Link href="/" aria-label="Roodada, inicio" onClick={() => setMovil(false)} className="flex items-center px-2 md:px-4">
+              <Image src="/logo.png" alt="" width={128} height={32} className="h-4 w-auto" />
+            </Link>
             <button type="button" className={`border-l border-border ${cell}`} onClick={() => { setMovil(false); trigger.current?.focus(); }} autoFocus>
               Cerrar <Icon name="close" size={18} />
             </button>

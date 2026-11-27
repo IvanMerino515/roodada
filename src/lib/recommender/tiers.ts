@@ -19,6 +19,8 @@ const TIERS: Record<string, number> = {
   "microSHIFT": 1, "microSHIFT Sword": 1, "microSHIFT Advent": 2,
   // Bujes internos de calidad: sin mantenimiento, propios de urbanas de gama media-alta
   "Enviolo": 3,
+  // Caja de cambios en el pedalier (sellada, casi sin mantenimiento; bicis de 3.500–9.000 €): gama alta (Edgar, 27-11-2026)
+  "Pinion": 4,
 };
 
 export const TIER_LABELS = ["", "básica", "de entrada", "media", "alta", "tope de gama"] as const;

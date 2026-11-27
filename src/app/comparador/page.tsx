@@ -14,7 +14,7 @@ import { CatalogSkeleton, ContentEnter } from "@/components/Skeletons";
 import { TrackEvent } from "@/components/TrackEvent";
 import { getCatalog } from "@/lib/catalog/load";
 import {
-  applyFilters, facetOptions, filtersToSearch, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
+  applyFilters, facetOptions, filtersToSearch, GAMAS, PAGE_SIZE, parseFilters, SORTS, type CatalogFilters,
 } from "@/lib/catalogFilters";
 import { decimal, int, label, priceLabel } from "@/lib/format";
 import type { Bike } from "@/lib/catalog/types";
@@ -72,7 +72,14 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
       <FilterForm key={filtersToSearch(f)} action="/comparador">
         <FilterRow label="Filtros principales">
           {/* Tipo y, si hay tipo elegido, Subtipo (Trail, XC, Descenso, Aero, Endurance…) */}
-          <TypeFilter categories={facets.categoria} subtypes={facets.subtipo} categoria={f.categoria} subtipo={f.subtipo} />
+          <TypeFilter
+            categories={facets.categoria}
+            subtypes={facets.subtipo}
+            categoria={f.categoria}
+            subtipo={f.subtipo}
+            platos={f.platos}
+            platosOptions={facets.platos}
+          />
           <FilterSelect id="electrica" name="electrica" label="Eléctrica" defaultValue={f.electrica ?? ""} extra>
             <option value="">Igual</option>
             <option value="si">Sí</option>
@@ -111,7 +118,7 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
           </FilterSelect>
         </FilterRow>
         <FilterRow label="Más filtros">
-          <MoreFiltersToggle active={[f.electrica, f.marca, f.q, f.material, f.suspension].filter(Boolean).length} />
+          <MoreFiltersToggle active={[f.electrica, f.marca, f.q, f.material, f.suspension, f.gama].filter(Boolean).length} />
           <div className={`${EXTRA} items-center border-b border-border md:border-r lg:border-b-0`}>
             <label htmlFor="q" className="eyebrow pl-2 whitespace-nowrap">Buscar:</label>
             <input
@@ -123,6 +130,14 @@ async function Catalog({ filters: f }: { filters: CatalogFilters }) {
               className="select normal-case tracking-normal placeholder:text-text placeholder:opacity-60"
             />
           </div>
+          {/* Gama: la más baja entre componentes (grupo) y precio (< 1.100 / 1.100–4.500 / > 4.500 €), ver gamaDe */}
+          <FilterSelect id="gama" name="gama" label="Gama" defaultValue={f.gama ?? ""} className="lg:border-b-0" extra>
+            <option value="">Todas</option>
+            {(Object.keys(GAMAS) as (keyof typeof GAMAS)[]).map((k) => {
+              const n = facets.gama.find(([g]) => g === k)?.[1] ?? 0;
+              return <option key={k} value={k}>{GAMAS[k]} ({int(n)})</option>;
+            })}
+          </FilterSelect>
           <FilterSelect id="material" name="material" label="Cuadro" defaultValue={f.material ?? ""} className="lg:border-b-0" extra>
             <option value="">Todos</option>
             {facets.material.map(([k, n]) => (

@@ -19,12 +19,42 @@ export type CatalogFilters = {
   marca?: string;
   material?: string;
   suspension?: string;
+  /** Solo gravel: monoplato (1x) o varios platos (2x/3x) */
+  platos?: Platos;
+  /** Gama: la más baja entre la de componentes (grupo) y la de precio (ver gamaDe) */
+  gama?: Gama;
   q?: string;
   orden: SortKey;
   pagina: number;
 };
 
 export const PAGE_SIZE = 24;
+
+/** Platos (solo gravel, 27-11-2026): monoplato = 1x; varios = 2x o 3x. Sin dato de platos, no entra si se filtra */
+export const PLATOS = { mono: "Monoplato (1x)", varios: "Varios platos (2x / 3x)" } as const;
+export type Platos = keyof typeof PLATOS;
+export const PLATOS_CATEGORIA = "bici-gravel";
+const platosDe = (b: Bike): Platos | null =>
+  b.specs.drivetrain === "1x" ? "mono" : b.specs.drivetrain === "2x" || b.specs.drivetrain === "3x" ? "varios" : null;
+
+/**
+ * Gama (decisión de Edgar, 27-11-2026): por componentes Y por precio, y cuenta LA MÁS BAJA de las dos
+ * (gama alta solo si lo es por las dos). Componentes: grupo de transmisión (tiers.ts): 1–2 entrada, 3 media, 4–5 alta.
+ * Precio (el de la marca): < 1.100 € entrada, 1.100–4.500 € media, > 4.500 € alta. Sin gama de grupo conocida, cuenta el precio.
+ */
+export const GAMAS = { entrada: "Gama de entrada", media: "Gama media", alta: "Gama alta" } as const;
+export type Gama = keyof typeof GAMAS;
+const ORDEN_GAMA: Gama[] = ["entrada", "media", "alta"];
+const GAMA_PRECIO = { media: 110_000, alta: 450_000 }; // céntimos: desde 1.100 € media; más de 4.500 € alta
+export const gamaPorPrecio = (cents: number): Gama => (cents < GAMA_PRECIO.media ? "entrada" : cents <= GAMA_PRECIO.alta ? "media" : "alta");
+export const gamaPorGrupo = (tier: number | null): Gama | null => (tier === null ? null : tier <= 2 ? "entrada" : tier === 3 ? "media" : "alta");
+export const gamaDe = (b: Bike): Gama | null => {
+  const precio = b.priceCents > 0 ? gamaPorPrecio(b.priceCents) : null;
+  const grupo = gamaPorGrupo(b.tier);
+  if (!precio) return grupo;
+  if (!grupo) return precio;
+  return ORDEN_GAMA[Math.min(ORDEN_GAMA.indexOf(precio), ORDEN_GAMA.indexOf(grupo))];
+};
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
 
@@ -40,6 +70,8 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
   const pagina = Number(one(sp.pagina));
   const orden = one(sp.orden);
   const electrica = one(sp.electrica);
+  const platos = one(sp.platos);
+  const gama = one(sp.gama);
   return {
     categoria: one(sp.categoria) as Category | undefined,
     // Sin tipo, el subtipo no vale (el desplegable ni aparece)
@@ -50,6 +82,9 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
     marca: one(sp.marca),
     material: one(sp.material),
     suspension: one(sp.suspension),
+    // Platos solo con gravel elegido (el desplegable solo sale ahí)
+    platos: one(sp.categoria) === PLATOS_CATEGORIA && platos && platos in PLATOS ? (platos as Platos) : undefined,
+    gama: gama && gama in GAMAS ? (gama as Gama) : undefined,
     q: one(sp.q)?.trim().slice(0, 80),
     orden: orden && orden in SORTS ? (orden as SortKey) : "calidad",
     pagina: Number.isInteger(pagina) && pagina > 0 ? pagina : 1,
@@ -71,6 +106,8 @@ export function applyFilters(bikes: Bike[], f: CatalogFilters): Bike[] {
       (!f.marca || b.brandSlug === f.marca || normalize(b.brand) === normalize(f.marca.trim())) &&
       (!f.material || b.frameMaterial === f.material) &&
       (!f.suspension || b.specs.suspension === f.suspension) &&
+      (!f.platos || platosDe(b) === f.platos) &&
+      (!f.gama || gamaDe(b) === f.gama) &&
       words.every((w) => normalize(`${b.brand} ${b.name} ${b.specs.groupset ?? ""}`).includes(w)),
   );
   const by: Record<SortKey, (a: Bike, b: Bike) => number> = {
@@ -102,6 +139,8 @@ export function facetOptions(bikes: Bike[]) {
     marcaNombre: Object.fromEntries(bikes.map((b) => [b.brandSlug, b.brand])),
     material: count((b) => b.frameMaterial),
     suspension: count((b) => b.specs.suspension),
+    platos: count((b) => (b.category === PLATOS_CATEGORIA ? platosDe(b) : null)),
+    gama: count((b) => gamaDe(b)),
   };
 }
 
