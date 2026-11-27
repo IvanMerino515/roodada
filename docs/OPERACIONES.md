@@ -30,6 +30,7 @@ Los comandos se lanzan **desde la carpeta del proyecto** (`~/Proyectos/roodada`)
 | Ver los registros | `sh scripts/vps/logs.sh` (o `logs.sh csp`, `logs.sh error`…) |
 | Volver a la versión anterior | `sh scripts/vps/volver.sh` |
 | Ver ya los datos nuevos de Edgar | `sh scripts/vps/refrescar.sh` |
+| Aplicar un cambio de `roodada.service` (memoria, variables) | `sh scripts/vps/servicio.sh` |
 | ¿Falta alguna web de fotos? | `npx tsx --env-file=.env.local scripts/comprobar-fotos.mts` |
 
 Los scripts de `scripts/vps/` entran al servidor con la clave `~/.ssh/digitaldementia_vps`. Quien no la tenga en su ordenador no puede lanzarlos.

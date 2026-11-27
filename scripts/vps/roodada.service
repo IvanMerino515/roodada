@@ -13,7 +13,14 @@ EnvironmentFile=/srv/roodada/.env
 ExecStart=__NODE__ server.js
 Restart=always
 RestartSec=3
-MemoryMax=1500M
+# Memoria (27-11-2026, tras dos cierres por falta de memoria con 1500M): las fotos (sharp/libvips) fragmentan la
+# memoria de glibc y crece sin parar. MALLOC_ARENA_MAX la contiene, VIPS_CONCURRENCY limita los hilos de fotos y
+# max-old-space-size hace que Node limpie antes. MemoryHigh frena el proceso antes de llegar al tope y que lo cierren.
+Environment=MALLOC_ARENA_MAX=2
+Environment=VIPS_CONCURRENCY=2
+Environment=NODE_OPTIONS=--max-old-space-size=768
+MemoryHigh=2000M
+MemoryMax=2500M
 # Aislamiento: no puede escribir fuera de /srv/roodada
 NoNewPrivileges=true
 ProtectSystem=strict
